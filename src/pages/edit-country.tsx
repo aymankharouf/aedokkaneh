@@ -1,7 +1,7 @@
 import { useState, useContext, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListInput, Fab, Icon, Toolbar, FabButton, FabButtons, FabBackdrop } from 'framework7-react'
 import { StoreContext } from '../data/store'
-import { editCountry, showMessage, showError, getMessage, deleteCountry } from '../data/actions'
+import { editCountry, showMessage, showError, getMessage, deleteCountry } from '../data/actionst'
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
 

@@ -5,7 +5,7 @@ import { StoreContext } from '../data/store'
 import labels from '../data/labels'
 
 
-const Locations = props => {
+const Locations = () => {
   const { state } = useContext(StoreContext)
   const [locations, setLocations] = useState(() => [...state.locations].sort((l1, l2) => l1.ordering - l2.ordering))
   useEffect(() => {

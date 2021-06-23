@@ -10,7 +10,8 @@ export interface iError {
   message: string
 }
 export interface iPack {
-
+  id?: string,
+  productId: string
 }
 export interface iPackPrice {
 
@@ -33,6 +34,10 @@ export interface iOrder {
 export interface iAdvert {
 }
 export interface iLocation {
+  id: string,
+  name: string,
+  fees: number,
+  ordering: number
 }
 export interface iPasswordRequest {
 }
@@ -46,7 +51,8 @@ export interface iStockTrans {
 
 }
 export interface iProduct {
-
+  id?: string,
+  country: string
 }
 export interface iSpending {
 

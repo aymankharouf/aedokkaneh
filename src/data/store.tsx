@@ -53,7 +53,10 @@ const Store = (props: any) => {
       let packs: iPack[] = []
       let packPrices: iPackPrice[] = []
       docs.forEach(doc => {
-        packs.push({...doc.data(), id: doc.id})
+        packs.push({
+          id: doc.id,
+          productId: doc.data().productId
+        })
         if (doc.data().prices) {
           doc.data().prices.forEach((p: any) => {
             packPrices.push({...p, packId: doc.id})
@@ -99,7 +102,10 @@ const Store = (props: any) => {
         const unsubscribeProducts = firebase.firestore().collection('products').where('isArchived', '==', false).onSnapshot(docs => {
           let products: iProduct[] = []
           docs.forEach(doc => {
-            products.push({...doc.data(), id: doc.id})
+            products.push({
+              id: doc.id,
+              country: doc.data().country
+            })
           })
           dispatch({type: 'SET_PRODUCTS', payload: products})
         }, err => {

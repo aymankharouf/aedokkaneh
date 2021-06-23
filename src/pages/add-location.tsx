@@ -1,64 +1,54 @@
-import { useState, useContext, useEffect } from 'react'
-import { editLocation, showMessage, showError, getMessage } from '../data/actions'
+import { useState, useEffect } from 'react'
+import { addLocation, showMessage, showError, getMessage } from '../data/actionst'
 import { f7, Page, Navbar, List, ListInput, Fab, Icon, Toolbar } from 'framework7-react'
-import { StoreContext } from '../data/store'
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
 
-const EditLocation = props => {
-  const { state } = useContext(StoreContext)
+
+const AddLocation = () => {
   const [error, setError] = useState('')
-  const [location] = useState(() => state.locations.find(l => l.id === props.id))
-  const [name, setName] = useState(location.name)
-  const [fees, setFees] = useState((location.fees / 100).toFixed(2))
-  const [ordering, setOrdering] = useState(location.ordering)
-  const [hasChanged, setHasChanged] = useState(false)
-  useEffect(() => {
-    if (name !== location.name
-    || fees * 100 !== location.fees
-    || ordering !== location.ordering) setHasChanged(true)
-    else setHasChanged(false)
-  }, [location, name, fees, ordering])
+  const [name, setName] = useState('')
+  const [fees, setFees] = useState('')
+  const [ordering, setOrdering] = useState('')
   useEffect(() => {
     if (error) {
       showError(error)
       setError('')
     }
   }, [error])
-  const handleEdit = () => {
+  const handleSubmit = () => {
     try{
       if (Number(fees) < 0 || Number(fees) !== Number(Number(fees).toFixed(2))) {
         throw new Error('invalidValue')
       }
-      const newLocation = {
-        ...location,
+      addLocation({
+        id: Math.random().toString(),
         name,
-        fees: fees * 100,
-        ordering
-      }
-      editLocation(newLocation, state.locations)
-      showMessage(labels.editSuccess)
-      f7.views.current.router.back()  
+        fees: +fees * 100,
+        ordering: +ordering
+      })
+      showMessage(labels.addSuccess)
+      f7.views.current.router.back()
     } catch(err) {
 			setError(getMessage(f7.views.current.router.currentRoute.path, err))
 		}
   }
   return (
     <Page>
-      <Navbar title={labels.editLocation} backLink={labels.back} />
+      <Navbar title={labels.addLocation} backLink={labels.back} />
       <List form inlineLabels>
         <ListInput 
           name="name" 
-          label={labels.name}
-          value={name}
+          label={labels.name} 
           clearButton
-          type="text" 
+          type="text"
+          value={name}
           onChange={e => setName(e.target.value)}
           onInputClear={() => setName('')}
         />
         <ListInput 
           name="fees" 
-          label={labels.fees}
+          label={labels.deliveryFees}
           clearButton
           type="number" 
           value={fees} 
@@ -75,16 +65,15 @@ const EditLocation = props => {
           onInputClear={() => setOrdering('')}
         />
       </List>
-      {!name || !fees || !ordering || !hasChanged ? '' :
-        <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleEdit()}>
+      {!name || !fees || !ordering ? '' :
+        <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleSubmit()}>
           <Icon material="done"></Icon>
         </Fab>
       }
       <Toolbar bottom>
         <BottomToolbar/>
       </Toolbar>
-
     </Page>
   )
 }
-export default EditLocation
+export default AddLocation
