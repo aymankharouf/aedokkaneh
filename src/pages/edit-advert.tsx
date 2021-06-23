@@ -15,7 +15,6 @@ const EditAdvert = (props: Props) => {
   const [text, setText] = useState(advert.text)
   const [imageUrl, setImageUrl] = useState(advert.imageUrl)
   const [image, setImage] = useState<File>()
-  const [fileErrorMessage, setFileErrorMessage] = useState('')
   const [hasChanged, setHasChanged] = useState(false)
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -86,8 +85,6 @@ const EditAdvert = (props: Props) => {
           label="Image" 
           type="file" 
           accept="image/*" 
-          errorMessage={fileErrorMessage}
-          errorMessageForce
           onChange={e => handleFileChange(e)}
         />
         <img src={imageUrl} className="img-card" alt={title} />

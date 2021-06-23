@@ -25,7 +25,7 @@ const EditCategory = (props: Props) => {
         name: getCategoryName(c, state.categories)
       }
     })
-    return categories.sort((c1, c2) => c1.name > c2.name ? 1 : -1)
+    return result.sort((c1, c2) => c1.name > c2.name ? 1 : -1)
   })
   useEffect(() => {
     if (name !== category.name

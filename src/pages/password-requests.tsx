@@ -5,12 +5,13 @@ import moment from 'moment'
 import 'moment/locale/ar'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
+import { iPasswordRequest } from '../data/interfaces'
 
-const PasswordRequests = props => {
+const PasswordRequests = () => {
   const { state } = useContext(StoreContext)
-  const [passwordRequests, setPasswordRequests] = useState([])
+  const [passwordRequests, setPasswordRequests] = useState<iPasswordRequest[]>([])
   useEffect(() => {
-    setPasswordRequests(() => state.passwordRequests.sort((r1, r2) => r1.time.seconds - r2.time.seconds))
+    setPasswordRequests(() => state.passwordRequests.sort((r1, r2) => r1.time > r2.time ? 1 : -1))
   }, [state.passwordRequests])
 
   return(
@@ -25,7 +26,7 @@ const PasswordRequests = props => {
                   link={`/retreive-password/${r.id}`}
                   title={r.mobile}
                   subtitle={r.status === 'n' ? labels.new : labels.resolved}
-                  text={moment(r.time.toDate()).fromNow()}
+                  text={moment(r.time).fromNow()}
                   key={r.id}
                 />
               )

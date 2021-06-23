@@ -3,18 +3,22 @@ import { f7, Block, Page, Navbar, List, ListItem, Toolbar, NavRight, Searchbar, 
 import BottomToolbar from './bottom-toolbar'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
-import { permitUser, showMessage, showError, getMessage } from '../data/actions'
+import { permitUser, showMessage, showError, getMessage } from '../data/actionst'
+import { iCustomerInfo } from '../data/interfaces'
 
-const PermissionList = props => {
+interface Props {
+  id: string
+}
+const PermissionList = (props: Props) => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
   const [inprocess, setInprocess] = useState(false)
-  const [customers, setCustomers] = useState([])
+  const [customers, setCustomers] = useState<iCustomerInfo[]>([])
   useEffect(() => {
     setCustomers(() => {
       const customers = state.customers.filter(c => (props.id === 's' && c.storeId) || (props.id === 'n' && c.storeName && !c.storeId))
       return customers.map(c => {
-        const storeName = state.stores.find(s => s.id === c.storeId)?.name || c.storeName || ''
+        const storeName = state.stores.find(s => s.id === c.storeId)?.name || c.storeName
         return {
           ...c,
           storeName
@@ -35,12 +39,11 @@ const PermissionList = props => {
       f7.dialog.close()
     }
   }, [inprocess])
-  const handleUnPermit = customer => {
+  const handleUnPermit = (customer: iCustomerInfo) => {
     f7.dialog.confirm(labels.confirmationText, labels.confirmationTitle, async () => {
       try{
         setInprocess(true)
-        const storeId = props.id === 's' ? '' : customer.storeId
-        await permitUser(customer.id, storeId, state.users, state.stores)
+        await permitUser(customer.id, null, state.users, state.stores)
         setInprocess(false)
         showMessage(labels.unPermitSuccess)
         f7.views.current.router.back()
@@ -78,7 +81,7 @@ const PermissionList = props => {
           : customers.map(c => 
               <ListItem
                 title={c.name}
-                subtitle={c.storeName}
+                subtitle={c.storeName || ''}
                 key={c.id}
               >
                 {props.id === 'n' ?

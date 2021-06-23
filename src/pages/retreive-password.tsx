@@ -1,18 +1,21 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListInput, Toolbar, Fab, Icon } from 'framework7-react'
 import { StoreContext } from '../data/store'
-import { resolvePasswordRequest, showMessage, showError, getMessage } from '../data/actions'
+import { resolvePasswordRequest, showMessage, showError, getMessage } from '../data/actionst'
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
 import { randomColors } from '../data/config'
 
-const RetreivePassword = props => {
+interface Props {
+  id: string
+}
+const RetreivePassword = (props: Props) => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [passwordRequest] = useState(() => state.passwordRequests.find(r => r.id === props.id))
+  const [passwordRequest] = useState(() => state.passwordRequests.find(r => r.id === props.id)!)
   const [userInfo] = useState(() => state.users.find(u => u.mobile === passwordRequest.mobile))
   const [password] = useState(() => {
-    const password = userInfo?.colors?.map(c => randomColors.find(rc => rc.name === c).id)
+    const password = userInfo?.colors.map(c => randomColors.find(rc => rc.name === c)!.id)
     return password?.join('')
   })
   useEffect(() => {

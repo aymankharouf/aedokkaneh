@@ -4,14 +4,17 @@ import { StoreContext } from '../data/store'
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
 
-const CustomerDetails = props => {
+interface Props {
+  id: string
+}
+const CustomerDetails = (props: Props) => {
   const { state } = useContext(StoreContext)
-  const [customer, setCustomer] = useState(() => state.customers.find(c => c.id === props.id))
-  const [userInfo, setUserInfo] = useState(() => state.users.find(u => u.id === props.id))
+  const [customer, setCustomer] = useState(() => state.customers.find(c => c.id === props.id)!)
+  const [userInfo, setUserInfo] = useState(() => state.users.find(u => u.id === props.id)!)
   const [storeName] = useState(() => state.stores.find(s => s.id === customer.storeId)?.name || '')
   useEffect(() => {
-    setCustomer(() => state.customers.find(c => c.id === props.id))
-    setUserInfo(() => state.users.find(u => u.id === props.id))
+    setCustomer(() => state.customers.find(c => c.id === props.id)!)
+    setUserInfo(() => state.users.find(u => u.id === props.id)!)
   }, [state.customers, state.users, props.id])
   return (
     <Page>
@@ -47,7 +50,7 @@ const CustomerDetails = props => {
         <ListInput 
           name="locationName" 
           label={labels.location}
-          value={state.locations.find(l => l.id === userInfo.locationId).name}
+          value={state.locations.find(l => l.id === userInfo.locationId)?.name}
           type="text"
           readonly
         />

@@ -2,14 +2,17 @@ import { useState, useContext, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListInput, Fab, Icon, Toolbar, ListItem, FabBackdrop, FabButton, FabButtons } from 'framework7-react'
 import { StoreContext } from '../data/store'
 import BottomToolbar from './bottom-toolbar'
-import { approveUser, deleteUser, showMessage, showError, getMessage } from '../data/actions'
+import { approveUser, deleteUser, showMessage, showError, getMessage } from '../data/actionst'
 import labels from '../data/labels'
 
-const ApproveUser = props => {
+interface Props {
+  id: string
+}
+const ApproveUser = (props: Props) => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
   const [inprocess, setInprocess] = useState(false)
-  const [userInfo] = useState(() => state.users.find(u => u.id === props.id))
+  const [userInfo] = useState(() => state.users.find(u => u.id === props.id)!)
   const [name, setName] = useState(userInfo.name)
   const [locationId, setLocationId] = useState(userInfo.locationId)
   const [address, setAddress] = useState('')
@@ -29,7 +32,7 @@ const ApproveUser = props => {
   }, [inprocess])
   const handleSubmit = () => {
     try {
-      approveUser(props.id, name, userInfo.mobile, locationId, userInfo.storeName || '', address, state.users)
+      approveUser(props.id, name, userInfo.mobile, locationId, userInfo.storeName, address, state.users, state.invitations)
       showMessage(labels.approveSuccess)
       f7.views.current.router.back()  
     } catch(err) {

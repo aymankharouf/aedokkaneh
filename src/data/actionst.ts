@@ -1,7 +1,8 @@
 import firebase from './firebase'
 import labels from './labels'
 import { f7 } from 'framework7-react'
-import { iAdvert, iCategory, iError, iLocation, iLog, iPack, iProduct } from "./interfaces"
+import { iAdvert, iCategory, iCustomerInfo, iError, iFriend, iLocation, iLog, iOrder, iPack, iProduct, iStore, iUserInfo } from "./interfaces"
+import { randomColors, setup } from './config'
 
 export const getMessage = (path: string, error: iError) => {
   const errorCode = error.code ? error.code.replace(/-|\//g, '_') : error.message
@@ -202,4 +203,128 @@ export const getCategoryName = (category: iCategory, categories: iCategory[]): s
     const categoryParent = categories.find(c => c.id === category.parentId)!
     return getCategoryName(categoryParent, categories) + '-' + category.name
   }
+}
+
+export const login = (email: string, password: string) => {
+  return firebase.auth().signInWithEmailAndPassword(email, password)
+}
+
+export const logout = () => {
+  firebase.auth().signOut()
+}
+
+export const registerUser = async (email: string, password: string) => {
+  await firebase.auth().createUserWithEmailAndPassword(email, password)
+  return firebase.auth().currentUser?.updateProfile({
+    displayName: 'a'
+  })
+}
+
+export const resolvePasswordRequest = (requestId: string) => {
+  firebase.firestore().collection('password-requests').doc(requestId).delete()
+}
+
+export const permitUser = async (userId: string, storeId: string | null, users: iUserInfo[], stores: iStore[]) => {
+  const userInfo = users.find(u => u.id === userId)!
+  let name
+  if (storeId) {
+    name = `${userInfo.name}-${stores.find(s => s.id === storeId)?.name}:${userInfo.mobile}`
+    await firebase.firestore().collection('customers').doc(userId).update({
+      storeId,
+      name
+    })  
+  } else {
+    name = `${userInfo.name}:${userInfo.mobile}`
+    await firebase.firestore().collection('customers').doc(userId).update({
+      storeId: firebase.firestore.FieldValue.delete(),
+      name
+    })  
+  }
+  const colors = userInfo.colors.map(c => randomColors.find(rc => rc.name === c)!.id)
+  const password = colors.join('')
+  await firebase.auth().signInWithEmailAndPassword(userInfo.mobile + '@gmail.com', userInfo.mobile.substring(9, 2) + password)
+  await firebase.auth().currentUser?.updateProfile({
+    displayName: storeId
+  })
+  return firebase.auth().signOut()
+}
+
+export const deleteUser = async (user: iUserInfo, orders: iOrder[]) => {
+  const colors = user.colors.map(c => randomColors.find(rc => rc.name === c)!.id)
+  const password = colors.join('')
+  await firebase.firestore().collection('users').doc(user.id).delete()
+  const userOrders = orders.filter(o => o.userId === user.id)
+  for (let o of userOrders) {
+    await firebase.firestore().collection('orders').doc(o.id).delete()
+  }
+  await firebase.auth().signInWithEmailAndPassword(user.mobile + '@gmail.com', user.mobile.substring(9, 2) + password)
+  return firebase.auth().currentUser?.delete()
+}
+
+export const approveUser = (id: string, name: string, mobile: string, locationId: string, storeName: string | null, address: string, users: iUserInfo[], invitations: iFriend[]) => {
+  const batch = firebase.firestore().batch()
+  const customerRef = firebase.firestore().collection('customers').doc(id)
+  batch.set(customerRef, {
+    name: `${name}:${mobile}`,
+    orderLimit: 0,
+    isBlocked: false,
+    storeName,
+    storeId: null,
+    address,
+    deliveryFees: 0,
+    specialDiscount: 0,
+    discounts: 0,
+    mapPosition: '',
+    ordersCount: 0,
+    deliveredOrdersCount: 0,
+    returnedCount: 0,
+    deliveredOrdersTotal: 0,
+    time: new Date()
+  })
+  const userRef = firebase.firestore().collection('users').doc(id)
+  batch.update(userRef, {
+    name,
+    locationId,
+    storeName: null
+  })
+  const invitedBy = invitations.filter(i => i.mobile === mobile)
+  invitedBy.forEach(i => {
+    const otherInvitations = invitations.filter(ii => ii.userId === i.userId && ii.mobile !== i.mobile)
+    otherInvitations.push({
+      ...i,
+      status: 'r'
+    })
+    const friends = otherInvitations.map(ii => {
+      const {userId, ...others} = ii
+      return others
+    })
+    const userRef = firebase.firestore().collection('users').doc(i.userId)
+    batch.update(userRef, {
+      friends
+    })
+    if (i.status === 's') {
+      const customerRef = firebase.firestore().collection('customers').doc(i.userId)
+      batch.update(customerRef, {
+        discounts: firebase.firestore.FieldValue.increment(setup.invitationDiscount)
+      })
+    }
+  })
+  batch.commit()
+}
+
+export const editCustomer = (customer: iCustomerInfo, name: string, locationId: string, mobile: string, storeId: string | null, stores: iStore[]) => {
+  const batch = firebase.firestore().batch()
+  const { id, ...others } = customer
+  const customerRef = firebase.firestore().collection('customers').doc(id)
+  const storeName = storeId ? `-${stores.find(s => s.id === storeId)?.name}`: ''
+  batch.update(customerRef, {
+    ...others,
+    name: `${name}${storeName}:${mobile}`,
+  })
+  const userRef = firebase.firestore().collection('users').doc(id)
+  batch.update(userRef, {
+    name,
+    locationId
+  })
+  batch.commit()
 }

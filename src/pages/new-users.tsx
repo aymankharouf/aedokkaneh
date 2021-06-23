@@ -5,15 +5,16 @@ import moment from 'moment'
 import 'moment/locale/ar'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
+import { iUserInfo } from '../data/interfaces'
 
 
-const NewUsers = props => {
+const NewUsers = () => {
   const { state } = useContext(StoreContext)
-  const [newUsers, setNewUsers] = useState([])
+  const [newUsers, setNewUsers] = useState<iUserInfo[]>([])
   useEffect(() => {
     setNewUsers(() => {
       const newUsers = state.users.filter(u => !state.customers.find(c => c.id === u.id))
-      return newUsers.sort((u1, u2) => u2.time.seconds - u1.time.seconds)
+      return newUsers.sort((u1, u2) => u2.time > u1.time ? 1 : -1)
     })
   }, [state.users, state.customers])
   return(
@@ -28,7 +29,7 @@ const NewUsers = props => {
                 link={`/approve-user/${u.id}`}
                 title={`${labels.user}: ${u.name}`}
                 subtitle={`${labels.mobile}: ${u.mobile}`}
-                text={moment(u.time.toDate()).fromNow()}
+                text={moment(u.time).fromNow()}
                 key={u.id}
               />
             )

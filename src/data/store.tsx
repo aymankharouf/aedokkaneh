@@ -78,7 +78,12 @@ const Store = (props: any) => {
     const unsubscribePasswordRequests = firebase.firestore().collection('password-requests').onSnapshot(docs => {
       let passwordRequests: iPasswordRequest[] = []
       docs.forEach(doc => {
-        passwordRequests.push({...doc.data(), id:doc.id})
+        passwordRequests.push({
+          id: doc.id,
+          mobile: doc.data().mobile,
+          status: doc.data().status,
+          time: doc.data().time.toDate()
+        })
       })
       dispatch({type: 'SET_PASSWORD_REQUESTS', payload: passwordRequests})
     }, err => {
@@ -130,7 +135,10 @@ const Store = (props: any) => {
         const unsubscribeOrders = firebase.firestore().collection('orders').where('isArchived', '==', false).onSnapshot(docs => {
           let orders: iOrder[] = []
           docs.forEach(doc => {
-            orders.push({...doc.data(), id:doc.id})
+            orders.push({
+              id: doc.id,
+              userId: doc.data().userId
+          })
           })
           dispatch({type: 'SET_ORDERS', payload: orders})
         }, err => {
@@ -146,7 +154,11 @@ const Store = (props: any) => {
             users.push({
               id: doc.id,
               name: doc.data().name,
-              mobile: doc.data().mobile
+              mobile: doc.data().mobile,
+              storeName: doc.data().storeName,
+              colors: doc.data().colors,
+              locationId: doc.data().locationId,
+              time: doc.data().time.toDate()
             })
             if (doc.data().notifications) {
               doc.data().notifications.forEach((n: any) => {
@@ -180,7 +192,24 @@ const Store = (props: any) => {
         const unsubscribeCustomers = firebase.firestore().collection('customers').onSnapshot(docs => {
           let customers: iCustomerInfo[] = []
           docs.forEach(doc => {
-            customers.push({...doc.data(), id:doc.id})
+            customers.push({
+              id: doc.id,
+              name: doc.data().name,
+              storeId: doc.data().storeId,
+              storeName: doc.data().storeName,
+              orderLimit: doc.data().orderLimit,
+              isBlocked: doc.data().isBlocked,
+              address: doc.data().address,
+              deliveryFees: doc.data().deliveryFees,
+              specialDiscount: doc.data().specialDiscount,
+              discounts: doc.data().discounts,
+              mapPosition: doc.data().mapPosition,
+              ordersCount: doc.data().ordersCount,
+              deliveredOrdersCount: doc.data().deliveredOrdersCount,
+              returnedCount: doc.data().returnedCount,
+              deliveredOrdersTotal: doc.data().deliveredOrdersTotal,
+              time: doc.data().time.toDate()
+            })
           })
           dispatch({type: 'SET_CUSTOMERS', payload: customers})
         }, err => {
@@ -190,7 +219,10 @@ const Store = (props: any) => {
           let stores: iStore[] = []
           let storePayments: iStorePayment[] = []
           docs.forEach(doc => {
-            stores.push({...doc.data(), id:doc.id})
+            stores.push({
+              id: doc.id,
+              name: doc.data().name
+            })
             if (doc.data().payments) {
               doc.data().payments.forEach((p: any) => {
                 storePayments.push({...p, storeId: doc.id, storeInfo: doc.data()})

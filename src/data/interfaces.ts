@@ -25,6 +25,10 @@ export interface iPackPrice {
 export interface iNotification {
 }
 export interface iFriend {
+  userId: string,
+  mobile: string,
+  name: string,
+  status: string
 }
 export interface iRating {
 }
@@ -33,12 +37,34 @@ export interface iAlarm {
 export interface iUserInfo {
   id: string,
   name: string,
-  mobile: string
+  mobile: string,
+  storeName: string | null,
+  colors: string[],
+  locationId: string,
+  time: Date
 }
 export interface iCustomerInfo {
+  id: string,
+  name: string,
+  storeId: string | null,
+  storeName: string | null,
+  orderLimit: number,
+  isBlocked: boolean,
+  address: string,
+  deliveryFees: number,
+  specialDiscount: number,
+  discounts: number,
+  mapPosition: string,
+  ordersCount: number,
+  deliveredOrdersCount: number,
+  returnedCount: number,
+  deliveredOrdersTotal: number,
+  time: Date
 }
 
 export interface iOrder {
+  id?: string,
+  userId: string
 }
 export interface iAdvert {
   id?: string,
@@ -56,9 +82,14 @@ export interface iLocation {
   ordering: number
 }
 export interface iPasswordRequest {
+  id: string,
+  mobile: string,
+  status: string,
+  time: Date
 }
 export interface iStore {
-
+  id?: string,
+  name: string
 }
 export interface iPurchase {
 

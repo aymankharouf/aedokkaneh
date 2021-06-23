@@ -5,15 +5,16 @@ import moment from 'moment'
 import 'moment/locale/ar'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
+import { iCustomerInfo } from '../data/interfaces'
 
-const Customers = props => {
-  const { state, user } = useContext(StoreContext)
-  const [customers, setCustomers] = useState([])
+const Customers = () => {
+  const { state } = useContext(StoreContext)
+  const [customers, setCustomers] = useState<iCustomerInfo[]>([])
   useEffect(() => {
-    setCustomers(() => [...state.customers].sort((c1, c2) => c2.time.seconds - c1.time.seconds))
+    setCustomers(() => [...state.customers].sort((c1, c2) => c2.time > c1.time ? 1 : -1))
   }, [state.customers])
 
-  if (!user) return <Page><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></Page>
+  if (!state.user) return <Page><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></Page>
   return(
     <Page>
       <Navbar title={labels.customers} backLink={labels.back}>
@@ -40,7 +41,7 @@ const Customers = props => {
               <ListItem
                 link={`/customer-details/${c.id}`}
                 title={c.name}
-                subtitle={moment(c.time.toDate()).fromNow()}
+                subtitle={moment(c.time).fromNow()}
                 badge={c.isBlocked ? labels.isBlocked : ''}
                 badgeColor="red"
                 key={c.id}

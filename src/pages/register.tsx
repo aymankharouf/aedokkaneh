@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
-import { f7, Page, Navbar, List, ListInput, Button, Toolbar, Link } from 'framework7-react'
-import { login, showMessage, showError, getMessage } from '../data/actions'
+import { f7, Page, Navbar, List, ListInput, Button } from 'framework7-react'
+import { registerUser, showMessage, showError, getMessage } from '../data/actionst'
 import labels from '../data/labels'
 
-const Login = props => {
-  const [error, setError] = useState('')
-  const [inprocess, setInprocess] = useState(false)
+const Register = () => {
   const [password, setPassword] = useState('')
   const [email, setEmail] = useState('')
+  const [error, setError] = useState('')
+  const [inprocess, setInprocess] = useState(false)
   useEffect(() => {
     if (error) {
       showError(error)
@@ -22,23 +22,23 @@ const Login = props => {
     }
   }, [inprocess])
 
-  const handleLogin = async () => {
+  const handleRegister = async () => {
     try{
       setInprocess(true)
-      await login(email, password)
+      await registerUser(email, password)
       setInprocess(false)
-      showMessage(labels.loginSuccess)
+      showMessage(labels.registerSuccess)
       f7.views.current.router.back()
-      f7.views.current.router.app.panel.close('right')  
-    } catch(err) {
+      f7.views.current.router.app.panel.close('right') 
+    } catch (err){
       setInprocess(false)
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
-		}
+      setError(getMessage(f7.views.current.router.currentRoute.path, err))
+    }
   }
 
   return (
     <Page>
-      <Navbar title={labels.login} backLink={labels.back} />
+      <Navbar title={labels.registerTitle} backLink={labels.back} />
       <List form>
         <ListInput
           label={labels.email}
@@ -53,15 +53,10 @@ const Login = props => {
           onChange={e => setPassword(e.target.value)}
         />
       </List>
-      {!email || !password ? '' : 
-        <Button text={labels.logon} large onClick={() => handleLogin()} />
+      {!email || !password ? '' :
+        <Button text={labels.register} href="#" large onClick={() => handleRegister()} />
       }
-      <Toolbar bottom>
-        <Link href="/register/">{labels.registerTitle}</Link>
-        <Link href="/change-password/">{labels.changePassword}</Link>
-      </Toolbar>
-
     </Page>
   )
 }
-export default Login
+export default Register

@@ -2,14 +2,17 @@ import { useState, useContext, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListInput, Fab, Icon, Toolbar, ListItem, Toggle } from 'framework7-react'
 import { StoreContext } from '../data/store'
 import BottomToolbar from './bottom-toolbar'
-import { editCustomer, showMessage, showError, getMessage } from '../data/actions'
+import { editCustomer, showMessage, showError, getMessage } from '../data/actionst'
 import labels from '../data/labels'
 
-const EditCustomer = props => {
+interface Props {
+  id: string
+}
+const EditCustomer = (props: Props) => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [customer] = useState(() => state.customers.find(c => c.id === props.id))
-  const [userInfo] = useState(() => state.users.find(u => u.id === props.id))
+  const [customer] = useState(() => state.customers.find(c => c.id === props.id)!)
+  const [userInfo] = useState(() => state.users.find(u => u.id === props.id)!)
   const [name, setName] = useState(userInfo.name)
   const [address, setAddress] = useState(customer.address)
   const [locationId, setLocationId] = useState(userInfo.locationId)
@@ -26,9 +29,9 @@ const EditCustomer = props => {
     || locationId !== userInfo.locationId
     || mapPosition !== customer.mapPosition
     || isBlocked !== customer.isBlocked
-    || deliveryFees * 100 !== customer.deliveryFees
-    || specialDiscount * 100 !== customer.specialDiscount
-    || orderLimit * 100 !== customer.orderLimit) setHasChanged(true)
+    || +deliveryFees * 100 !== customer.deliveryFees
+    || +specialDiscount * 100 !== customer.specialDiscount
+    || +orderLimit * 100 !== customer.orderLimit) setHasChanged(true)
     else setHasChanged(false)
   }, [customer, userInfo, name, address, locationId, mapPosition, isBlocked, deliveryFees, orderLimit, specialDiscount])
   useEffect(() => {
@@ -53,9 +56,9 @@ const EditCustomer = props => {
         address,
         mapPosition,
         isBlocked,
-        deliveryFees: deliveryFees * 100,
-        orderLimit: orderLimit * 100,
-        specialDiscount: specialDiscount * 100
+        deliveryFees: +deliveryFees * 100,
+        orderLimit: +orderLimit * 100,
+        specialDiscount: +specialDiscount * 100
       }
       editCustomer(newCustomer, name, locationId, userInfo.mobile, customer.storeId, state.stores)
       showMessage(labels.editSuccess)

@@ -4,12 +4,15 @@ import { permitUser, showMessage, showError, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { StoreContext } from '../data/store'
 
-const PermitUser = props => {
+interface Props {
+  id: string
+}
+const PermitUser = (props: Props) => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
   const [inprocess, setInprocess] = useState(false)
   const [userId, setUserId] = useState(props.id === '0' ? '' : props.id)
-  const [customerInfo] = useState(() => state.customers.find(c => c.id === props.id))
+  const [customerInfo] = useState(() => state.customers.find(c => c.id === props.id)!)
   const [storeId, setStoreId] = useState('')
   const [users] = useState(() => {
     const users = state.users.map(u => {
@@ -42,7 +45,7 @@ const PermitUser = props => {
   }, [inprocess])
   useEffect(() => {
     if (userId) {
-      setStoreId(state.customers.find(c => c.id === userId).storeId || '')
+      setStoreId(state.customers.find(c => c.id === userId)?.storeId || '')
     } else {
       setStoreId('')
     }
