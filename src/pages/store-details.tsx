@@ -5,11 +5,14 @@ import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
 import { storeTypes } from '../data/config'
 
-const StoreDetails = props => {
+interface Props {
+  id: string
+}
+const StoreDetails = (props: Props) => {
   const { state } = useContext(StoreContext)
-  const [store, setStore] = useState(() => state.stores.find(s => s.id === props.id))
+  const [store, setStore] = useState(() => state.stores.find(s => s.id === props.id)!)
   useEffect(() => {
-    setStore(() => state.stores.find(s => s.id === props.id))
+    setStore(() => state.stores.find(s => s.id === props.id)!)
   }, [state.stores, props.id])
 
   return (
@@ -40,7 +43,7 @@ const StoreDetails = props => {
         <ListInput
           name="type"
           label={labels.type}
-          value={storeTypes.find(t => t.id === store.type).name}
+          value={storeTypes.find(t => t.id === store.type)?.name}
           type="text"
           readonly
         />

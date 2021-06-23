@@ -221,7 +221,17 @@ const Store = (props: any) => {
           docs.forEach(doc => {
             stores.push({
               id: doc.id,
-              name: doc.data().name
+              name: doc.data().name,
+              type: doc.data().type,
+              discount: doc.data().discount,
+              isActive: doc.data().isActive,
+              allowReturn: doc.data().allowReturn,
+              mobile: doc.data().mobile,
+              mapPosition: doc.data().mapPosition,
+              openTime: doc.data().openTime,
+              address: doc.data().address,
+              time: doc.data().time.toDate(),
+              balances: doc.data().balances
             })
             if (doc.data().payments) {
               doc.data().payments.forEach((p: any) => {
@@ -237,7 +247,12 @@ const Store = (props: any) => {
         const unsubscribePurchases = firebase.firestore().collection('purchases').where('isArchived', '==', false).onSnapshot(docs => {
           let purchases: iPurchase[] = []
           docs.forEach(doc => {
-            purchases.push({...doc.data(), id:doc.id})
+            purchases.push({
+              id: doc.id,
+              storeId: doc.data().storeId,
+              total: doc.data().total,
+              time: doc.data().time.toDate()
+            })
           })
           dispatch({type: 'SET_PURCHASES', payload: purchases})
         }, err => {

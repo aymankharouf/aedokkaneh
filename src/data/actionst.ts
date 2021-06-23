@@ -328,3 +328,24 @@ export const editCustomer = (customer: iCustomerInfo, name: string, locationId: 
   })
   batch.commit()
 }
+
+export const addStock = () => {
+  firebase.firestore().collection('stores').doc('s').set({
+    name: labels.stockName,
+    type: '1',
+    isActive: true,
+    allowReturn: true,
+    discount: 0,
+    mobile: '',
+    mapPosition: '',
+    openTime: '',
+    address: '',
+    balances: [],
+    time: new Date()
+  })
+}
+
+export const editStore = (store: iStore) => {
+  const { id, ...others } = store
+  firebase.firestore().collection('stores').doc(id).update(others)
+}

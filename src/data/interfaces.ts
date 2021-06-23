@@ -87,12 +87,29 @@ export interface iPasswordRequest {
   status: string,
   time: Date
 }
+export interface iBalance {
+  month: number,
+  balance: number
+}
 export interface iStore {
   id?: string,
-  name: string
+  name: string,
+  type: string,
+  isActive: boolean,
+  allowReturn: boolean,
+  discount: number,
+  mobile: string,
+  mapPosition: string,
+  openTime: string,
+  address: string,
+  time: Date,
+  balances: iBalance[]
 }
 export interface iPurchase {
-
+  id?: string,
+  storeId: string,
+  total: number,
+  time: Date
 }
 export interface iStockTrans {
 

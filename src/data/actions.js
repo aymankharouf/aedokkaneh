@@ -4,13 +4,13 @@ import { f7 } from 'framework7-react'
 import { setup, randomColors } from './config'
 import moment from 'moment'
 
-export const getMessage = (props, error) => {
+export const getMessage = (path, error) => {
   const errorCode = error.code ? error.code.replace(/-|\//g, '_') : error.message
   if (!labels[errorCode]) {
     firebase.firestore().collection('logs').add({
       userId: firebase.auth().currentUser.uid,
       error: error.code,
-      page: props.f7route.route.component.name,
+      page: path,
       time: new Date()
     })
   }

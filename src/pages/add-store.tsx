@@ -1,31 +1,28 @@
-import { useState, useContext, useEffect } from 'react'
+import { useState, useEffect } from 'react'
+import { addStore, showMessage, showError, getMessage } from '../data/actions'
 import { f7, Page, Navbar, List, ListItem, ListInput, Fab, Icon, Toolbar, Toggle } from 'framework7-react'
-import { StoreContext } from '../data/store'
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
 import { storeTypes } from '../data/config'
-import { editStore, showMessage, showError, getMessage } from '../data/actions'
 
-const EditStore = props => {
-  const { state } = useContext(StoreContext)
+const AddStore = () => {
   const [error, setError] = useState('')
-  const [store] = useState(() => state.stores.find(s => s.id === props.id))
-  const [type, setType] = useState(store.type)
-  const [name, setName] = useState(store.name)
-  const [mobile, setMobile] = useState(store.mobile)
+  const [type, setType] = useState('')
+  const [name, setName] = useState('')
+  const [mobile, setMobile] = useState('')
   const [mobileErrorMessage, setMobileErrorMessage] = useState('')
-  const [address, setAddress] = useState(store.address)
-  const [discount, setDiscount] = useState(store.discount * 100)
-  const [mapPosition, setMapPosition] = useState(store.mapPosition)
-  const [allowReturn, setAllowReturn] = useState(store.allowReturn)
-  const [isActive, setIsActive] = useState(store.isActive)
-  const [openTime, setOpenTime] = useState(store.openTime)
-  const [hasChanged, setHasChanged] = useState(false)
+  const [address, setAddress] = useState('')
+  const [discount, setDiscount] = useState('')
+  const [mapPosition, setMapPosition] = useState('')
+  const [allowReturn, setAllowReturn] = useState(false)
+  const [isActive, setIsActive] = useState(false)
+  const [openTime, setOpenTime] = useState('')
+
   useEffect(() => {
     const patterns = {
       mobile: /^07[7-9][0-9]{7}$/
     }
-    const validateMobile = (value) => {
+    const validateMobile = (value: string) => {
       if (patterns.mobile.test(value)){
         setMobileErrorMessage('')
       } else {
@@ -36,18 +33,6 @@ const EditStore = props => {
     else setMobileErrorMessage('')
   }, [mobile])
   useEffect(() => {
-    if (name !== store.name
-    || type !== store.type
-    || mobile !== store.mobile
-    || discount !== store.discount * 100
-    || address !== store.address
-    || mapPosition !== store.mapPosition
-    || allowReturn !== store.allowReturn
-    || isActive !== store.isActive
-    || openTime !== store.openTime) setHasChanged(true)
-    else setHasChanged(false)
-  }, [store, name, type, mobile, discount, address, mapPosition, allowReturn, isActive, openTime])
-  useEffect(() => {
     if (error) {
       showError(error)
       setError('')
@@ -55,23 +40,24 @@ const EditStore = props => {
   }, [error])
   const handleSubmit = () => {
     try{
-      if (discount && discount <= 0) {
+      if (Number(discount) <= 0) {
         throw new Error('invalidValue')
       }
-      const newStore = {
-        ...store,
+      const store = {
         name,
         type,
-        discount: discount / 100,
+        discount : +discount / 100,
+        mobile,
+        mapPosition,
         allowReturn,
         isActive,
-        mobile,
+        openTime,
         address,
-        mapPosition,
-        openTime
+        balances: [],
+        time: new Date()
       }
-      editStore(newStore)
-      showMessage(labels.editSuccess)
+      addStore(store)
+      showMessage(labels.addSuccess)
       f7.views.current.router.back()
     } catch(err) {
 			setError(getMessage(f7.views.current.router.currentRoute.path, err))
@@ -79,7 +65,7 @@ const EditStore = props => {
   }
   return (
     <Page>
-      <Navbar title={labels.editStore} backLink={labels.back} />
+      <Navbar title={labels.newStore} backLink={labels.back} />
       <List form inlineLabels>
         <ListInput 
           name="name" 
@@ -174,7 +160,7 @@ const EditStore = props => {
           onInputClear={() => setAddress('')}
         />
       </List>
-      {!name || !type || mobileErrorMessage || !hasChanged ? '' :
+      {!name || !discount || !type || mobileErrorMessage ? '' :
         <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleSubmit()}>
           <Icon material="done"></Icon>
         </Fab>
@@ -185,4 +171,4 @@ const EditStore = props => {
     </Page>
   )
 }
-export default EditStore
+export default AddStore
