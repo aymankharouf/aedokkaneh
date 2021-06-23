@@ -35,7 +35,7 @@ const Notifications = props => {
         deleteNotification(userInfo, notificationId,)
         showMessage(labels.deleteSuccess)
       } catch(err) {
-        setError(getMessage(props, err))
+        setError(getMessage(f7.views.current.router.currentRoute.path, err))
       }
     })  
   }

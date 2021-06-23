@@ -28,10 +28,10 @@ const ChangePassword = props => {
       await changePassword(oldPassword, newPassword)
       setInprocess(false)
       showMessage(labels.changePasswordSuccess)
-      props.f7router.back()
+      f7.views.current.router.back()
     } catch(err) {
       setInprocess(false)
-			setError(getMessage(props, err))
+			setError(getMessage(f7.views.current.router.currentRoute.path, err))
 		}
   }
 

@@ -53,10 +53,10 @@ const PermitUser = props => {
       await permitUser(userId, storeId, state.users, state.stores)
       setInprocess(false)
       showMessage(labels.permitSuccess)
-      props.f7router.back()
+      f7.views.current.router.back()
     } catch (err){
       setInprocess(false)
-      setError(getMessage(props, err))
+      setError(getMessage(f7.views.current.router.currentRoute.path, err))
     }
   }
 

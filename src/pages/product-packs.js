@@ -32,9 +32,9 @@ const ProductPacks = props => {
     try{
       archiveProduct(product, state.packs)
       showMessage(labels.editSuccess)
-      props.f7router.back()
+      f7.views.current.router.back()
     } catch(err) {
-			setError(getMessage(props, err))
+			setError(getMessage(f7.views.current.router.currentRoute.path, err))
 		}
   }
   const handleDelete = () => {
@@ -42,9 +42,9 @@ const ProductPacks = props => {
       try{
         deleteProduct(product)
         showMessage(labels.deleteSuccess)
-        props.f7router.back()
+        f7.views.current.router.back()
       } catch(err) {
-        setError(getMessage(props, err))
+        setError(getMessage(f7.views.current.router.currentRoute.path, err))
       }
     })
   }
@@ -78,10 +78,10 @@ const ProductPacks = props => {
         <Icon material="build"></Icon>
       </Fab>
       <Actions ref={actionsList}>
-        <ActionsButton onClick={() => props.f7router.navigate(`/product-details/${props.id}`)}>{labels.details}</ActionsButton>
-        <ActionsButton onClick={() => props.f7router.navigate(`/add-pack/${props.id}`)}>{labels.addPack}</ActionsButton>
-        <ActionsButton onClick={() => props.f7router.navigate(`/add-offer/${props.id}`)}>{labels.addOffer}</ActionsButton>
-        <ActionsButton onClick={() => props.f7router.navigate(`/add-bulk/${props.id}`)}>{labels.addBulk}</ActionsButton>
+        <ActionsButton onClick={() => f7.views.current.router.navigate(`/product-details/${props.id}`)}>{labels.details}</ActionsButton>
+        <ActionsButton onClick={() => f7.views.current.router.navigate(`/add-pack/${props.id}`)}>{labels.addPack}</ActionsButton>
+        <ActionsButton onClick={() => f7.views.current.router.navigate(`/add-offer/${props.id}`)}>{labels.addOffer}</ActionsButton>
+        <ActionsButton onClick={() => f7.views.current.router.navigate(`/add-bulk/${props.id}`)}>{labels.addBulk}</ActionsButton>
         {activePacks.length === 0 ? 
           <ActionsButton onClick={() => handleArchive()}>{labels.archive}</ActionsButton>
         : ''}

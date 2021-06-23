@@ -43,10 +43,10 @@ const PermissionList = props => {
         await permitUser(customer.id, storeId, state.users, state.stores)
         setInprocess(false)
         showMessage(labels.unPermitSuccess)
-        props.f7router.back()
+        f7.views.current.router.back()
       } catch (err){
         setInprocess(false)
-        setError(getMessage(props, err))
+        setError(getMessage(f7.views.current.router.currentRoute.path, err))
       }
     })
   }
@@ -82,7 +82,7 @@ const PermissionList = props => {
                 key={c.id}
               >
                 {props.id === 'n' ?
-                  <Button text={labels.permitUser} slot="after" onClick={() => props.f7router.navigate(`/permit-user/${c.id}`)} />
+                  <Button text={labels.permitUser} slot="after" onClick={() => f7.views.current.router.navigate(`/permit-user/${c.id}`)} />
                 : 
                   <Button text={labels.unPermitUser} slot="after" onClick={() => handleUnPermit(c)} />
                 }

@@ -28,11 +28,11 @@ const Register = props => {
       await registerUser(email, password)
       setInprocess(false)
       showMessage(labels.registerSuccess)
-      props.f7router.back()
-      props.f7router.app.panel.close('right') 
+      f7.views.current.router.back()
+      f7.views.current.router.app.panel.close('right') 
     } catch (err){
       setInprocess(false)
-      setError(getMessage(props, err))
+      setError(getMessage(f7.views.current.router.currentRoute.path, err))
     }
   }
 

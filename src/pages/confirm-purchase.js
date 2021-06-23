@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from 'react'
-import { Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, Link, Badge } from 'framework7-react'
+import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, Link, Badge } from 'framework7-react'
 import { StoreContext } from '../data/store'
 import { confirmPurchase, stockOut, showMessage, showError, getMessage, quantityText } from '../data/actions'
 import labels from '../data/labels'
@@ -28,20 +28,20 @@ const ConfirmPurchase = props => {
       if (store.id === 's') {
         stockOut(state.basket.packs, state.orders, state.packPrices, state.packs)
         showMessage(labels.purchaseSuccess)
-        props.f7router.navigate('/home/', {reloadAll: true})
+        f7.views.current.router.navigate('/home/', {reloadAll: true})
         dispatch({type: 'CLEAR_BASKET'})    
       } else {
         confirmPurchase(state.basket.packs, state.orders, store.id, state.packPrices, state.packs, state.stores, total)
         showMessage(labels.purchaseSuccess)
-        props.f7router.navigate('/home/', {reloadAll: true})
+        f7.views.current.router.navigate('/home/', {reloadAll: true})
         dispatch({type: 'CLEAR_BASKET'})    
       }  
     } catch(err) {
-			setError(getMessage(props, err))
+			setError(getMessage(f7.views.current.router.currentRoute.path, err))
 		}
   }
   const handleDelete = () => {
-    props.f7router.navigate('/home/', {reloadAll: true})
+    f7.views.current.router.navigate('/home/', {reloadAll: true})
     dispatch({type: 'CLEAR_BASKET'})  
   }
   let i = 0

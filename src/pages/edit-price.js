@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from 'react'
-import { Page, Navbar, List, ListInput, Fab, Icon } from 'framework7-react'
+import { f7, Page, Navbar, List, ListInput, Fab, Icon } from 'framework7-react'
 import { StoreContext } from '../data/store'
 import { editPrice, showMessage, showError, getMessage } from '../data/actions'
 import labels from '../data/labels'
@@ -54,9 +54,9 @@ const EditPrice = props => {
       }
       editPrice(newStorePack, storePack.price, state.packPrices, state.packs)
       showMessage(labels.editSuccess)
-      props.f7router.back()
+      f7.views.current.router.back()
     } catch(err) {
-			setError(getMessage(props, err))
+			setError(getMessage(f7.views.current.router.currentRoute.path, err))
 		}
   }
   return (

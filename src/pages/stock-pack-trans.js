@@ -86,7 +86,7 @@ const StockPackTrans = props => {
         dispatch({type: 'ADD_TO_RETURN_BASKET', params})
         showMessage(labels.addToBasketSuccess)
       } catch(err) {
-        setError(getMessage(props, err))
+        setError(getMessage(f7.views.current.router.currentRoute.path, err))
       }      
     })
   }
@@ -94,9 +94,9 @@ const StockPackTrans = props => {
     try{
       unfoldStockPack(stockPackInfo, state.packPrices, state.packs)
       showMessage(labels.executeSuccess)
-      props.f7router.back()
+      f7.views.current.router.back()
     } catch(err) {
-      setError(getMessage(props, err))
+      setError(getMessage(f7.views.current.router.currentRoute.path, err))
     }      
   }
   return(

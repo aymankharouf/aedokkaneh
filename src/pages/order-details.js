@@ -62,7 +62,7 @@ const OrderDetails = props => {
   const handleAction = action => {
     try{
       if (action.path) {
-        props.f7router.navigate(action.path)
+        f7.views.current.router.navigate(action.path)
       } else {
         if (action.id === 'a' && !state.customers.find(c => c.id === order.userId)){
           throw new Error('notApprovedUser')
@@ -81,17 +81,17 @@ const OrderDetails = props => {
               }
               mergeOrder(lastOrder, order.basket, order.id)
               showMessage(labels.mergeSuccess)
-              props.f7router.back()
+              f7.views.current.router.back()
             } catch(err) {
-              setError(getMessage(props, err))
+              setError(getMessage(f7.views.current.router.currentRoute.path, err))
             }
           }, () => {
             try{
               updateOrderStatus(order, action.id, state.packPrices, state.packs, false)
               showMessage(labels.editSuccess)
-              props.f7router.back()
+              f7.views.current.router.back()
             } catch(err) {
-              setError(getMessage(props, err))
+              setError(getMessage(f7.views.current.router.currentRoute.path, err))
             }
           })
         } else if (action.id === 'i') {
@@ -99,41 +99,41 @@ const OrderDetails = props => {
             try{
               updateOrderStatus(order, action.id, state.packPrices, state.packs, true)
               showMessage(labels.editSuccess)
-              props.f7router.back()
+              f7.views.current.router.back()
             } catch(err) {
-              setError(getMessage(props, err))
+              setError(getMessage(f7.views.current.router.currentRoute.path, err))
             }
           }, () => {
             try{
               updateOrderStatus(order, action.id, state.packPrices, state.packs, false)
               showMessage(labels.editSuccess)
-              props.f7router.back()
+              f7.views.current.router.back()
             } catch(err) {
-              setError(getMessage(props, err))
+              setError(getMessage(f7.views.current.router.currentRoute.path, err))
             }
           })
         } else if (action.id === 'd') {
           updateOrderStatus(order, 'd', state.packPrices, state.packs, false)
           showMessage(labels.editSuccess)
-          props.f7router.back()
+          f7.views.current.router.back()
         } else if (action.id === 't') {
           f7.dialog.prompt(labels.enterDeliveryTime, labels.deliveryTimeTitle, value => {
             try{
               setDeliveryTime(order.id, value)
               showMessage(labels.editSuccess)
-              props.f7router.back()
+              f7.views.current.router.back()
             } catch(err) {
-              setError(getMessage(props, err))
+              setError(getMessage(f7.views.current.router.currentRoute.path, err))
             }
           })
         } else {
           updateOrderStatus(order, action.id, state.packPrices, state.packs, false)
           showMessage(labels.editSuccess)
-          props.f7router.back()
+          f7.views.current.router.back()
         }  
       }
     } catch(err) {
-			setError(getMessage(props, err))
+			setError(getMessage(f7.views.current.router.currentRoute.path, err))
 		}
   }
   return(
@@ -188,7 +188,7 @@ const OrderDetails = props => {
         <Icon material="build"></Icon>
       </Fab>
       <Actions ref={actionsList}>
-        <ActionsButton onClick={() => props.f7router.navigate(`/customer-details/${order.userId}`)}>{labels.customerInfo}</ActionsButton>
+        <ActionsButton onClick={() => f7.views.current.router.navigate(`/customer-details/${order.userId}`)}>{labels.customerInfo}</ActionsButton>
         {props.type === 'n' && statusActions.map(a => 
           <ActionsButton key={a.id} onClick={() => handleAction(a)}>{a.name}</ActionsButton>
         )}

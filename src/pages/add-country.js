@@ -1,6 +1,6 @@
 import { useContext, useState, useEffect } from 'react'
 import { StoreContext } from '../data/store'
-import { Page, Navbar, List, ListInput, Fab, Icon, Toolbar } from 'framework7-react'
+import { f7, Page, Navbar, List, ListInput, Fab, Icon, Toolbar } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
 import { addCountry, showMessage, showError, getMessage } from '../data/actions'
@@ -23,9 +23,9 @@ const AddCountry = props => {
       }
       addCountry(name)
       showMessage(labels.addSuccess)
-      props.f7router.back()
+      f7.views.current.router.back()
     } catch(err) {
-			setError(getMessage(props, err))
+			setError(getMessage(f7.views.current.router.currentRoute.path, err))
 		}
   }
   return (

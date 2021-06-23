@@ -74,9 +74,9 @@ const RequestedPackDetails = props => {
             }
             dispatch({type: 'ADD_TO_BASKET', params})
             showMessage(labels.addToBasketSuccess)
-            props.f7router.back()
+            f7.views.current.router.back()
           } catch(err) {
-            setError(getMessage(props, err))
+            setError(getMessage(f7.views.current.router.currentRoute.path, err))
           }      
         })
       } else if (packStore.isAuto) {
@@ -94,7 +94,7 @@ const RequestedPackDetails = props => {
         }
         dispatch({type: 'ADD_TO_BASKET', params})
         showMessage(labels.addToBasketSuccess)
-        props.f7router.back()
+        f7.views.current.router.back()
       } else {
         if (packStore.subQuantity) {
           quantity = Math.ceil(Number(props.quantity) / packStore.subQuantity)
@@ -115,10 +115,10 @@ const RequestedPackDetails = props => {
         }
         dispatch({type: 'ADD_TO_BASKET', params})
         showMessage(labels.addToBasketSuccess)
-        props.f7router.back()  
+        f7.views.current.router.back()  
       }
     } catch(err) {
-      setError(getMessage(props, err))
+      setError(getMessage(f7.views.current.router.currentRoute.path, err))
     }
   }
 	const handlePurchase = packStore => {
@@ -146,7 +146,7 @@ const RequestedPackDetails = props => {
         }
       }
     } catch(err) {
-      setError(getMessage(props, err))
+      setError(getMessage(f7.views.current.router.currentRoute.path, err))
     }
   }
   const handleUnavailable = overPriced => {
@@ -155,9 +155,9 @@ const RequestedPackDetails = props => {
         const approvedOrders = state.orders.filter(o => ['a', 'e'].includes(o.status))
         packUnavailable(pack, Number(props.price), approvedOrders, overPriced)
         showMessage(labels.executeSuccess)
-        props.f7router.back()
+        f7.views.current.router.back()
       } catch(err) {
-        setError(getMessage(props, err))
+        setError(getMessage(f7.views.current.router.currentRoute.path, err))
       }
     })
   }

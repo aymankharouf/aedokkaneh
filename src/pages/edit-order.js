@@ -49,9 +49,9 @@ const EditOrder = props => {
         updateOrderStatus(order, type, state.packPrices, state.packs, false)
         showMessage(labels.deleteSuccess)
         dispatch({type: 'CLEAR_ORDER_BASKET'})
-        props.f7router.back()
+        f7.views.current.router.back()
       } catch(err) {
-        setError(getMessage(props, err))
+        setError(getMessage(f7.views.current.router.currentRoute.path, err))
       }
     })  
   }
@@ -66,9 +66,9 @@ const EditOrder = props => {
       }
       showMessage(labels.editSuccess)
       dispatch({type: 'CLEAR_ORDER_BASKET'})
-      props.f7router.back()
+      f7.views.current.router.back()
     } catch(err) {
-			setError(getMessage(props, err))
+			setError(getMessage(f7.views.current.router.currentRoute.path, err))
 		}
   }
   const handleIncrease = pack => {

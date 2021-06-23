@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from 'react'
-import { Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, Badge } from 'framework7-react'
+import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, Badge } from 'framework7-react'
 import { StoreContext } from '../data/store'
 import { showMessage, showError, getMessage, quantityDetails, approveOrderRequest, addQuantity } from '../data/actions'
 import labels from '../data/labels'
@@ -58,9 +58,9 @@ const OrderRequestDetails = props => {
     try{
       approveOrderRequest(order, state.orders, state.packPrices, state.packs)
       showMessage(labels.approveSuccess)
-      props.f7router.back()
+      f7.views.current.router.back()
     } catch(err) {
-      setError(getMessage(props, err))
+      setError(getMessage(f7.views.current.router.currentRoute.path, err))
     }
   }
   return(

@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from 'react'
-import { Block, Page, Navbar, Toolbar, List, ListItem, Fab, Icon } from 'framework7-react'
+import { f7, Block, Page, Navbar, Toolbar, List, ListItem, Fab, Icon } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
@@ -27,7 +27,7 @@ const Orders = props => {
   return(
     <Page>
       <Navbar title={labels.orders} backLink={labels.back} />
-      <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => props.f7router.navigate('/archived-orders/')}>
+      <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => f7.views.current.router.navigate('/archived-orders/')}>
         <Icon material="backup"></Icon>
       </Fab>
       <Block>

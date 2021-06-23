@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from 'react'
-import { Page, Navbar, List, ListItem, Icon, Fab, Toolbar, ListInput, BlockTitle } from 'framework7-react'
+import { f7, Page, Navbar, List, ListItem, Icon, Fab, Toolbar, ListInput, BlockTitle } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
 import { StoreContext } from '../data/store'
 import moment from 'moment'
@@ -56,9 +56,9 @@ const AlarmDetails = props => {
     try{
       approveAlarm(userInfo, alarm, newPackId, customerInfo, state.packPrices, state.packs)
       showMessage(labels.approveSuccess)
-			props.f7router.back()
+			f7.views.current.router.back()
     } catch(err) {
-			setError(getMessage(props, err))
+			setError(getMessage(f7.views.current.router.currentRoute.path, err))
 		}
   }
   let i = 0

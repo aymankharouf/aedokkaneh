@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from 'react'
-import { Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon } from 'framework7-react'
+import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
@@ -48,7 +48,7 @@ const StoreBalanceTrans = props => {
   return(
     <Page>
       <Navbar title={`${labels.balanceTrans} ${store.name} ${year}-${month}`} backLink={labels.back} />
-      <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => props.f7router.navigate(`/add-store-payment/${props.id}`)}>
+      <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => f7.views.current.router.navigate(`/add-store-payment/${props.id}`)}>
         <Icon material="add"></Icon>
       </Fab>
       <Block>

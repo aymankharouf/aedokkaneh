@@ -31,9 +31,9 @@ const ApproveUser = props => {
     try {
       approveUser(props.id, name, userInfo.mobile, locationId, userInfo.storeName || '', address, state.users)
       showMessage(labels.approveSuccess)
-      props.f7router.back()  
+      f7.views.current.router.back()  
     } catch(err) {
-			setError(getMessage(props, err))
+			setError(getMessage(f7.views.current.router.currentRoute.path, err))
 		}
   }
   const handleDelete = () => {
@@ -43,10 +43,10 @@ const ApproveUser = props => {
         await deleteUser(userInfo, state.orders)
         setInprocess(false)
         showMessage(labels.deleteSuccess)
-        props.f7router.back()
+        f7.views.current.router.back()
       } catch(err) {
         setInprocess(false)
-        setError(getMessage(props, err))
+        setError(getMessage(f7.views.current.router.currentRoute.path, err))
       }
     })
   }

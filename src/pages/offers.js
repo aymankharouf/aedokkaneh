@@ -41,7 +41,7 @@ const Offers = props => {
             changeStorePackStatus(storePack, state.packPrices, state.packs)
             showMessage(labels.haltSuccess)
           } catch(err) {
-            setError(getMessage(props, err))
+            setError(getMessage(f7.views.current.router.currentRoute.path, err))
           }
         })
       } else {
@@ -49,7 +49,7 @@ const Offers = props => {
         showMessage(labels.haltSuccess)
       }
     } catch(err) {
-			setError(getMessage(props, err))
+			setError(getMessage(f7.views.current.router.currentRoute.path, err))
 		}
   }
   let i = 0

@@ -33,7 +33,7 @@ const Adverts = props => {
         updateAdvertStatus(currentAdvert, state.adverts)
         showMessage(labels.editSuccess)
       } catch(err) {
-        setError(getMessage(props, err))
+        setError(getMessage(f7.views.current.router.currentRoute.path, err))
       }
     })  
   }
@@ -43,7 +43,7 @@ const Adverts = props => {
         deleteAdvert(currentAdvert)
         showMessage(labels.deleteSuccess)
       } catch(err) {
-        setError(getMessage(props, err))
+        setError(getMessage(f7.views.current.router.currentRoute.path, err))
       }
     })  
   }
@@ -74,7 +74,7 @@ const Adverts = props => {
         <Icon material="add"></Icon>
       </Fab>
       <Actions ref={actionsList}>
-        <ActionsButton onClick={() => props.f7router.navigate(`/advert-details/${currentAdvert.id}`)}>{labels.details}</ActionsButton>
+        <ActionsButton onClick={() => f7.views.current.router.navigate(`/advert-details/${currentAdvert.id}`)}>{labels.details}</ActionsButton>
         <ActionsButton onClick={() => handleDelete()}>{labels.delete}</ActionsButton>
         <ActionsButton onClick={() => handleUpdate()}>{currentAdvert.isActive ? labels.stop : labels.activate}</ActionsButton>
       </Actions>

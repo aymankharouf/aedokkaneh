@@ -70,7 +70,7 @@ const PackDetails = props => {
       refreshPackPrice(pack, state.packPrices, state.packs)
       showMessage(labels.refreshSuccess)
     } catch(err) {
-			setError(getMessage(props, err))
+			setError(getMessage(f7.views.current.router.currentRoute.path, err))
 		}
   }
   const handleDelete = () => {
@@ -78,9 +78,9 @@ const PackDetails = props => {
       try{
         deletePack(pack.id)
         showMessage(labels.deleteSuccess)
-        props.f7router.back()
+        f7.views.current.router.back()
       } catch(err) {
-        setError(getMessage(props, err))
+        setError(getMessage(f7.views.current.router.currentRoute.path, err))
       }
     })
   }
@@ -90,7 +90,7 @@ const PackDetails = props => {
         deleteStorePack(currentStorePack, state.packPrices, state.packs)
         showMessage(labels.deleteSuccess)
       } catch(err) {
-        setError(getMessage(props, err))
+        setError(getMessage(f7.views.current.router.currentRoute.path, err))
       }
     })
   }
@@ -117,7 +117,7 @@ const PackDetails = props => {
           }
           dispatch({type: 'ADD_TO_BASKET', params})
           showMessage(labels.addToBasketSuccess)
-          props.f7router.back()
+          f7.views.current.router.back()
         })
       } else {
         params = {
@@ -128,10 +128,10 @@ const PackDetails = props => {
         }
         dispatch({type: 'ADD_TO_BASKET', params})
         showMessage(labels.addToBasketSuccess)
-        props.f7router.back()
+        f7.views.current.router.back()
       }
     } catch(err) {
-			setError(getMessage(props, err))
+			setError(getMessage(f7.views.current.router.currentRoute.path, err))
 		}
   }
   const handleChangeStatus = () => {
@@ -139,7 +139,7 @@ const PackDetails = props => {
       changeStorePackStatus(currentStorePack, state.packPrices, state.packs)
       showMessage(labels.editSuccess)
     } catch(err) {
-      setError(getMessage(props, err))
+      setError(getMessage(f7.views.current.router.currentRoute.path, err))
     }
   }
 
@@ -195,16 +195,16 @@ const PackDetails = props => {
         <Icon material="keyboard_arrow_down"></Icon>
         <Icon material="close"></Icon>
         <FabButtons position="bottom">
-          <FabButton color="green" onClick={() => props.f7router.navigate(`/add-pack-store/${props.id}`)}>
+          <FabButton color="green" onClick={() => f7.views.current.router.navigate(`/add-pack-store/${props.id}`)}>
             <Icon material="add"></Icon>
           </FabButton>
-          <FabButton color="blue" onClick={() => props.f7router.navigate(`/${pack.isOffer ? 'edit-offer' : (pack.subPackId ? 'edit-bulk' : 'edit-pack')}/${props.id}`)}>
+          <FabButton color="blue" onClick={() => f7.views.current.router.navigate(`/${pack.isOffer ? 'edit-offer' : (pack.subPackId ? 'edit-bulk' : 'edit-pack')}/${props.id}`)}>
             <Icon material="edit"></Icon>
           </FabButton>
           <FabButton color="yellow" onClick={() => handleRefreshPrice()}>
             <Icon material="cached"></Icon>
           </FabButton>
-          <FabButton color="pink" onClick={() => props.f7router.navigate(`/pack-trans/${props.id}`)}>
+          <FabButton color="pink" onClick={() => f7.views.current.router.navigate(`/pack-trans/${props.id}`)}>
             <Icon material="import_export"></Icon>
           </FabButton>
           {pack.detailsCount === 0 ? 
@@ -219,7 +219,7 @@ const PackDetails = props => {
           <ActionsButton onClick={() => handleChangeStatus()}>{currentStorePack.isActive ? labels.deactivate : labels.activate}</ActionsButton>
         }
         {currentStorePack.storeId === 's' && currentStorePack.quantity === 0 ? '' : 
-          <ActionsButton onClick={() => props.f7router.navigate(`/edit-price/${currentStorePack.packId}/store/${currentStorePack.storeId}`)}>{labels.editPrice}</ActionsButton>
+          <ActionsButton onClick={() => f7.views.current.router.navigate(`/edit-price/${currentStorePack.packId}/store/${currentStorePack.storeId}`)}>{labels.editPrice}</ActionsButton>
         }
         {currentStorePack.storeId === 's' ? '' :
           <ActionsButton onClick={() => handleDeletePrice()}>{labels.delete}</ActionsButton>

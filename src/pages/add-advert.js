@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Page, Navbar, List, ListInput, ListItem, Fab, Icon } from 'framework7-react'
+import { f7, Page, Navbar, List, ListInput, ListItem, Fab, Icon } from 'framework7-react'
 import { addAdvert, showMessage, showError, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { advertType } from '../data/config'
@@ -42,9 +42,9 @@ const AddAdvert = props => {
       }
       addAdvert(advert, image)
       showMessage(labels.addSuccess)
-      props.f7router.back()
+      f7.views.current.router.back()
     } catch(err) {
-			setError(getMessage(props, err))
+			setError(getMessage(f7.views.current.router.currentRoute.path, err))
 		}
   }
   return (

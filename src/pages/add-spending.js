@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Page, Navbar, List, ListItem, ListInput, Fab, Icon } from 'framework7-react'
+import { f7, Page, Navbar, List, ListItem, ListInput, Fab, Icon } from 'framework7-react'
 import labels from '../data/labels'
 import { spendingTypes } from '../data/config'
 import { addSpending, showMessage, showError, getMessage } from '../data/actions'
@@ -42,9 +42,9 @@ const AddSpending = props => {
         time: new Date()
       })
       showMessage(labels.addSuccess)
-      props.f7router.back()
+      f7.views.current.router.back()
     } catch(err) {
-			setError(getMessage(props, err))
+			setError(getMessage(f7.views.current.router.currentRoute.path, err))
 		}
   }
   return (

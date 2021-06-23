@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from 'react'
-import { Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, FabButton, FabButtons, Badge, FabBackdrop } from 'framework7-react'
+import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, FabButton, FabButtons, Badge, FabBackdrop } from 'framework7-react'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
 import BottomToolbar from './bottom-toolbar'
@@ -37,9 +37,9 @@ const Categories = props => {
     try{
       deleteCategory(currentCategory, state.categories)
       showMessage(labels.deleteSuccess)
-      props.f7router.back()
+      f7.views.current.router.back()
     } catch(err) {
-      setError(getMessage(props, err))
+      setError(getMessage(f7.views.current.router.currentRoute.path, err))
     }
   }
 
@@ -70,11 +70,11 @@ const Categories = props => {
         <Icon material="keyboard_arrow_down"></Icon>
         <Icon material="close"></Icon>
         <FabButtons position="bottom">
-          <FabButton color="green" onClick={() => props.f7router.navigate(`/add-category/${props.id}`)}>
+          <FabButton color="green" onClick={() => f7.views.current.router.navigate(`/add-category/${props.id}`)}>
             <Icon material="add"></Icon>
           </FabButton>
           {props.id === '0' ? '' :
-            <FabButton color="blue" onClick={() => props.f7router.navigate(`/edit-category/${props.id}`)}>
+            <FabButton color="blue" onClick={() => f7.views.current.router.navigate(`/edit-category/${props.id}`)}>
               <Icon material="edit"></Icon>
             </FabButton>
           }
@@ -83,7 +83,7 @@ const Categories = props => {
               <Icon material="delete"></Icon>
             </FabButton>
           : ''}
-          <FabButton color="orange" onClick={() => props.f7router.navigate(`/products/${props.id}`)}>
+          <FabButton color="orange" onClick={() => f7.views.current.router.navigate(`/products/${props.id}`)}>
             <Icon material="shopping_cart"></Icon>
           </FabButton>
 

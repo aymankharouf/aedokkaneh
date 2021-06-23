@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Page, Navbar, List, ListInput, Fab, Icon } from 'framework7-react'
+import { f7, Page, Navbar, List, ListInput, Fab, Icon } from 'framework7-react'
 import labels from '../data/labels'
 import { addCategory, showMessage, showError, getMessage } from '../data/actions'
 
@@ -18,9 +18,9 @@ const AddCategory = props => {
     try{
       addCategory(props.id, name, Number(ordering))
       showMessage(labels.addSuccess)
-      props.f7router.back()
+      f7.views.current.router.back()
     } catch(err) {
-			setError(getMessage(props, err))
+			setError(getMessage(f7.views.current.router.currentRoute.path, err))
 		}
   }
   

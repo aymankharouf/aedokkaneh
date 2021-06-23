@@ -49,7 +49,7 @@ const ArchivedProducts = props => {
       setInprocess(false)
     } catch(err) {
       setInprocess(false)
-      setError(getMessage(props, err))
+      setError(getMessage(f7.views.current.router.currentRoute.path, err))
     }
   }
   if (!user) return <Page><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></Page>

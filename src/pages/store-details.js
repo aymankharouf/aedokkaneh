@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from 'react'
-import { Page, Navbar, List, ListItem, ListInput, Fab, Icon, Toolbar, Toggle, FabButton, FabButtons, FabBackdrop } from 'framework7-react'
+import { f7, Page, Navbar, List, ListItem, ListInput, Fab, Icon, Toolbar, Toggle, FabButton, FabButtons, FabBackdrop } from 'framework7-react'
 import { StoreContext } from '../data/store'
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
@@ -88,19 +88,19 @@ const StoreDetails = props => {
         <Icon material="keyboard_arrow_down"></Icon>
         <Icon material="close"></Icon>
         <FabButtons position="bottom">
-          <FabButton color="green" onClick={() => props.f7router.navigate(`/store-packs/${props.id}`)}>
+          <FabButton color="green" onClick={() => f7.views.current.router.navigate(`/store-packs/${props.id}`)}>
             <Icon material="shopping_cart"></Icon>
           </FabButton>
-          <FabButton color="blue" onClick={() => props.f7router.navigate(`/edit-store/${props.id}`)}>
+          <FabButton color="blue" onClick={() => f7.views.current.router.navigate(`/edit-store/${props.id}`)}>
             <Icon material="edit"></Icon>
           </FabButton>
-          <FabButton color="yellow" onClick={() => props.f7router.navigate(`/store-trans/${store.id}`)}>
+          <FabButton color="yellow" onClick={() => f7.views.current.router.navigate(`/store-trans/${store.id}`)}>
             <Icon material="import_export"></Icon>
           </FabButton>
-          <FabButton color="red" onClick={() => props.f7router.navigate(`/store-owners/${store.id}`)}>
+          <FabButton color="red" onClick={() => f7.views.current.router.navigate(`/store-owners/${store.id}`)}>
             <Icon material="perm_identity"></Icon>
           </FabButton>
-          <FabButton color="orange" onClick={() => props.f7router.navigate(`/store-balance/${store.id}`)}>
+          <FabButton color="orange" onClick={() => f7.views.current.router.navigate(`/store-balance/${store.id}`)}>
             <Icon material="attach_money"></Icon>
           </FabButton>
         </FabButtons>
