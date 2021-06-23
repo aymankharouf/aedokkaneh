@@ -1,7 +1,7 @@
 import firebase from './firebase'
 import labels from './labels'
 import { f7 } from 'framework7-react'
-import { iError, iLocation, iPack, iProduct } from "./interfaces"
+import { iAdvert, iError, iLocation, iLog, iPack, iProduct } from "./interfaces"
 
 export const getMessage = (path: string, error: iError) => {
   const errorCode = error.code ? error.code.replace(/-|\//g, '_') : error.message
@@ -83,4 +83,59 @@ export const editLocation = (location: iLocation, locations: iLocation[]) => {
   firebase.firestore().collection('lookups').doc('l').update({
     values
   })
+}
+
+export const deleteLog = (log: iLog) => {
+  firebase.firestore().collection('logs').doc(log.id).delete()
+}
+
+export const addAdvert = async (advert: iAdvert, image?: File) => {
+  const advertRef = firebase.firestore().collection('adverts').doc()
+  let url = ''
+  if (image) {
+    const filename = image.name
+    const ext = filename.slice(filename.lastIndexOf('.'))
+    const fileData = await firebase.storage().ref().child('adverts/' + advertRef.id + ext).put(image)
+    url = await firebase.storage().ref().child(fileData.metadata.fullPath).getDownloadURL()
+  }
+  advert.imageUrl = url  
+  advertRef.set(advert)
+}
+
+export const editAdvert = async (advert: iAdvert, image?: File) => {
+  const { id, ...others } = advert
+  if (image) {
+    const filename = image.name
+    const ext = filename.slice(filename.lastIndexOf('.'))
+    const fileData = await firebase.storage().ref().child('adverts/' + id + ext).put(image)
+    const url = await firebase.storage().ref().child(fileData.metadata.fullPath).getDownloadURL()
+    others.imageUrl = url
+  }
+  firebase.firestore().collection('adverts').doc(id).update(others)
+}
+
+export const deleteAdvert = async (advert: iAdvert) => {
+  firebase.firestore().collection('adverts').doc(advert.id).delete()
+  if (advert.imageUrl) {
+    const ext = advert.imageUrl.slice(advert.imageUrl.lastIndexOf('.'), advert.imageUrl.indexOf('?'))
+    await firebase.storage().ref().child('adverts/' + advert.id + ext).delete()
+  }
+}
+
+export const updateAdvertStatus = (advert: iAdvert, adverts: iAdvert[]) => {
+  const batch = firebase.firestore().batch()
+  let advertRef = firebase.firestore().collection('adverts').doc(advert.id)
+  batch.update(advertRef, {
+    isActive: !advert.isActive
+  })
+  if (!advert.isActive) {
+    const activeAdvert = adverts.find(a => a.isActive)
+    if (activeAdvert) {
+      advertRef = firebase.firestore().collection('adverts').doc(activeAdvert.id)
+      batch.update(advertRef, {
+        isActive: false
+      })
+    }
+  }
+  batch.commit()
 }

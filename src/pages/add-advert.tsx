@@ -1,18 +1,19 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, ChangeEvent } from 'react'
 import { f7, Page, Navbar, List, ListInput, ListItem, Fab, Icon } from 'framework7-react'
-import { addAdvert, showMessage, showError, getMessage } from '../data/actions'
+import { addAdvert, showMessage, showError, getMessage } from '../data/actionst'
 import labels from '../data/labels'
 import { advertType } from '../data/config'
 
-const AddAdvert = props => {
+const AddAdvert = () => {
   const [error, setError] = useState('')
   const [type, setType] = useState('')
   const [title, setTitle] = useState('')
   const [text, setText] = useState('')
   const [imageUrl, setImageUrl] = useState('')
-  const [image, setImage] = useState(null)
-  const handleFileChange = e => {
+  const [image, setImage] = useState<File>()
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
+    if (!files) return
     const filename = files[0].name
     if (filename.lastIndexOf('.') <= 0) {
       setError(labels.invalidFile)
@@ -20,7 +21,7 @@ const AddAdvert = props => {
     }
     const fileReader = new FileReader()
     fileReader.addEventListener('load', () => {
-      setImageUrl(fileReader.result)
+      if (fileReader.result) setImageUrl(fileReader.result.toString())
     })
     fileReader.readAsDataURL(files[0])
     setImage(files[0])
@@ -37,6 +38,7 @@ const AddAdvert = props => {
         type,
         title,
         text,
+        imageUrl,
         isActive: false,
         time: new Date()
       }

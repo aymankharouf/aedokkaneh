@@ -5,23 +5,26 @@ import moment from 'moment'
 import 'moment/locale/ar'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
-import { deleteLog, showMessage, showError, getMessage } from '../data/actions'
+import { deleteLog, showMessage, showError, getMessage } from '../data/actionst'
+import { iLog, iUserInfo } from '../data/interfaces'
 
-
-const Logs = props => {
+interface ExtendedLog extends iLog {
+  userInfo: iUserInfo
+}
+const Logs = () => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [logs, setLogs] = useState([])
+  const [logs, setLogs] = useState<ExtendedLog[]>([])
   useEffect(() => {
     setLogs(() => {
       const logs = state.logs.map(l => {
-        const userInfo = state.users.find(u => u.id === l.userId)
+        const userInfo = state.users.find(u => u.id === l.userId)!
         return {
           ...l,
           userInfo
         }
       })
-      return logs.sort((l1, l2) => l2.time.seconds - l1.time.seconds)
+      return logs.sort((l1, l2) => l2.time > l1.time ? 1 : -1)
     })
   }, [state.logs, state.users])
   useEffect(() => {
@@ -30,7 +33,7 @@ const Logs = props => {
       setError('')
     }
   }, [error])
-  const handleDelete = log => {
+  const handleDelete = (log: iLog) => {
     f7.dialog.confirm(labels.confirmationText, labels.confirmationTitle, () => {
       try{
         deleteLog(log)
@@ -53,7 +56,7 @@ const Logs = props => {
                 title={`${labels.user}: ${l.userInfo?.name || l.userId}`}
                 subtitle={l.userInfo?.mobile ? `${labels.mobile}: ${l.userInfo.mobile}` : ''}
                 text={l.page}
-                footer={moment(l.time.toDate()).fromNow()}
+                footer={moment(l.time).fromNow()}
                 key={l.id}
               >
                 <div className="list-subtext1">{l.error}</div>

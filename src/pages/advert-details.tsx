@@ -4,9 +4,12 @@ import { StoreContext } from '../data/store'
 import labels from '../data/labels'
 import BottomToolbar from './bottom-toolbar'
 
-const AdvertDetails = props => {
+interface Props {
+  id: string
+}
+const AdvertDetails = (props: Props) => {
   const { state } = useContext(StoreContext)
-  const [advert] = useState(() => state.adverts.find(a => a.id === props.id))
+  const [advert] = useState(() => state.adverts.find(a => a.id === props.id)!)
   return (
     <Page>
       <Navbar title={labels.advertDetails} backLink={labels.back} />

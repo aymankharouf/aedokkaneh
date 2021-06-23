@@ -5,17 +5,18 @@ import { StoreContext } from '../data/store'
 import labels from '../data/labels'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { updateAdvertStatus, showMessage, showError, getMessage, deleteAdvert } from '../data/actions'
+import { updateAdvertStatus, showMessage, showError, getMessage, deleteAdvert } from '../data/actionst'
 import { advertType } from '../data/config'
+import { iAdvert } from '../data/interfaces'
 
-const Adverts = props => {
+const Adverts = () => {
   const { state } = useContext(StoreContext)
-  const [currentAdvert, setCurrentAdvert] = useState('')
+  const [currentAdvert, setCurrentAdvert] = useState<iAdvert>()
   const [error, setError] = useState('')
-  const [adverts, setAdverts] = useState([])
-  const actionsList = useRef('')
+  const [adverts, setAdverts] = useState<iAdvert[]>([])
+  const actionsList = useRef<Actions>(null)
   useEffect(() => {
-    setAdverts(() => [...state.adverts].sort((a1, a2) => a2.time.seconds - a1.time.seconds))
+    setAdverts(() => [...state.adverts].sort((a1, a2) => a2.time > a1.time ? 1 : -1))
   }, [state.adverts])
   useEffect(() => {
     if (error) {
@@ -23,13 +24,14 @@ const Adverts = props => {
       setError('')
     }
   }, [error])
-  const handleAction = advert => {
+  const handleAction = (advert: iAdvert) => {
     setCurrentAdvert(advert)
-    actionsList.current.open()
+    actionsList.current?.open()
   }
   const handleUpdate = () => {
     f7.dialog.confirm(labels.confirmationText, labels.confirmationTitle, () => {
       try{
+        if (!currentAdvert) return
         updateAdvertStatus(currentAdvert, state.adverts)
         showMessage(labels.editSuccess)
       } catch(err) {
@@ -40,6 +42,7 @@ const Adverts = props => {
   const handleDelete = () => {
     f7.dialog.confirm(labels.confirmationText, labels.confirmationTitle, () => {
       try{
+        if (!currentAdvert) return
         deleteAdvert(currentAdvert)
         showMessage(labels.deleteSuccess)
       } catch(err) {
@@ -56,10 +59,10 @@ const Adverts = props => {
             <ListItem title={labels.noData} />
           : adverts.map(a =>
               <ListItem
-                title={advertType.find(t => t.id === a.type).name}
+                title={advertType.find(t => t.id === a.type)?.name}
                 subtitle={a.title}
                 text={a.text}
-                footer={moment(a.time.toDate()).fromNow()}
+                footer={moment(a.time).fromNow()}
                 key={a.id}
                 className={currentAdvert && currentAdvert.id === a.id ? 'selected' : ''}
               >
@@ -74,9 +77,9 @@ const Adverts = props => {
         <Icon material="add"></Icon>
       </Fab>
       <Actions ref={actionsList}>
-        <ActionsButton onClick={() => f7.views.current.router.navigate(`/advert-details/${currentAdvert.id}`)}>{labels.details}</ActionsButton>
+        <ActionsButton onClick={() => f7.views.current.router.navigate(`/advert-details/${currentAdvert?.id}`)}>{labels.details}</ActionsButton>
         <ActionsButton onClick={() => handleDelete()}>{labels.delete}</ActionsButton>
-        <ActionsButton onClick={() => handleUpdate()}>{currentAdvert.isActive ? labels.stop : labels.activate}</ActionsButton>
+        <ActionsButton onClick={() => handleUpdate()}>{currentAdvert?.isActive ? labels.stop : labels.activate}</ActionsButton>
       </Actions>
 
       <Toolbar bottom>

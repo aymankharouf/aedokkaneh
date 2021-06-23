@@ -590,7 +590,7 @@ export const addProduct = async (product, image) => {
     const fileData = await firebase.storage().ref().child('products/' + productRef.id + ext).put(image)
     imageUrl = await firebase.storage().ref().child(fileData.metadata.fullPath).getDownloadURL()
   }
-  product['imageUrl'] = imageUrl
+  product.imageUrl = imageUrl
   productRef.set(product)
 }
 

@@ -80,7 +80,15 @@ const Store = (props: any) => {
     const unsubscribeAdverts = firebase.firestore().collection('adverts').onSnapshot(docs => {
       let adverts: iAdvert[] = []
       docs.forEach(doc => {
-        adverts.push({...doc.data(), id:doc.id})
+        adverts.push({
+          id: doc.id,
+          type: doc.data().type,
+          title: doc.data().title,
+          text: doc.data().text,
+          imageUrl: doc.data().imageUrl,
+          isActive: doc.data().isActive,
+          time: doc.data().time.toDate()
+        })
       })
       dispatch({type: 'SET_ADVERTS', payload: adverts})
     }, err => {
@@ -127,7 +135,11 @@ const Store = (props: any) => {
           let ratings: iRating[] = []
           let invitations: iFriend[] = []
           docs.forEach(doc => {
-            users.push({...doc.data(), id:doc.id})
+            users.push({
+              id: doc.id,
+              name: doc.data().name,
+              mobile: doc.data().mobile
+            })
             if (doc.data().notifications) {
               doc.data().notifications.forEach((n: any) => {
                 notifications.push({...n, userId: doc.id})
@@ -221,7 +233,13 @@ const Store = (props: any) => {
         const unsubscribeLogs = firebase.firestore().collection('logs').onSnapshot(docs => {
           let logs: iLog[] = []
           docs.forEach(doc => {
-            logs.push({...doc.data(), id:doc.id})
+            logs.push({
+              id: doc.id,
+              userId: doc.data().userId,
+              page: doc.data().page,
+              error: doc.data().error,
+              time: doc.data().time.toDate()
+            })
           })
           dispatch({type: 'SET_LOGS', payload: logs})
         }, err => {

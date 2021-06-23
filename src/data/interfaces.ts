@@ -25,6 +25,9 @@ export interface iRating {
 export interface iAlarm {
 }
 export interface iUserInfo {
+  id: string,
+  name: string,
+  mobile: string
 }
 export interface iCustomerInfo {
 }
@@ -32,6 +35,13 @@ export interface iCustomerInfo {
 export interface iOrder {
 }
 export interface iAdvert {
+  id?: string,
+  type: string,
+  title: string,
+  text: string,
+  isActive: boolean,
+  imageUrl: string,
+  time: Date
 }
 export interface iLocation {
   id: string,
@@ -61,7 +71,11 @@ export interface iMonthlyTrans {
 
 }
 export interface iLog {
-
+  id: string,
+  userId: string,
+  page: string,
+  error: string,
+  time: Date
 }
 export interface iStorePayment {
   
