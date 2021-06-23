@@ -5,7 +5,7 @@ import { logout } from '../data/actions'
 import labels from '../data/labels'
 
 const Panel = props => {
-  const { state, user, dispatch } = useContext(StoreContext)
+  const { state, dispatch } = useContext(StoreContext)
   const [approvalsCount, setApprovalsAcount] = useState('')
   const [offersCount, setOffersAcount] = useState('')
   useEffect(() => {
@@ -36,16 +36,16 @@ const Panel = props => {
     <Page>
       <Navbar title={labels.mainPanelTitle} />
       <List>
-        {user ? <ListItem link="#" title={labels.logout} onClick={() => handleLogout()} />
+        {state.user ? <ListItem link="#" title={labels.logout} onClick={() => handleLogout()} />
         : <ListItem link="/panel-login/" title={labels.login} />}
-        {user ? <ListItem link="/settings/" title={labels.settings} view="#main-view" panelClose /> : ''}
-        {user ? <ListItem link="/requested-packs/" title={labels.requestedPacks} view="#main-view" panelClose /> : ''}
-        {user ? <ListItem link="/purchase-plan/" title={labels.purchasePlan} view="#main-view" panelClose /> : ''}
-        {user ? <ListItem link="/approvals/" title={labels.approvals} badge={approvalsCount} badgeColor="red" view="#main-view" panelClose /> : ''}
-        {user ? <ListItem link="/offers/" title={labels.offers} badge={offersCount} badgeColor="red" view="#main-view" panelClose /> : ''}
-        {user ? <ListItem link="/monthly-trans-call/" title={labels.monthlyTrans} view="#main-view" panelClose /> : ''}
-        {user ? <ListItem link="/logs/" title={labels.logs} view="#main-view" panelClose /> : ''}
-        {user ? <ListItem link="/permission-list/s" title={labels.storesOwners} view="#main-view" panelClose /> : ''}
+        {state.user ? <ListItem link="/settings/" title={labels.settings} view="#main-view" panelClose /> : ''}
+        {state.user ? <ListItem link="/requested-packs/" title={labels.requestedPacks} view="#main-view" panelClose /> : ''}
+        {state.user ? <ListItem link="/purchase-plan/" title={labels.purchasePlan} view="#main-view" panelClose /> : ''}
+        {state.user ? <ListItem link="/approvals/" title={labels.approvals} badge={approvalsCount} badgeColor="red" view="#main-view" panelClose /> : ''}
+        {state.user ? <ListItem link="/offers/" title={labels.offers} badge={offersCount} badgeColor="red" view="#main-view" panelClose /> : ''}
+        {state.user ? <ListItem link="/monthly-trans-call/" title={labels.monthlyTrans} view="#main-view" panelClose /> : ''}
+        {state.user ? <ListItem link="/logs/" title={labels.logs} view="#main-view" panelClose /> : ''}
+        {state.user ? <ListItem link="/permission-list/s" title={labels.storesOwners} view="#main-view" panelClose /> : ''}
       </List>
     </Page>
   )

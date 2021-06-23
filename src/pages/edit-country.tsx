@@ -5,8 +5,10 @@ import { editCountry, showMessage, showError, getMessage, deleteCountry } from '
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
 
-
-const EditCountry = props => {
+interface Props {
+  name: string
+}
+const EditCountry = (props: Props) => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
   const [name, setName] = useState(props.name)

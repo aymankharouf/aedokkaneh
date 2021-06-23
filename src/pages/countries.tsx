@@ -5,7 +5,7 @@ import { StoreContext } from '../data/store'
 import labels from '../data/labels'
 
 
-const Countries = props => {
+const Countries = () => {
   const { state } = useContext(StoreContext)
   const [countries, setCountries] = useState(() => [...state.countries].sort((c1, c2) => c1 > c2 ? 1 : -1))
   useEffect(() => {

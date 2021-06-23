@@ -3,10 +3,10 @@ import { StoreContext } from '../data/store'
 import { f7, Page, Navbar, List, ListInput, Fab, Icon, Toolbar } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
-import { addCountry, showMessage, showError, getMessage } from '../data/actions'
+import { addCountry, showMessage, showError, getMessage } from '../data/actionst'
 
 
-const AddCountry = props => {
+const AddCountry = () => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
   const [name, setName] = useState('')

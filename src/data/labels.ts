@@ -1,4 +1,6 @@
-const labels = {
+import { iLabel } from './interfaces'
+
+const labels: iLabel = {
   offers: 'العروض',
   registerTitle: 'تسجيل جديد',
   name: 'اﻻسم',

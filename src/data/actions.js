@@ -1,4 +1,4 @@
-import firebase, { prodApp } from './firebase'
+import firebase from './firebase'
 import labels from './labels'
 import { f7 } from 'framework7-react'
 import { setup, randomColors } from './config'
@@ -1956,13 +1956,4 @@ export const setDeliveryTime = (orderId, deliveryTime) => {
   })
 }
 
-export const getProdData = async () => {
-  let categories = []
-  await prodApp.firestore().collection('categories')
-          .get().then(docs => {
-    docs.forEach(doc => {
-      categories.push({...doc.data(), id:doc.id})
-    })
-  })
-  return categories
-}
+
