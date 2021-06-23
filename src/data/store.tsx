@@ -43,7 +43,14 @@ const Store = (props: any) => {
     const unsubscribeCategories = firebase.firestore().collection('categories').onSnapshot(docs => {
       let categories: iCategory[] = []
       docs.forEach(doc => {
-        categories.push({...doc.data(), id:doc.id})
+        categories.push({
+          id: doc.id,
+          parentId: doc.data().parentId,
+          name: doc.data().name,
+          ordering: doc.data().ordering,
+          isLeaf: doc.data().isLeaf,
+          isActive: doc.data().isActive
+        })
       })
       dispatch({type: 'SET_CATEGORIES', payload: categories})
     }, err => {
@@ -112,7 +119,8 @@ const Store = (props: any) => {
           docs.forEach(doc => {
             products.push({
               id: doc.id,
-              country: doc.data().country
+              country: doc.data().country,
+              categoryId: doc.data().categoryId
             })
           })
           dispatch({type: 'SET_PRODUCTS', payload: products})

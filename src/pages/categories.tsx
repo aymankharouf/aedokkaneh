@@ -4,18 +4,26 @@ import { StoreContext } from '../data/store'
 import labels from '../data/labels'
 import BottomToolbar from './bottom-toolbar'
 import { deleteCategory, showMessage, showError, getMessage } from '../data/actions'
+import { iCategory } from '../data/interfaces'
 
-const Categories = props => {
+interface Props {
+  id: string
+}
+interface ExtendedCategory extends iCategory {
+  childrenCount: number,
+  productsCount: number
+}
+const Categories = (props: Props) => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [categories, setCategories] = useState([])
-  const [currentCategory] = useState(() => state.categories.find(c => c.id === props.id) || '')
-  const [categoryChildrenCount] = useState(() => state.categories.filter(c => c.parentId === currentCategory.id).length)
-  const [categoryProductsCount] = useState(() => state.products.filter(p => p.categoryId === currentCategory.id).length)
+  const [categories, setCategories] = useState<ExtendedCategory[]>([])
+  const [currentCategory] = useState(() => state.categories.find(c => c.id === props.id))
+  const [categoryChildrenCount] = useState(() => state.categories.filter(c => c.parentId === currentCategory?.id).length)
+  const [categoryProductsCount] = useState(() => state.products.filter(p => p.categoryId === currentCategory?.id).length)
   useEffect(() => {
     setCategories(() => {
-      let categories = state.categories.filter(c => c.parentId === props.id)
-      categories = categories.map(c => {
+      const categories = state.categories.filter(c => c.parentId === props.id)
+      const result = categories.map(c => {
         const childrenCount = state.categories.filter(cc => cc.parentId === c.id).length
         const productsCount = state.products.filter(p => p.categoryId === c.id).length
         return {
@@ -24,7 +32,7 @@ const Categories = props => {
           productsCount
         }
       })
-      return categories.sort((c1, c2) => c1.ordering - c2.ordering)
+      return result.sort((c1, c2) => c1.ordering - c2.ordering)
     })
   }, [state.categories, state.products, props.id])
   useEffect(() => {

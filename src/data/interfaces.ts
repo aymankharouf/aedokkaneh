@@ -4,6 +4,12 @@ export interface iLabel {
     [key: string]: string
 }
 export interface iCategory {
+  id?: string,
+  parentId: string,
+  name: string,
+  ordering: number,
+  isLeaf: boolean,
+  isActive: boolean
 }
 export interface iError {
   code: string,
@@ -62,7 +68,8 @@ export interface iStockTrans {
 }
 export interface iProduct {
   id?: string,
-  country: string
+  country: string,
+  categoryId: string
 }
 export interface iSpending {
 

@@ -3,21 +3,23 @@ import { f7, Page, Navbar, List, ListInput, Fab, Icon, Toolbar, ListItem, Toggle
 import { StoreContext } from '../data/store'
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
-import { editCategory, showMessage, showError, getMessage, getCategoryName } from '../data/actions'
+import { editCategory, showMessage, showError, getMessage, getCategoryName } from '../data/actionst'
 
-
-const EditCategory = props => {
+interface Props {
+  id: string
+}
+const EditCategory = (props: Props) => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [category] = useState(() => state.categories.find(c => c.id === props.id))
+  const [category] = useState(() => state.categories.find(c => c.id === props.id)!)
   const [name, setName] = useState(category.name)
-  const [ordering, setOrdering] = useState(category.ordering)
+  const [ordering, setOrdering] = useState(category.ordering.toString())
   const [parentId, setParentId] = useState(category.parentId)
   const [isActive, setIsActive] = useState(category.isActive)
   const [hasChanged, setHasChanged] = useState(false)
   const [categories] = useState(() => {
-    let categories = state.categories.filter(c => c.id !== props.id)
-    categories = categories.map(c => {
+    const categories = state.categories.filter(c => c.id !== props.id)
+    const result = categories.map(c => {
       return {
         id: c.id,
         name: getCategoryName(c, state.categories)
@@ -27,7 +29,7 @@ const EditCategory = props => {
   })
   useEffect(() => {
     if (name !== category.name
-    || ordering !== category.ordering
+    || +ordering !== category.ordering
     || parentId !== category.parentId
     || isActive !== category.isActive) setHasChanged(true)
     else setHasChanged(false)
@@ -44,7 +46,7 @@ const EditCategory = props => {
         ...category,
         parentId,
         name,
-        ordering,
+        ordering: +ordering,
         isActive
       }
       editCategory(newCategory, category, state.categories)

@@ -1,7 +1,7 @@
 import firebase from './firebase'
 import labels from './labels'
 import { f7 } from 'framework7-react'
-import { iAdvert, iError, iLocation, iLog, iPack, iProduct } from "./interfaces"
+import { iAdvert, iCategory, iError, iLocation, iLog, iPack, iProduct } from "./interfaces"
 
 export const getMessage = (path: string, error: iError) => {
   const errorCode = error.code ? error.code.replace(/-|\//g, '_') : error.message
@@ -138,4 +138,68 @@ export const updateAdvertStatus = (advert: iAdvert, adverts: iAdvert[]) => {
     }
   }
   batch.commit()
+}
+
+export const addCategory = (parentId: string, name: string, ordering: number) => {
+  const batch = firebase.firestore().batch()
+  let categoryRef
+  if (parentId !== '0') {
+    categoryRef = firebase.firestore().collection('categories').doc(parentId)
+    batch.update(categoryRef, {
+      isLeaf: false
+    })
+  }
+  categoryRef = firebase.firestore().collection('categories').doc()
+  batch.set(categoryRef, {
+    parentId,
+    name,
+    ordering,
+    isLeaf: true,
+    isActive: false
+  })
+  batch.commit()
+}
+
+export const editCategory = (category: iCategory, oldCategory: iCategory, categories: iCategory[]) => {
+  const batch = firebase.firestore().batch()
+  const { id, ...others } = category
+  let categoryRef = firebase.firestore().collection('categories').doc(id)
+  batch.update(categoryRef, others)
+  if (category.parentId !== oldCategory.parentId) {
+    categoryRef = firebase.firestore().collection('categories').doc(category.parentId)
+    batch.update(categoryRef, {
+      isLeaf: false
+    })
+    const childrenCount = categories.filter(c => c.id !== id && c.parentId === oldCategory.parentId).length
+    if (childrenCount === 0) {
+      categoryRef = firebase.firestore().collection('categories').doc(oldCategory.parentId)
+      batch.update(categoryRef, {
+        isLeaf: true
+      })  
+    }
+  }
+  batch.commit()
+}
+
+export const deleteCategory = (category: iCategory, categories: iCategory[]) => {
+  const batch = firebase.firestore().batch()
+  let categoryRef = firebase.firestore().collection('categories').doc(category.id)
+  batch.delete(categoryRef)
+  const childrenCount = categories.filter(c => c.id !== category.id && c.parentId === category.parentId).length
+  if (childrenCount === 0) {
+    categoryRef = firebase.firestore().collection('categories').doc(category.parentId)
+    batch.update(categoryRef, {
+      isLeaf: true
+    })
+  }
+  batch.commit()
+}
+
+export const getCategoryName = (category: iCategory, categories: iCategory[]): string => {
+  if (category.parentId === '0') {
+    return category.name
+  } else {
+    const categoryParent = categories.find(c => c.id === category.parentId)!
+    return getCategoryName(categoryParent, categories) + '-' + category.name
+  }
 }
