@@ -4,7 +4,7 @@ import BottomToolbar from './bottom-toolbar'
 import { randomColors } from '../data/config'
 import labels from '../data/labels'
 
-const Home = props => {
+const Home = () => {
   const [mainPages] = useState(() => [
     {id: '1', name: labels.orders, path: '/orders/'},
     {id: '2', name: labels.stores, path: '/stores/'},

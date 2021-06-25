@@ -6,24 +6,16 @@ import 'moment/locale/ar'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
 import { spendingTypes } from '../data/config'
+import { iSpending } from '../data/interfaces'
 
-const Spendings = props => {
-  const { state, user } = useContext(StoreContext)
-  const [spendings, setSpendings] = useState([])
+const Spendings = () => {
+  const { state } = useContext(StoreContext)
+  const [spendings, setSpendings] = useState<iSpending[]>([])
   useEffect(() => {
-    setSpendings(() => {
-      const spendings = state.spendings.map(s => {
-        const spendingTypeInfo = spendingTypes.find(t => t.id === s.type)
-        return {
-          ...s,
-          spendingTypeInfo
-        }
-      })
-      return spendings.sort((s1, s2) => s2.time.seconds - s1.time.seconds)
-    })
+    setSpendings(() => [...state.spendings].sort((s1, s2) => s2.time > s1.time ? 1 : -1))
   }, [state.spendings])
 
-  if (!user) return <Page><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></Page>
+  if (!state.user) return <Page><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></Page>
   return(
     <Page>
       <Navbar title={labels.spendings} backLink={labels.back} />
@@ -35,8 +27,8 @@ const Spendings = props => {
               return (
                 <ListItem
                   link={`/edit-spending/${s.id}`}
-                  title={s.spendingTypeInfo.name}
-                  subtitle={moment(s.time.toDate()).fromNow()}
+                  title={spendingTypes.find(t => t.id === s.type)?.name}
+                  subtitle={moment(s.time).fromNow()}
                   after={(s.amount / 100).toFixed(2)}
                   key={s.id}
                 />

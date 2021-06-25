@@ -1,7 +1,7 @@
 import firebase from './firebase'
 import labels from './labels'
 import { f7 } from 'framework7-react'
-import { iAdvert, iCategory, iCustomerInfo, iError, iFriend, iLocation, iLog, iOrder, iPack, iPackPrice, iProduct, iStore, iUserInfo } from "./interfaces"
+import { iAdvert, iCategory, iCustomerInfo, iError, iFriend, iLocation, iLog, iNotification, iOrder, iPack, iPackPrice, iProduct, iSpending, iStore, iUserInfo } from "./interfaces"
 import { randomColors, setup } from './config'
 import moment from 'moment'
 
@@ -756,4 +756,41 @@ export const editPrice = (storePack: iPackPrice, oldPrice: number, packPrices: i
   if (!batch) {
     newBatch.commit()
   }
+}
+
+export const sendNotification = (userId: string, title: string, message: string, batch?: firebase.firestore.WriteBatch) => {
+  const newBatch =  batch || firebase.firestore().batch()
+  const userRef = firebase.firestore().collection('users').doc(userId)
+  newBatch.update(userRef, {
+    notifications: firebase.firestore.FieldValue.arrayUnion({
+      id: Math.random().toString(),
+      title,
+      message,
+      status: 'n',
+      time: new Date()
+    })
+  })
+  if (!batch) {
+    newBatch.commit()
+  }
+}
+
+export const deleteNotification = (notification: iNotification, notifications: iNotification[]) => {
+  const otherNotifications = notifications.filter(n => n.userId === notification.userId && n.id !== notification.id)
+  const result = otherNotifications.map(n => {
+    const {userId, ...others} = n
+    return others
+  })
+  firebase.firestore().collection('users').doc(notification.userId).update({
+    notifications: result
+  })
+}
+
+export const addSpending = (spending: iSpending) => {
+  firebase.firestore().collection('spendings').add(spending)
+}
+
+export const editSpending = (spending: iSpending) => {
+  const { id, ...others } = spending
+  firebase.firestore().collection('spendings').doc(id).update(others)
 }

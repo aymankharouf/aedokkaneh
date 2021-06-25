@@ -3,7 +3,7 @@ import { f7, Page, Navbar, List, ListInput, Button } from 'framework7-react'
 import { changePassword, showMessage, showError, getMessage } from '../data/actions'
 import labels from '../data/labels'
 
-const ChangePassword = props => {
+const ChangePassword = () => {
   const [oldPassword, setOldPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [error, setError] = useState('')

@@ -58,6 +58,12 @@ export interface iPackPrice {
   isAuto: boolean
 }
 export interface iNotification {
+  id: string,
+  userId: string,
+  title: string,
+  message: string,
+  status: string,
+  time: Date
 }
 export interface iFriend {
   userId: string,
@@ -167,7 +173,12 @@ export interface iProduct {
   isArchived: boolean
 }
 export interface iSpending {
-
+  id?: string,
+  type: string,
+  amount: number,
+  spendingDate: Date,
+  description: string,
+  time: Date
 }
 export interface iMonthlyTrans {
 

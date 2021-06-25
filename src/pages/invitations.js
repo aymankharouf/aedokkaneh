@@ -4,7 +4,6 @@ import BottomToolbar from './bottom-toolbar'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
 
-
 const Invitations = props => {
   const { state } = useContext(StoreContext)
   const [invitations, setInvitations] = useState([])

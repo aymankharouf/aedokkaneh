@@ -1,7 +1,7 @@
 import { Page, Navbar, Block } from 'framework7-react'
 import labels from '../data/labels'
 
-const NotFoundPage = props => {
+const NotFoundPage = () => {
   return (
     <Page>
       <Navbar title={labels.notFoundPageTitle} backLink={labels.back} />

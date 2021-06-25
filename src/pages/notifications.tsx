@@ -5,22 +5,26 @@ import { StoreContext } from '../data/store'
 import labels from '../data/labels'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { deleteNotification, showMessage, showError, getMessage } from '../data/actions'
+import { deleteNotification, showMessage, showError, getMessage } from '../data/actionst'
+import { iNotification, iUserInfo } from '../data/interfaces'
 
-const Notifications = props => {
-  const { state, user } = useContext(StoreContext)
+interface ExtendedNotification extends iNotification {
+  userInfo: iUserInfo
+}
+const Notifications = () => {
+  const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [notifications, setNotifications] = useState([])
+  const [notifications, setNotifications] = useState<ExtendedNotification[]>([])
   useEffect(() => {
     setNotifications(() => {
       const notifications = state.notifications.map(n => {
-        const userInfo = state.users.find(u => u.id === n.userId)
+        const userInfo = state.users.find(u => u.id === n.userId)!
         return {
           ...n,
           userInfo
         }
       })
-      return notifications.sort((n1, n2) => n2.time.seconds - n1.time.seconds)
+      return notifications.sort((n1, n2) => n2.time > n1.time ? 1 : -1)
     })
   }, [state.users, state.notifications])
   useEffect(() => {
@@ -29,10 +33,11 @@ const Notifications = props => {
       setError('')
     }
   }, [error])
-  const handleDelete = (userInfo, notificationId) => {
+  const handleDelete = (notificationId: string) => {
     f7.dialog.confirm(labels.confirmationText, labels.confirmationTitle, () => {
       try{
-        deleteNotification(userInfo, notificationId,)
+        const notification = state.notifications.find(n => n.id === notificationId)!
+        deleteNotification(notification, state.notifications)
         showMessage(labels.deleteSuccess)
       } catch(err) {
         setError(getMessage(f7.views.current.router.currentRoute.path, err))
@@ -40,7 +45,7 @@ const Notifications = props => {
     })  
   }
 
-  if (!user) return <Page><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></Page>
+  if (!state.user) return <Page><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></Page>
   return (
     <Page>
       <Navbar title={labels.notifications} backLink={labels.back} />
@@ -53,11 +58,11 @@ const Notifications = props => {
                 title={`${n.userInfo.name}:${n.userInfo.mobile}`}
                 subtitle={n.title}
                 text={n.message}
-                footer={moment(n.time.toDate()).fromNow()}
+                footer={moment(n.time).fromNow()}
                 key={n.id}
               >
                 <div className="list-subtext1">{n.status === 'n' ? labels.notRead : labels.read}</div>
-                <Button text={labels.delete} slot="after" onClick={() => handleDelete(n.userInfo, n.id)} />
+                <Button text={labels.delete} slot="after" onClick={() => handleDelete(n.id)} />
               </ListItem>
             )
           }

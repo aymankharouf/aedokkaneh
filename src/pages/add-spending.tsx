@@ -2,26 +2,26 @@ import { useState, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListItem, ListInput, Fab, Icon } from 'framework7-react'
 import labels from '../data/labels'
 import { spendingTypes } from '../data/config'
-import { addSpending, showMessage, showError, getMessage } from '../data/actions'
+import { addSpending, showMessage, showError, getMessage } from '../data/actionst'
 
-const AddSpending = props => {
+const AddSpending = () => {
   const [error, setError] = useState('')
   const [type, setType] = useState('')
   const [amount, setAmount] = useState('')
   const [spendingDate, setSpendingDate] = useState([new Date()])
   const [spendingDateErrorMessage, setSpendingDateErrorMessage] = useState('')
   const [description, setDescription] = useState('')
-  useEffect(() => {
-    const validateDate = value => {
-      if (new Date(value) > new Date()){
-        setSpendingDateErrorMessage(labels.invalidSpendingDate)
-      } else {
-        setSpendingDateErrorMessage('')
-      }
-    }
-    if (spendingDate.length > 0) validateDate(spendingDate)
-    else setSpendingDateErrorMessage('')
-  }, [spendingDate])
+  // useEffect(() => {
+  //   const validateDate = value => {
+  //     if (new Date(value) > new Date()){
+  //       setSpendingDateErrorMessage(labels.invalidSpendingDate)
+  //     } else {
+  //       setSpendingDateErrorMessage('')
+  //     }
+  //   }
+  //   if (spendingDate.length > 0) validateDate(spendingDate)
+  //   else setSpendingDateErrorMessage('')
+  // }, [spendingDate])
   useEffect(() => {
     if (error) {
       showError(error)
@@ -33,10 +33,11 @@ const AddSpending = props => {
       if (Number(amount) <= 0 || Number(amount) !== Number(Number(amount).toFixed(2))) {
         throw new Error('invalidValue')
       }
-      const formatedDate = spendingDate.length > 0 ? new Date(spendingDate) : ''
+      // const formatedDate = spendingDate.length > 0 ? new Date(spendingDate) : ''
+      const formatedDate = new Date()
       addSpending({
         type,
-        amount: amount * 100,
+        amount: +amount * 100,
         spendingDate: formatedDate,
         description,
         time: new Date()

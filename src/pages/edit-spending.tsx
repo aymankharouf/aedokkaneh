@@ -1,32 +1,35 @@
 import { useState, useContext, useEffect } from 'react'
-import { editSpending, showMessage, showError, getMessage } from '../data/actions'
+import { editSpending, showMessage, showError, getMessage } from '../data/actionst'
 import { f7, Page, Navbar, List, ListInput, Fab, Icon, Toolbar, ListItem } from 'framework7-react'
 import { StoreContext } from '../data/store'
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
 import { spendingTypes } from '../data/config'
 
-const EditSpending = props => {
+interface Props {
+  id: string
+}
+const EditSpending = (props: Props) => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [spending] = useState(() => state.spendings.find(s => s.id === props.id))
+  const [spending] = useState(() => state.spendings.find(s => s.id === props.id)!)
   const [type, setType] = useState(spending.type)
   const [amount, setAmount] = useState((spending.amount / 100).toFixed(2))
-  const [spendingDate, setSpendingDate] = useState(() => spending.spendingDate ? [spending.spendingDate.toDate()] : '')
+  const [spendingDate, setSpendingDate] = useState(() => spending.spendingDate ? [spending.spendingDate] : '')
   const [spendingDateErrorMessage, setSpendingDateErrorMessage] = useState('')
   const [description, setDescription] = useState(spending.description)
   const [hasChanged, setHasChanged] = useState(false)
-  useEffect(() => {
-    const validateDate = value => {
-      if (new Date(value) > new Date()){
-        setSpendingDateErrorMessage(labels.invalidSpendingDate)
-      } else {
-        setSpendingDateErrorMessage('')
-      }
-    }
-    if (spendingDate.length > 0) validateDate(spendingDate)
-    else setSpendingDateErrorMessage('')
-  }, [spendingDate])
+  // useEffect(() => {
+  //   const validateDate = value => {
+  //     if (new Date(value) > new Date()){
+  //       setSpendingDateErrorMessage(labels.invalidSpendingDate)
+  //     } else {
+  //       setSpendingDateErrorMessage('')
+  //     }
+  //   }
+  //   if (spendingDate.length > 0) validateDate(spendingDate)
+  //   else setSpendingDateErrorMessage('')
+  // }, [spendingDate])
   useEffect(() => {
     if (error) {
       showError(error)
@@ -38,11 +41,12 @@ const EditSpending = props => {
       if (Number(amount) <= 0 || Number(amount) !== Number(Number(amount).toFixed(2))) {
         throw new Error('invalidValue')
       }
-      const formatedDate = spendingDate.length > 0 ? new Date(spendingDate) : ''
+      // const formatedDate = spendingDate.length > 0 ? new Date(spendingDate) : ''
+      const formatedDate = new Date()
       const newSpending = {
         ...spending,
         type,
-        amount: amount * 100,
+        amount: +amount * 100,
         spendingDate: formatedDate,
         description
       }
@@ -54,12 +58,13 @@ const EditSpending = props => {
 		}    
   }
   useEffect(() => {
-    if (amount * 100 !== spending.amount
+    if (+amount * 100 !== spending.amount
     || type !== spending.type
     || description !== spending.description
     || (!spending.spendingDate && spendingDate.length > 0)
     || (spending.spendingDate && spendingDate.length === 0)
-    || (spending.spendingDate.toDate()).toString() !== (new Date(spendingDate)).toString()) setHasChanged(true)
+    // || (spending.spendingDate.toDate()).toString() !== (new Date(spendingDate)).toString()
+    ) setHasChanged(true)
     else setHasChanged(false)
   }, [spending, amount, spendingDate, type, description])
 

@@ -209,7 +209,14 @@ const Store = (props: any) => {
             })
             if (doc.data().notifications) {
               doc.data().notifications.forEach((n: any) => {
-                notifications.push({...n, userId: doc.id})
+                notifications.push({
+                  userId: doc.id,
+                  id: n.id,
+                  title: n.title,
+                  message: n.message,
+                  status: n.status,
+                  time: n.time.toDate()
+                })
               })
             }
             if (doc.data().alarms) {
@@ -317,7 +324,14 @@ const Store = (props: any) => {
         const unsubscribeSpendings = firebase.firestore().collection('spendings').onSnapshot(docs => {
           let spendings: iSpending[] = []
           docs.forEach(doc => {
-            spendings.push({...doc.data(), id:doc.id})
+            spendings.push({
+              id: doc.id,
+              type: doc.data().type,
+              amount: doc.data().amount,
+              spendingDate: doc.data().spendingDate.toDate(),
+              description: doc.data().description,
+              time: doc.data().time.toDate()
+            })
           })
           dispatch({type: 'SET_SPENDINGS', payload: spendings})
         }, err => {
