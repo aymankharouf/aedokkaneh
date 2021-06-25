@@ -1,46 +1,38 @@
-import { useState, useContext, useEffect } from 'react'
-import { editPack, showMessage, showError, getMessage } from '../data/actions'
+import { useState, useContext, useEffect, ChangeEvent } from 'react'
+import { addPack, showMessage, showError, getMessage } from '../data/actionst'
 import { f7, Page, Navbar, List, ListItem, ListInput, Fab, Icon, Toggle } from 'framework7-react'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
 
-
-const EditPack = props => {
+interface Props {
+  id: string
+}
+const AddPack = (props: Props) => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [pack] = useState(() => state.packs.find(p => p.id === props.id))
-  const [name, setName] = useState(pack.name)
-  const [unitsCount, setUnitsCount] = useState(pack.unitsCount)
-  const [isDivided, setIsDivided] = useState(pack.isDivided)
-  const [byWeight, setByWeight] = useState(pack.byWeight)
-  const [closeExpired, setCloseExpired] = useState(pack.closeExpired)
-  const [hasChanged, setHasChanged] = useState(false)
-  const [specialImage, setSpecialImage] = useState(pack.specialImage)
-  const [image, setImage] = useState(null)
-  const [imageUrl, setImageUrl] = useState(pack.imageUrl)
-  useEffect(() => {
-    if (name !== pack.name
-    || unitsCount !== pack.unitsCount
-    || isDivided !== pack.isDivided
-    || byWeight !== pack.byWeight
-    || closeExpired !== pack.closeExpired
-    || specialImage !== pack.specialImage
-    || imageUrl !== pack.imageUrl) setHasChanged(true)
-    else setHasChanged(false)
-  }, [pack, name, unitsCount, isDivided, byWeight, closeExpired, specialImage, imageUrl])
-  useEffect(() => {
-    if (isDivided) {
-      setByWeight(true)
-    }
-  }, [isDivided])
+  const [name, setName] = useState('')
+  const [unitsCount, setUnitsCount] = useState('')
+  const [isDivided, setIsDivided] = useState(false)
+  const [byWeight, setByWeight] = useState(false)
+  const [closeExpired, setCloseExpired] = useState(false)
+  const [specialImage, setSpecialImage] = useState(false)
+  const [image, setImage] = useState<File>()
+  const [product] = useState(() => state.products.find(p => p.id === props.id)!)
+  const [imageUrl, setImageUrl] = useState(product.imageUrl)
   useEffect(() => {
     if (error) {
       showError(error)
       setError('')
     }
   }, [error])
-  const handleFileChange = e => {
+  useEffect(() => {
+    if (isDivided) {
+      setByWeight(true)
+    }
+  }, [isDivided])
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
+    if (!files) return
     const filename = files[0].name
     if (filename.lastIndexOf('.') <= 0) {
       setError(labels.invalidFile)
@@ -48,26 +40,48 @@ const EditPack = props => {
     }
     const fileReader = new FileReader()
     fileReader.addEventListener('load', () => {
-      setImageUrl(fileReader.result)
+      if (fileReader.result) setImageUrl(fileReader.result.toString())
     })
     fileReader.readAsDataURL(files[0])
     setImage(files[0])
   }
   const handleSubmit = () => {
     try{
-      if (state.packs.find(p => p.id !== pack.id && p.productId === props.id && p.name === name && p.closeExpired === closeExpired)) {
+      if (state.packs.find(p => p.productId === props.id && p.name === name && p.closeExpired === closeExpired)) {
         throw new Error('duplicateName')
       }
-      const newPack = {
-        ...pack,
+      const pack = {
         name,
-        unitsCount: Number(unitsCount),
+        productId: product.id!,
+        productName: product.name,
+        productAlias: product.alias,
+        productDescription: product.description,
+        categoryId: product.categoryId,
+        country: product.country,
+        trademark: product.trademark,
+        sales: product.sales,
+        rating: product.rating,
+        ratingCount: product.ratingCount,    
+        unitsCount: +unitsCount,
         isDivided,
+        closeExpired,
         byWeight,
-        closeExpired
+        isOffer: false,
+        price: 0,
+        forSale: true,
+        isArchived: false,
+        imageUrl: product.imageUrl,
+        specialImage: false,
+        subPackId: '',
+        bonusPackId: '',
+        offerEnd: null,
+        subQuantity: 0,
+        subPercent: 0,
+        bonusQuantity: 0,
+        bonusPercent: 0
       }
-      editPack(newPack, pack, image, state.packs)
-      showMessage(labels.editSuccess)
+      addPack(pack, image)
+      showMessage(labels.addSuccess)
       f7.views.current.router.back()
     } catch(err) {
 			setError(getMessage(f7.views.current.router.currentRoute.path, err))
@@ -75,7 +89,7 @@ const EditPack = props => {
   }
   return (
     <Page>
-      <Navbar title={`${labels.editPack} ${pack.productName}`} backLink={labels.back} />
+      <Navbar title={`${labels.addPack} ${product.name}`} backLink={labels.back} />
       <List form inlineLabels>
         <ListInput 
           name="name" 
@@ -111,6 +125,7 @@ const EditPack = props => {
             color="green" 
             checked={byWeight} 
             onToggleChange={() => setByWeight(!byWeight)}
+            disabled={isDivided}
           />
         </ListItem>
         <ListItem>
@@ -142,7 +157,7 @@ const EditPack = props => {
         : ''}
         <img src={imageUrl} className="img-card" alt={labels.noImage} />
       </List>
-      {!name || !unitsCount || !hasChanged ? '' :
+      {!name || !unitsCount ? '' :
         <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleSubmit()}>
           <Icon material="done"></Icon>
         </Fab>
@@ -150,4 +165,4 @@ const EditPack = props => {
     </Page>
   )
 }
-export default EditPack
+export default AddPack

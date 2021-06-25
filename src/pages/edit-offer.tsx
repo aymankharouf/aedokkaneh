@@ -1,23 +1,26 @@
-import { useState, useContext, useEffect } from 'react'
-import { editPack, showMessage, showError, getMessage } from '../data/actions'
+import { useState, useContext, useEffect, ChangeEvent } from 'react'
+import { editPack, showMessage, showError, getMessage } from '../data/actionst'
 import { f7, Page, Navbar, List, ListItem, ListInput, Fab, Icon, BlockTitle, Toggle } from 'framework7-react'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
 
-const EditOffer = props => {
+interface Props {
+  id: string
+}
+const EditOffer = (props: Props) => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [pack] = useState(() => state.packs.find(p => p.id === props.id))
+  const [pack] = useState(() => state.packs.find(p => p.id === props.id)!)
   const [name, setName] = useState(pack.name)
   const [subPackId, setSubPackId] = useState(pack.subPackId)
-  const [subQuantity, setSubQuantity] = useState(pack.subQuantity)
-  const [subPercent, setSubPercent] = useState(pack.subPercent * 100)
+  const [subQuantity, setSubQuantity] = useState(pack.subQuantity.toString())
+  const [subPercent, setSubPercent] = useState((pack.subPercent * 100).toString())
   const [bonusPackId, setBonusPackId] = useState(pack.bonusPackId)
-  const [bonusQuantity, setBonusQuantity] = useState(pack.bonusQuantity)
-  const [bonusPercent, setBonusPercent] = useState(pack.bonusPercent * 100)
+  const [bonusQuantity, setBonusQuantity] = useState(pack.bonusQuantity.toString())
+  const [bonusPercent, setBonusPercent] = useState((pack.bonusPercent * 100).toString())
   const [hasChanged, setHasChanged] = useState(false)
   const [specialImage, setSpecialImage] = useState(pack.specialImage)
-  const [image, setImage] = useState(null)
+  const [image, setImage] = useState<File>()
   const [imageUrl, setImageUrl] = useState(pack.imageUrl)
   const [packs] = useState(() => {
     const packs = state.packs.filter(p => p.productId === pack.productId && !p.isOffer && !p.byWeight && p.forSale)
@@ -29,23 +32,23 @@ const EditOffer = props => {
     })
   })
   const [bonusPacks] = useState(() => {
-    let packs = state.packs.filter(p => p.productId !== pack.productId && !p.subPackId && !p.byWeight)
-    packs = packs.map(p => {
+    const packs = state.packs.filter(p => p.productId !== pack.productId && !p.subPackId && !p.byWeight)
+    const result = packs.map(p => {
       return {
         id: p.id,
         name: `${p.productName} ${p.name} ${p.closeExpired ? '(' + labels.closeExpired + ')' : ''}`
       }
     })
-    return packs.sort((p1, p2) => p1.name > p2.name ? 1 : -1)
+    return result.sort((p1, p2) => p1.name > p2.name ? 1 : -1)
   }) 
   useEffect(() => {
     if (name !== pack.name
     || subPackId !== pack.subPackId
-    || subQuantity !== pack.subQuantity
-    || subPercent !== pack.subPercent * 100
+    || +subQuantity !== pack.subQuantity
+    || +subPercent !== pack.subPercent * 100
     || bonusPackId !== pack.bonusPackId
-    || bonusQuantity !== pack.bonusQuantity * 100
-    || bonusPercent !== pack.bonusPercent
+    || +bonusQuantity !== pack.bonusQuantity * 100
+    || +bonusPercent !== pack.bonusPercent
     || specialImage !== pack.specialImage
     || imageUrl !== pack.imageUrl) setHasChanged(true)
     else setHasChanged(false)
@@ -56,8 +59,9 @@ const EditOffer = props => {
       setError('')
     }
   }, [error])
-  const handleFileChange = e => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
+    if (!files) return
     const filename = files[0].name
     if (filename.lastIndexOf('.') <= 0) {
       setError(labels.invalidFile)
@@ -65,7 +69,7 @@ const EditOffer = props => {
     }
     const fileReader = new FileReader()
     fileReader.addEventListener('load', () => {
-      setImageUrl(fileReader.result)
+      if (fileReader.result) setImageUrl(fileReader.result.toString())
     })
     fileReader.readAsDataURL(files[0])
     setImage(files[0])
@@ -73,7 +77,7 @@ const EditOffer = props => {
 
   const handleSubmit = () => {
     try{
-      const subPackInfo = state.packs.find(p => p.id === subPackId)
+      const subPackInfo = state.packs.find(p => p.id === subPackId)!
       const bonusPackInfo = state.packs.find(p => p.id === bonusPackId)
       if (state.packs.find(p => p.id !== pack.id && p.productId === props.id && p.name === name && p.closeExpired === subPackInfo.closeExpired)) {
         throw new Error('duplicateName')
@@ -95,8 +99,8 @@ const EditOffer = props => {
         name,
         subPackId,
         subQuantity: Number(subQuantity),
-        unitsCount: subQuantity * subPackInfo.unitsCount,
-        subPercent: subPercent / 100,
+        unitsCount: +subQuantity * subPackInfo.unitsCount,
+        subPercent: +subPercent / 100,
         subPackName: subPackInfo.name,
         isDivided: subPackInfo.isDivided,
         byWeight: subPackInfo.byWeight,
@@ -104,10 +108,10 @@ const EditOffer = props => {
         bonusPackId,
         bonusProductName: bonusPackInfo?.productName || '',
         bonusPackName: bonusPackInfo?.name || '',
-        bonusQuantity: Number(bonusQuantity),
-        bonusPercent: bonusPercent / 100
+        bonusQuantity: +bonusQuantity,
+        bonusPercent: +bonusPercent / 100
       }
-      editPack(newPack, pack, image, state.packs)
+      editPack(newPack, pack, state.packs, image)
       showMessage(labels.editSuccess)
       f7.views.current.router.back()
     } catch(err) {

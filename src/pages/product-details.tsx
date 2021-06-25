@@ -3,11 +3,14 @@ import { Page, Navbar, List, ListInput, Fab, Icon } from 'framework7-react'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
 
-const ProductDetails = props => {
+interface Props {
+  id: string
+}
+const ProductDetails = (props: Props) => {
   const { state } = useContext(StoreContext)
-  const [product, setProduct] = useState(() => state.products.find(p => p.id === props.id))
+  const [product, setProduct] = useState(() => state.products.find(p => p.id === props.id)!)
   useEffect(() => {
-    setProduct(() => state.products.find(p => p.id === props.id))
+    setProduct(() => state.products.find(p => p.id === props.id)!)
   }, [state.products, props.id])
   return (
     <Page>
@@ -38,7 +41,7 @@ const ProductDetails = props => {
           name="categoryId" 
           label={labels.category}
           type="text" 
-          value={state.categories.find(c => c.id === product.categoryId).name}
+          value={state.categories.find(c => c.id === product.categoryId)?.name}
           readonly
         />
         <ListInput 

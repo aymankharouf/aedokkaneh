@@ -3,27 +3,34 @@ import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Searchbar, NavRight, 
 import BottomToolbar from './bottom-toolbar'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
-import { productOfText, getCategoryName } from '../data/actions'
+import { productOfText, getCategoryName } from '../data/actionst'
+import { iCategory, iProduct } from '../data/interfaces'
 
-const Products = props => {
-  const { state, user } = useContext(StoreContext)
+interface Props {
+  id: string
+}
+interface ExtendedProduct extends iProduct {
+  categoryInfo: iCategory
+}
+const Products = (props: Props) => {
+  const { state } = useContext(StoreContext)
   const [category] = useState(() => state.categories.find(c => c.id === props.id))
-  const [products, setProducts] = useState([])
+  const [products, setProducts] = useState<ExtendedProduct[]>([])
   useEffect(() => {
     setProducts(() => {
-      let products = state.products.filter(p => props.id === '-1' ? !state.packs.find(pa => pa.productId === p.id) || state.packs.filter(pa => pa.productId === p.id).length === state.packs.filter(pa => pa.productId === p.id && pa.price === 0).length : props.id === '0' || p.categoryId === props.id)
-      products = products.map(p => {
-        const categoryInfo = state.categories.find(c => c.id === p.categoryId)
+      const products = state.products.filter(p => props.id === '-1' ? !state.packs.find(pa => pa.productId === p.id) || state.packs.filter(pa => pa.productId === p.id).length === state.packs.filter(pa => pa.productId === p.id && pa.price === 0).length : props.id === '0' || p.categoryId === props.id)
+      const result = products.map(p => {
+        const categoryInfo = state.categories.find(c => c.id === p.categoryId)!
         return {
           ...p,
           categoryInfo
         }
       })
-      return products.sort((p1, p2) => p1.categoryId === p2.categoryId ? (p1.name > p2.name ? 1 : -1) : (p1.categoryInfo.name > p2.categoryInfo.name ? 1 : -1))
+      return result.sort((p1, p2) => p1.categoryId === p2.categoryId ? (p1.name > p2.name ? 1 : -1) : (p1.categoryInfo.name > p2.categoryInfo.name ? 1 : -1))
     })
   }, [state.products, state.categories, state.packs, props.id])
   
-  if (!user) return <Page><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></Page>
+  if (!state.user) return <Page><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></Page>
   return(
     <Page>
       <Navbar title={props.id === '-1' ? labels.notUsedProducts : (props.id === '0' ? labels.products : category?.name || '')} backLink={labels.back}>

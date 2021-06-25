@@ -43,7 +43,7 @@ const PermissionList = (props: Props) => {
     f7.dialog.confirm(labels.confirmationText, labels.confirmationTitle, async () => {
       try{
         setInprocess(true)
-        await permitUser(customer.id, null, state.users, state.stores)
+        await permitUser(customer.id, '', state.users, state.stores)
         setInprocess(false)
         showMessage(labels.unPermitSuccess)
         f7.views.current.router.back()

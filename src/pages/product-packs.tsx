@@ -4,15 +4,20 @@ import RatingStars from './rating-stars'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
 import BottomToolbar from './bottom-toolbar'
-import { archiveProduct, deleteProduct, showMessage, getMessage, showError, productOfText } from '../data/actions'
+import { archiveProduct, deleteProduct, showMessage, getMessage, showError, productOfText } from '../data/actionst'
+import { iPack } from '../data/interfaces'
 
-const ProductPacks = props => {
+interface Props {
+  id: string,
+  type: string
+}
+const ProductPacks = (props: Props) => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [product] = useState(() => props.type === 'a' ? state.archivedProducts.find(p => p.id === props.id) : state.products.find(p => p.id === props.id))
-  const [packs, setPacks] = useState([])
-  const [activePacks, setActivePacks] = useState([])
-  const actionsList = useRef('')
+  const [product] = useState(() => props.type === 'a' ? state.archivedProducts.find(p => p.id === props.id)! : state.products.find(p => p.id === props.id)!)
+  const [packs, setPacks] = useState<iPack[]>([])
+  const [activePacks, setActivePacks] = useState<iPack[]>([])
+  const actionsList = useRef<Actions>(null)
   useEffect(() => {
     setPacks(() => {
       const packs = props.type === 'a' ? state.archivedPacks.filter(p => p.productId === props.id) : state.packs.filter(p => p.productId === props.id)
@@ -74,7 +79,7 @@ const ProductPacks = props => {
           </ListItem>
         )}
       </List>
-      <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => actionsList.current.open()}>
+      <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => actionsList.current?.open()}>
         <Icon material="build"></Icon>
       </Fab>
       <Actions ref={actionsList}>

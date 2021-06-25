@@ -1,38 +1,58 @@
 import { useContext, useState, useEffect, useRef } from 'react'
 import { f7, Page, Navbar, Card, CardContent, CardFooter, Link, List, ListItem, Icon, Fab, Toolbar, Badge, FabButton, FabButtons, FabBackdrop, Actions, ActionsButton } from 'framework7-react'
 import { StoreContext } from '../data/store'
-import { getPackStores, deleteStorePack, refreshPackPrice, deletePack, changeStorePackStatus, showMessage, showError, getMessage, quantityText } from '../data/actions'
+import { getPackStores, deleteStorePack, refreshPackPrice, deletePack, changeStorePackStatus, showMessage, showError, getMessage, quantityText } from '../data/actionst'
 import BottomToolbar from './bottom-toolbar'
 import moment from 'moment'
 import labels from '../data/labels'
+import { iPack, iPackPrice, iStore } from '../data/interfaces'
 
-const PackDetails = props => {
+interface Props {
+  id: string
+}
+interface ExtendedPackPrice extends iPackPrice {
+  subQuantity: number,
+  unitPrice: number,
+  unitCost: number,
+  isOffer: boolean,
+  packInfo: iPack,
+  storeInfo: iStore
+}
+const PackDetails = (props: Props) => {
   const { state, dispatch } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [currentStorePack, setCurrentStorePack] = useState('')
-  const actionsList = useRef('')
-  const [pack, setPack] = useState(() => {
-    const pack = state.packs.find(p => p.id === props.id)
-    let detailsCount = state.packPrices.filter(p => p.packId === pack.id).length
-    detailsCount = detailsCount === 0 ? state.orders.filter(o => o.basket.find(p => p.packId === pack.id)).length : detailsCount
-    return {
-      ...pack,
-      detailsCount
-    }
-  })
-  const [packStores, setPackStores] = useState([])
+  const [currentStorePack, setCurrentStorePack] = useState<ExtendedPackPrice>()
+  const actionsList = useRef<Actions>(null)
+  const [pack, setPack] = useState(() => state.packs.find(p => p.id === props.id)!)
+  const [packStores, setPackStores] = useState<ExtendedPackPrice[]>([])
+  const [detailsCount, setDetailsCount] = useState(0)
+  useEffect(() => {
+    setDetailsCount(() => {
+      const detailsCount = state.packPrices.filter(p => p.packId === pack.id).length
+      return detailsCount === 0 ? state.orders.filter(o => o.basket.find(p => p.packId === pack.id)).length : detailsCount
+    })
+  }, [pack, state.orders, state.packPrices])
   useEffect(() => {
     setPackStores(() => {
-      const packStores = getPackStores(pack, state.packPrices, state.stores, state.packs)
+      const packStores = getPackStores(pack, state.packPrices, state.packs)
+      const result = packStores.map(p => {
+        const packInfo = state.packs.find(pp => pp.id === p.packId)!
+        const storeInfo = state.stores.find(s => s.id === p.storeId)!
+        return {
+          ...p,
+          packInfo,
+          storeInfo
+        }
+      })
       const today = new Date()
       today.setDate(today.getDate() - 30)
-      return packStores.sort((s1, s2) => 
+      return result.sort((s1, s2) => 
       {
         if (s1.unitPrice === s2.unitPrice) {
           if (s1.storeInfo.type === s2.storeInfo.type){
             if (s2.storeInfo.discount === s1.storeInfo.discount) {
-              const store1Purchases = state.purchases.filter(p => p.storeId === s1.storeId && p.time.toDate() < today)
-              const store2Purchases = state.purchases.filter(p => p.storeId === s2.storeId && p.time.toDate() < today)
+              const store1Purchases = state.purchases.filter(p => p.storeId === s1.storeId && p.time < today)
+              const store2Purchases = state.purchases.filter(p => p.storeId === s2.storeId && p.time < today)
               const store1Sales = store1Purchases.reduce((sum, p) => sum + p.total, 0)
               const store2Sales = store2Purchases.reduce((sum, p) => sum + p.total, 0)
               return store1Sales - store2Sales
@@ -49,15 +69,7 @@ const PackDetails = props => {
     })
   }, [pack, state.stores, state.packPrices, state.purchases, state.packs])
   useEffect(() => {
-    setPack(() => {
-      const pack = state.packs.find(p => p.id === props.id) || ''
-      let detailsCount = state.packPrices.filter(p => p.packId === pack.id).length
-      detailsCount = detailsCount === 0 ? state.orders.filter(o => o.basket.find(p => p.packId === pack.id)).length : detailsCount
-      return {
-        ...pack,
-        detailsCount
-      }
-    })
+    setPack(() => state.packs.find(p => p.id === props.id)!)
   }, [state.packs, state.packPrices, state.orders, props.id])
   useEffect(() => {
     if (error) {
@@ -67,7 +79,7 @@ const PackDetails = props => {
   }, [error])
   const handleRefreshPrice = () => {
     try{
-      refreshPackPrice(pack, state.packPrices, state.packs)
+      refreshPackPrice(pack, state.packPrices)
       showMessage(labels.refreshSuccess)
     } catch(err) {
 			setError(getMessage(f7.views.current.router.currentRoute.path, err))
@@ -76,7 +88,7 @@ const PackDetails = props => {
   const handleDelete = () => {
     f7.dialog.confirm(labels.confirmationText, labels.confirmationTitle, () => {
       try{
-        deletePack(pack.id)
+        deletePack(pack.id!)
         showMessage(labels.deleteSuccess)
         f7.views.current.router.back()
       } catch(err) {
@@ -87,6 +99,7 @@ const PackDetails = props => {
   const handleDeletePrice = () => {
     f7.dialog.confirm(labels.confirmationText, labels.confirmationTitle, () => {
       try{
+        if (!currentStorePack) return
         deleteStorePack(currentStorePack, state.packPrices, state.packs)
         showMessage(labels.deleteSuccess)
       } catch(err) {
@@ -96,13 +109,13 @@ const PackDetails = props => {
   }
   const handlePurchase = () => {
 		try{
-      if (currentStorePack.offerEnd && new Date() > currentStorePack.offerEnd.toDate()) {
+      if (currentStorePack?.offerEnd && new Date() > currentStorePack.offerEnd) {
         throw new Error('offerEnded')
       }
-			if (state.basket.storeId && state.basket.storeId !== currentStorePack.storeId){
+			if (state.basket?.storeId && state.basket.storeId !== currentStorePack?.storeId){
 				throw new Error('twoDiffStores')
       }
-      if (state.basket.packs?.find(p => p.packId === pack.id)) {
+      if (state.basket?.packs.find(p => p.packId === pack.id)) {
         throw new Error('alreadyInBasket')
       }
       let params
@@ -112,10 +125,10 @@ const PackDetails = props => {
             pack,
             packStore: currentStorePack,
             quantity : pack.isDivided ? Number(weight) : 1,
-            price: currentStorePack.price,
+            price: currentStorePack?.price,
             weight: Number(weight),
           }
-          dispatch({type: 'ADD_TO_BASKET', params})
+          dispatch({type: 'ADD_TO_BASKET', payload: params})
           showMessage(labels.addToBasketSuccess)
           f7.views.current.router.back()
         })
@@ -124,9 +137,9 @@ const PackDetails = props => {
           pack, 
           packStore: currentStorePack,
           quantity: 1,
-          price: currentStorePack.price
+          price: currentStorePack?.price
         }
-        dispatch({type: 'ADD_TO_BASKET', params})
+        dispatch({type: 'ADD_TO_BASKET', payload: params})
         showMessage(labels.addToBasketSuccess)
         f7.views.current.router.back()
       }
@@ -136,6 +149,7 @@ const PackDetails = props => {
   }
   const handleChangeStatus = () => {
     try{
+      if (!currentStorePack) return
       changeStorePackStatus(currentStorePack, state.packPrices, state.packs)
       showMessage(labels.editSuccess)
     } catch(err) {
@@ -143,19 +157,13 @@ const PackDetails = props => {
     }
   }
 
-  const handleActions = storePackInfo => {
+  const handleActions = (storePackInfo: ExtendedPackPrice) => {
     const storePack = {
-      packId: pack.id,
-      storeId: storePackInfo.storeId,
-      price: storePackInfo.price,
-      cost: storePackInfo.cost,
-      offerEnd: storePackInfo.offerEnd,
-      isActive: storePackInfo.isActive,
-      time: storePackInfo.time
+      ...storePackInfo,
+      packId: pack.id!
     }
-    if (storePackInfo.quantity) storePack['quantity'] = storePackInfo.quantity
     setCurrentStorePack(storePack)
-    actionsList.current.open()
+    actionsList.current?.open()
   }
   let i = 0
   return (
@@ -184,7 +192,7 @@ const PackDetails = props => {
             <div className="list-subtext1">{`${labels.price}: ${(s.price / 100).toFixed(2)}${s.price === s.unitPrice ? '' : '(' + (s.unitPrice / 100).toFixed(2) + ')'}`}</div>
             <div className="list-subtext2">{`${labels.cost}: ${(s.cost / 100).toFixed(2)}${s.cost === s.unitCost ? '' : '(' + (s.unitCost / 100).toFixed(2) + ')'}`}</div>
             <div className="list-subtext3">{s.subQuantity ? `${labels.quantity}: ${s.subQuantity}` : ''}</div>
-            {s.offerEnd ? <div className="list-subtext4">{labels.offerUpTo}: {moment(s.offerEnd.toDate()).format('Y/M/D')}</div> : ''}
+            {s.offerEnd ? <div className="list-subtext4">{labels.offerUpTo}: {moment(s.offerEnd).format('Y/M/D')}</div> : ''}
             {s.isActive ? '' : <Badge slot="title" color='red'>{labels.inActive}</Badge>}
             {s.packId === pack.id && !s.isAuto ? <Link slot="after" iconMaterial="more_vert" onClick={()=> handleActions(s)}/> : ''}
           </ListItem>
@@ -207,7 +215,7 @@ const PackDetails = props => {
           <FabButton color="pink" onClick={() => f7.views.current.router.navigate(`/pack-trans/${props.id}`)}>
             <Icon material="import_export"></Icon>
           </FabButton>
-          {pack.detailsCount === 0 ? 
+          {detailsCount === 0 ? 
             <FabButton color="red" onClick={() => handleDelete()}>
               <Icon material="delete"></Icon>
             </FabButton>
@@ -215,16 +223,16 @@ const PackDetails = props => {
         </FabButtons>
       </Fab>
       <Actions ref={actionsList}>
-        {currentStorePack.storeId === 's' ? '' :
-          <ActionsButton onClick={() => handleChangeStatus()}>{currentStorePack.isActive ? labels.deactivate : labels.activate}</ActionsButton>
+        {currentStorePack?.storeId === 's' ? '' :
+          <ActionsButton onClick={() => handleChangeStatus()}>{currentStorePack?.isActive ? labels.deactivate : labels.activate}</ActionsButton>
         }
-        {currentStorePack.storeId === 's' && currentStorePack.quantity === 0 ? '' : 
-          <ActionsButton onClick={() => f7.views.current.router.navigate(`/edit-price/${currentStorePack.packId}/store/${currentStorePack.storeId}`)}>{labels.editPrice}</ActionsButton>
+        {currentStorePack?.storeId === 's' && currentStorePack?.quantity === 0 ? '' : 
+          <ActionsButton onClick={() => f7.views.current.router.navigate(`/edit-price/${currentStorePack?.packId}/store/${currentStorePack?.storeId}`)}>{labels.editPrice}</ActionsButton>
         }
-        {currentStorePack.storeId === 's' ? '' :
+        {currentStorePack?.storeId === 's' ? '' :
           <ActionsButton onClick={() => handleDeletePrice()}>{labels.delete}</ActionsButton>
         }
-        {currentStorePack.storeId === 's' ? '' :
+        {currentStorePack?.storeId === 's' ? '' :
           <ActionsButton onClick={() => handlePurchase()}>{labels.purchase}</ActionsButton>
         }
       </Actions>

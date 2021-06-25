@@ -1,15 +1,19 @@
 import { useState, useContext, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListInput, Fab, Icon } from 'framework7-react'
 import { StoreContext } from '../data/store'
-import { editPrice, showMessage, showError, getMessage } from '../data/actions'
+import { editPrice, showMessage, showError, getMessage } from '../data/actionst'
 import labels from '../data/labels'
 
-const EditPrice = props => {
+interface Props {
+  packId: string,
+  storeId: string
+}
+const EditPrice = (props: Props) => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [pack] = useState(() => state.packs.find(p => p.id === props.packId))
-  const [store] = useState(() => state.stores.find(s => s.id === props.storeId))
-  const [storePack] = useState(() => state.packPrices.find(p => p.packId === props.packId && p.storeId === props.storeId))
+  const [pack] = useState(() => state.packs.find(p => p.id === props.packId)!)
+  const [store] = useState(() => state.stores.find(s => s.id === props.storeId)!)
+  const [storePack] = useState(() => state.packPrices.find(p => p.packId === props.packId && p.storeId === props.storeId)!)
   const [cost, setCost] = useState(props.storeId === 's' ? (storePack.cost / 100).toFixed(2) : '')
   const [price, setPrice] = useState('')
   const [offerDays, setOfferDays] = useState('')
@@ -21,9 +25,9 @@ const EditPrice = props => {
   }, [error])
   useEffect(() => {
     if (cost && store.id !== 's') {
-      setPrice((cost * (1 + (store.isActive && store.type !== '5' ? 0 : store.discount))).toFixed(2))
+      setPrice((+cost * (1 + (store.isActive && store.type !== '5' ? 0 : store.discount))).toFixed(2))
     } else {
-      setPrice(0)
+      setPrice('')
     }
   }, [cost, store])
   const handleEdit = () => {
@@ -40,15 +44,15 @@ const EditPrice = props => {
       if (offerDays && Number(offerDays) <= 0) {
         throw new Error('invalidPeriod')
       }
-      let offerEnd = ''
+      let offerEnd = null
       if (offerDays) {
         offerEnd = new Date()
         offerEnd.setDate(offerEnd.getDate() + Number(offerDays))
       }
       const newStorePack = {
         ...storePack,
-        cost: cost * 100,
-        price : price * 100,
+        cost: +cost * 100,
+        price : +price * 100,
         offerEnd,
         time: new Date()
       }

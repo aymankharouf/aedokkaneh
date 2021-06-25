@@ -62,11 +62,48 @@ const Store = (props: any) => {
       docs.forEach(doc => {
         packs.push({
           id: doc.id,
-          productId: doc.data().productId
+          name: doc.data().name,
+          productId: doc.data().productId,
+          productName: doc.data().productName,
+          productAlias: doc.data().productAlias,
+          productDescription: doc.data().productDescription,
+          categoryId: doc.data().categoryId,
+          trademark: doc.data().trademark,
+          country: doc.data().country,
+          sales: doc.data().sales,
+          rating: doc.data().rating,
+          ratingCount: doc.data().ratingCount,
+          price: doc.data().price,
+          imageUrl: doc.data().imageUrl,
+          subPackId: doc.data().subPackId,
+          specialImage: doc.data().specialImage,
+          bonusPackId: doc.data().bonusPackId,
+          isOffer: doc.data().isOffer,
+          offerEnd: doc.data().offerEnd?.toDate() || null,
+          closeExpired: doc.data().closeExpired,
+          forSale: doc.data().forSale,
+          subQuantity: doc.data().subQuantity,
+          subPercent: doc.data().subPercent,
+          bonusQuantity: doc.data().bonusQuantity,
+          bonusPercent: doc.data().bonusPercent,
+          unitsCount: doc.data().unitsCount,
+          byWeight: doc.data().byWeight,
+          isDivided: doc.data().isDivided
         })
         if (doc.data().prices) {
           doc.data().prices.forEach((p: any) => {
-            packPrices.push({...p, packId: doc.id})
+            packPrices.push({
+              packId: doc.id,
+              storeId: p.storeId,
+              quantity: p.quantity,
+              weight: p.weight,
+              price: p.price,
+              cost: p.cost,
+              isActive: p.isActive,
+              offerEnd: p.offerEnd?.toDate() || null,
+              time: p.time.toDate(),
+              isAuto: p.isAuto
+            })
           })
         }
       })
@@ -124,8 +161,17 @@ const Store = (props: any) => {
           docs.forEach(doc => {
             products.push({
               id: doc.id,
+              name: doc.data().name,
+              alias: doc.data().alias,
+              description: doc.data().description,
+              trademark: doc.data().trademark,
               country: doc.data().country,
-              categoryId: doc.data().categoryId
+              categoryId: doc.data().categoryId,
+              imageUrl: doc.data().imageUrl,
+              sales: doc.data().sales,
+              rating: doc.data().rating,
+              ratingCount: doc.data().ratingCount,
+              isArchived: doc.data().isArchived
             })
           })
           dispatch({type: 'SET_PRODUCTS', payload: products})
@@ -137,7 +183,8 @@ const Store = (props: any) => {
           docs.forEach(doc => {
             orders.push({
               id: doc.id,
-              userId: doc.data().userId
+              userId: doc.data().userId,
+              basket: doc.data().basket
           })
           })
           dispatch({type: 'SET_ORDERS', payload: orders})

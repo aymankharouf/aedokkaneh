@@ -17,10 +17,45 @@ export interface iError {
 }
 export interface iPack {
   id?: string,
-  productId: string
+  name: string,
+  productId: string,
+  productName: string,
+  productAlias: string,
+  productDescription: string,
+  categoryId: string,
+  trademark: string,
+  country: string,
+  sales: number,
+  rating: number,
+  ratingCount: number,
+  price: number,
+  imageUrl: string,
+  subPackId: string,
+  specialImage: boolean,
+  bonusPackId: string,
+  isOffer: boolean,
+  offerEnd: Date | null,
+  closeExpired: boolean,
+  forSale: boolean,
+  subQuantity: number,
+  subPercent: number,
+  bonusQuantity: number,
+  bonusPercent: number,
+  unitsCount: number,
+  byWeight: boolean,
+  isDivided: boolean
 }
 export interface iPackPrice {
-
+  packId: string,
+  storeId: string,
+  quantity: number,
+  weight: number,
+  price: number,
+  cost: number,
+  isActive: boolean,
+  offerEnd: Date | null,
+  time: Date,
+  isAuto: boolean
 }
 export interface iNotification {
 }
@@ -38,7 +73,7 @@ export interface iUserInfo {
   id: string,
   name: string,
   mobile: string,
-  storeName: string | null,
+  storeName: string,
   colors: string[],
   locationId: string,
   time: Date
@@ -46,8 +81,8 @@ export interface iUserInfo {
 export interface iCustomerInfo {
   id: string,
   name: string,
-  storeId: string | null,
-  storeName: string | null,
+  storeId: string,
+  storeName: string,
   orderLimit: number,
   isBlocked: boolean,
   address: string,
@@ -61,10 +96,13 @@ export interface iCustomerInfo {
   deliveredOrdersTotal: number,
   time: Date
 }
-
+export interface iOraderBasketPack {
+  packId: string
+}
 export interface iOrder {
   id?: string,
-  userId: string
+  userId: string,
+  basket: iOraderBasketPack[]
 }
 export interface iAdvert {
   id?: string,
@@ -116,8 +154,17 @@ export interface iStockTrans {
 }
 export interface iProduct {
   id?: string,
+  name: string,
+  alias: string,
+  description: string,
+  trademark: string,
   country: string,
-  categoryId: string
+  categoryId: string,
+  imageUrl: string,
+  sales: number,
+  rating: number,
+  ratingCount: number,
+  isArchived: boolean
 }
 export interface iSpending {
 
@@ -134,6 +181,13 @@ export interface iLog {
 }
 export interface iStorePayment {
   
+}
+export interface iBasket {
+  storeId: string,
+  packs: iBasketPack[]
+}
+export interface iBasketPack {
+  packId: string
 }
 export interface iState {
   user?: firebase.User,
@@ -163,7 +217,8 @@ export interface iState {
   alarms: iAlarm[],
   ratings: iRating[],
   invitations: iFriend[],
-  storePayments: iStorePayment[]
+  storePayments: iStorePayment[],
+  basket?: iBasket
 }
 
 export interface iAction {

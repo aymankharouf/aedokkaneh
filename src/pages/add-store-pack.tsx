@@ -2,19 +2,29 @@ import { useState, useContext, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListItem, ListInput, Fab, Icon, Toggle } from 'framework7-react'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
-import { addPackPrice, showMessage, showError, getMessage } from '../data/actions'
+import { addPackPrice, showMessage, showError, getMessage } from '../data/actionst'
 
-const AddPackStore = props => {
+interface Props {
+  id: string
+}
+const AddStorePack = (props: Props) => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
+  const [packId, setPackId] = useState('')
   const [cost, setCost] = useState('')
   const [price, setPrice] = useState('')
   const [offerDays, setOfferDays] = useState('')
-  const [isActive, setIsActive] = useState(false)
-  const [storeId, setStoreId] = useState('')
-  const [store, setStore] = useState('')
-  const [stores] = useState(() => state.stores.filter(s => s.id !== 's'))
-  const [pack] = useState(() => state.packs.find(p => p.id === props.id))
+  const [store] = useState(() => state.stores.find(s => s.id === props.id)!)
+  const [isActive, setIsActive] = useState(store.isActive)
+  const [packs] = useState(() => {
+    const packs = state.packs.map(p => {
+      return {
+        id: p.id,
+        name: `${p.productName}-${p.productAlias} ${p.name}`
+      }
+    })
+    return packs.sort((p1, p2) => p1.name > p2.name ? 1 : -1)
+  }) 
   useEffect(() => {
     if (error) {
       showError(error)
@@ -22,23 +32,15 @@ const AddPackStore = props => {
     }
   }, [error])
   useEffect(() => {
-    if (storeId) {
-      setStore(state.stores.find(s => s.id === storeId))
-    }
-  }, [state.stores, storeId])
-  useEffect(() => {
-    setIsActive(store.isActive || false)
-  }, [store])
-  useEffect(() => {
     if (cost) {
-      setPrice((cost * (1 + (store.isActive && store.type !== '5' ? 0 : store.discount))).toFixed(2))
+      setPrice((+cost * (1 + (store.isActive && store.type !== '5' ? 0 : store.discount))).toFixed(2))
     } else {
-      setPrice(0)
+      setPrice('')
     }
   }, [cost, store])
   const handleSubmit = () => {
     try{
-      if (state.packPrices.find(p => p.packId === pack.id && p.storeId === storeId)) {
+      if (state.packPrices.find(p => p.packId === packId && p.storeId === store.id)) {
         throw new Error('duplicatePackInStore')
       }
       if (Number(cost) <= 0 || Number(cost) !== Number(Number(cost).toFixed(2))) {
@@ -53,34 +55,37 @@ const AddPackStore = props => {
       if (offerDays && Number(offerDays) <= 0) {
         throw new Error('invalidPeriod')
       }
-      let offerEnd = ''
+      let offerEnd = null
       if (offerDays) {
         offerEnd = new Date()
         offerEnd.setDate(offerEnd.getDate() + Number(offerDays))
       }
       const storePack = {
-        packId: pack.id,
-        storeId,
-        cost: cost * 100,
-        price: price * 100,
+        packId,
+        storeId: store.id!,
+        cost: +cost * 100,
+        price: +price * 100,
         offerEnd,
         isActive,
-        time: new Date()
+        time: new Date(),
+        quantity: 0,
+        weight: 0,
+        isAuto: false
       }
       addPackPrice(storePack, state.packPrices, state.packs)
       showMessage(labels.addSuccess)
       f7.views.current.router.back()
     } catch(err) {
-    	setError(getMessage(f7.views.current.router.currentRoute.path, err))
-    }
+			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+		}
   }
 
   return (
     <Page>
-      <Navbar title={`${labels.addPrice} ${pack.productName} ${pack.name}${pack.closeExpired ? '(' + labels.closeExpired + ')' : ''}`} backLink={labels.back} />
+      <Navbar title={`${labels.addProduct} ${store.name}`} backLink={labels.back} />
       <List form inlineLabels>
         <ListItem
-          title={labels.store}
+          title={labels.product}
           smartSelect
           smartSelectParams={{
             openIn: "popup", 
@@ -90,10 +95,10 @@ const AddPackStore = props => {
             popupCloseLinkText: labels.close
           }}
         >
-          <select name="storeId" value={storeId} onChange={e => setStoreId(e.target.value)}>
+          <select name="packId" value={packId} onChange={e => setPackId(e.target.value)}>
             <option value=""></option>
-            {stores.map(s => 
-              <option key={s.id} value={s.id}>{s.name}</option>
+            {packs.map(p => 
+              <option key={p.id} value={p.id}>{p.name}</option>
             )}
           </select>
         </ListItem>
@@ -134,7 +139,7 @@ const AddPackStore = props => {
           />
         </ListItem>
       </List>
-      {!storeId || !cost ? '' :
+      {!packId || !cost ? '' :
         <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleSubmit()}>
           <Icon material="done"></Icon>
         </Fab>
@@ -143,4 +148,4 @@ const AddPackStore = props => {
     </Page>
   )
 }
-export default AddPackStore
+export default AddStorePack

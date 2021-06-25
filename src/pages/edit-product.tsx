@@ -1,34 +1,31 @@
-import { useState, useContext, useEffect } from 'react'
+import { useState, useContext, useEffect, ChangeEvent } from 'react'
 import { f7, Page, Navbar, List, ListItem, ListInput, Fab, Icon } from 'framework7-react'
 import { StoreContext } from '../data/store'
-import { addProduct, showMessage, showError, getMessage } from '../data/actions'
+import { editProduct, showMessage, showError, getMessage } from '../data/actionst'
 import labels from '../data/labels'
 
-const AddProduct = props => {
+interface Props {
+  id: string
+}
+const EditProduct = (props: Props) => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [name, setName] = useState('')
-  const [alias, setAlias] = useState('')
-  const [description, setDescription] = useState('')
-  const [categoryId, setCategoryId] = useState(props.id === '0' ? '' : props.id)
-  const [trademark, setTrademark] = useState('')
-  const [country, setCountry] = useState('')
-  const [imageUrl, setImageUrl] = useState('')
-  const [image, setImage] = useState(null)
-  const [categories] = useState(() => {
-    const categories = state.categories.filter(c => c.isLeaf)
-    return categories.sort((c1, c2) => c1.name > c2.name ? 1 : -1)
-  })
+  const [product] = useState(() => state.products.find(p => p.id === props.id)!)
+  const [name, setName] = useState(product.name)
+  const [alias, setAlias] = useState(product.alias)
+  const [description, setDescription] = useState(product.description)
+  const [categoryId, setCategoryId] = useState(product.categoryId)
+  const [trademark, setTrademark] = useState(product.trademark)
+  const [country, setCountry] = useState(product.country)
+  const [imageUrl, setImageUrl] = useState(product.imageUrl)
+  const [image, setImage] = useState<File>()
+  const [fileErrorMessage, setFileErrorMessage] = useState('')
+  const [hasChanged, setHasChanged] = useState(false)
+  const [categories] = useState(() => [...state.categories].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
   const [countries] = useState(() => [...state.countries].sort((c1, c2) => c1 > c2 ? 1 : -1))
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
-
-  const handleFileChange = e => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
+    if (!files) return
     const filename = files[0].name
     if (filename.lastIndexOf('.') <= 0) {
       setError(labels.invalidFile)
@@ -36,30 +33,43 @@ const AddProduct = props => {
     }
     const fileReader = new FileReader()
     fileReader.addEventListener('load', () => {
-      setImageUrl(fileReader.result)
+      if (fileReader.result) setImageUrl(fileReader.result.toString())
     })
     fileReader.readAsDataURL(files[0])
     setImage(files[0])
   }
+  useEffect(() => {
+    if (name !== product.name
+    || alias !== product.alias
+    || description !== product.description
+    || country !== product.country
+    || categoryId !== product.categoryId
+    || trademark !== product.trademark
+    || imageUrl !== product.imageUrl) setHasChanged(true)
+    else setHasChanged(false)
+  }, [product, name, alias, description, country, categoryId, trademark, imageUrl])
+  useEffect(() => {
+    if (error) {
+      showError(error)
+      setError('')
+    }
+  }, [error])
   const handleSubmit = () => {
     try{
-      if (state.products.find(p => p.categoryId === categoryId && p.country === country && p.name === name && p.alias === alias)) {
+      if (state.products.find(p => p.id !== product.id && p.categoryId === categoryId && p.country === country && p.name === name && p.alias === alias)) {
         throw new Error('duplicateProduct')
       }
-      const product = {
+      const newProduct = {
+        ...product,
+        categoryId,
         name,
         alias,
         description,
-        categoryId,
         trademark,
         country,
-        sales: 0,
-        rating: 0,
-        ratingCount: 0,
-        isArchived: false
       }
-      addProduct(product, image)
-      showMessage(labels.addSuccess)
+      editProduct(newProduct, product.name, state.packs, image)
+      showMessage(labels.editSuccess)
       f7.views.current.router.back()
     } catch(err) {
 			setError(getMessage(f7.views.current.router.currentRoute.path, err))
@@ -67,7 +77,7 @@ const AddProduct = props => {
   }
   return (
     <Page>
-      <Navbar title={labels.addProduct} backLink={labels.back} />
+      <Navbar title={labels.editProduct} backLink={labels.back} />
       <List form inlineLabels>
         <ListInput 
           name="name" 
@@ -143,14 +153,16 @@ const AddProduct = props => {
         </ListItem>
         <ListInput 
           name="image" 
-          label={labels.image} 
+          label="Image" 
           type="file" 
           accept="image/*" 
+          errorMessage={fileErrorMessage}
+          errorMessageForce
           onChange={e => handleFileChange(e)}
         />
         <img src={imageUrl} className="img-card" alt={labels.noImage} />
       </List>
-      {!name || !categoryId || !country ? '' :
+      {!name || !categoryId || !country || !hasChanged ? '' :
         <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleSubmit()}>
           <Icon material="done"></Icon>
         </Fab>
@@ -158,4 +170,4 @@ const AddProduct = props => {
     </Page>
   )
 }
-export default AddProduct
+export default EditProduct

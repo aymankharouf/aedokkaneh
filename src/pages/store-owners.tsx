@@ -3,24 +3,17 @@ import { Block, Page, Navbar, List, ListItem, Toolbar } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
+import { iCustomerInfo } from '../data/interfaces'
 
-
-const StoreOwners = props => {
+interface Props {
+  id: string
+}
+const StoreOwners = (props: Props) => {
   const { state } = useContext(StoreContext)
-  const [store] = useState(() => state.stores.find(s => s.id === props.id))
-  const [storeOwners, setStoreOwners] = useState([])
+  const [store] = useState(() => state.stores.find(s => s.id === props.id)!)
+  const [storeOwners, setStoreOwners] = useState<iCustomerInfo[]>([])
   useEffect(() => {
-    setStoreOwners(() => {
-      let storeOwners = state.customers.filter(c => c.storeId === props.id)
-      storeOwners = storeOwners.map(o => {
-        const customerInfo = state.customers.find(c => c.id === o.id)
-        return {
-          ...o,
-          customerInfo,
-        }
-      })
-      return storeOwners
-    })
+    setStoreOwners(() => state.customers.filter(c => c.storeId === props.id))
   }, [state.customers, props.id])
   return (
     <Page>
@@ -32,7 +25,7 @@ const StoreOwners = props => {
           : storeOwners.map(o => 
               <ListItem 
                 link="#"
-                title={o.customerInfo.name} 
+                title={o.name} 
                 key={o.id} 
               />
             )

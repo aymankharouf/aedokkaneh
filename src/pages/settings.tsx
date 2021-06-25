@@ -5,7 +5,7 @@ import labels from '../data/labels'
 import { randomColors } from '../data/config'
 
 
-const Settings = props => {
+const Settings = () => {
   const [sections] = useState(() => [
     {id: '1', name: labels.countries, path: '/countries/'},
     {id: '2', name: labels.categories, path: '/categories/0'},
