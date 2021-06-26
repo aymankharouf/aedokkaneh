@@ -6,30 +6,31 @@ import { StoreContext } from '../data/store'
 import labels from '../data/labels'
 import { stockTransTypes } from '../data/config'
 import BottomToolbar from './bottom-toolbar'
+import { iStockTrans } from '../data/interfaces'
 
-const StoreTrans = props => {
+interface Props {
+  id: string
+}
+const StoreTrans = (props: Props) => {
   const { state } = useContext(StoreContext)
-  const [store] = useState(() => state.stores.find(s => s.id === props.id))
-  const [trans, setTrans] = useState([])
+  const [store] = useState(() => state.stores.find(s => s.id === props.id)!)
+  const [trans, setTrans] = useState<iStockTrans[]>([])
   useEffect(() => {
     setTrans(() => {
       const stockTrans = state.stockTrans.filter(t => t.storeId === props.id && t.type !== 'p')
-      let purchases = state.purchases.filter(p => p.storeId === props.id)
-      purchases = purchases.map(p => {
+      const purchases = state.purchases.filter(p => p.storeId === props.id)
+      const result = purchases.map(p => {
         return {
-          ...p,
-          type: 'p'
+          purchaseId: p.id!,
+          storeId: p.storeId,
+          type: 'p',
+          total: p.total,
+          time: p.time,
+          basket: p.basket
         }
       })
-      let trans = [...purchases, ...stockTrans]
-      trans = trans.map(t => {
-        const stockTransTypeInfo = stockTransTypes.find(ty => ty.id === t.type)
-        return {
-          ...t,
-          stockTransTypeInfo
-        }
-      })
-      return trans.sort((t1, t2) => t2.time.seconds - t1.time.seconds)
+      const trans = [...result, ...stockTrans]
+      return trans.sort((t1, t2) => t2.time > t1.time ? 1 : -1)
     })
   }, [state.stockTrans, state.purchases, props.id])
 
@@ -43,9 +44,9 @@ const StoreTrans = props => {
           : trans.map(t => 
               <ListItem
                 link={t.type === 'p' ? `/purchase-details/${t.id}/type/n` : `/stock-trans-details/${t.id}/type/n`}
-                title={t.stockTransTypeInfo.name}
+                title={stockTransTypes.find(tt => tt.id === t.type)?.name}
                 subtitle={`${labels.total}: ${(t.total / 100).toFixed(2)}`}
-                text={moment(t.time.toDate()).fromNow()}
+                text={moment(t.time).fromNow()}
                 key={t.id}
               />
             )

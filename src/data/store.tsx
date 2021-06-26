@@ -322,6 +322,10 @@ const Store = (props: any) => {
             stockTrans.push({
               id: doc.id,
               purchaseId: doc.data().purchaseId,
+              type: doc.data().type,
+              total: doc.data().total,
+              storeId: doc.data().storeId,
+              time: doc.data().time.toDate(),
               basket: doc.data().basket
             })
           })

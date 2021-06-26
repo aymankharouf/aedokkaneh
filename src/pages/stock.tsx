@@ -1,27 +1,31 @@
 import { useContext, useState, useEffect } from 'react'
 import { Block, Page, Navbar, List, ListItem, Toolbar, Searchbar, NavRight, Link, Badge } from 'framework7-react'
 import { StoreContext } from '../data/store'
-import { quantityText } from '../data/actions'
+import { quantityText } from '../data/actionst'
 import labels from '../data/labels'
+import { iPack, iPackPrice } from '../data/interfaces'
 
-const Stock = props => {
-  const { state, user } = useContext(StoreContext)
-  const [stockPacks, setStockPacks] = useState([])
+interface ExtendedPackPrice extends iPackPrice {
+  packInfo: iPack
+}
+const Stock = () => {
+  const { state } = useContext(StoreContext)
+  const [stockPacks, setStockPacks] = useState<ExtendedPackPrice[]>([])
   useEffect(() => {
     setStockPacks(() => {
-      let stockPacks = state.packPrices.filter(p => p.storeId === 's')
-      stockPacks = stockPacks.map(p => {
-        const packInfo = state.packs.find(pa => pa.id === p.packId)
+      const stockPacks = state.packPrices.filter(p => p.storeId === 's')
+      const result = stockPacks.map(p => {
+        const packInfo = state.packs.find(pa => pa.id === p.packId)!
         return {
           ...p,
           packInfo
         }
       })
-      return stockPacks.sort((p1, p2) => p1.time.seconds - p2.time.seconds)
+      return result.sort((p1, p2) => p1.time > p2.time ? 1 : -1)
     })
   }, [state.packPrices, state.packs])
 
-  if (!user) return <Page><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></Page>
+  if (!state.user) return <Page><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></Page>
   let i = 0
   return(
     <Page>

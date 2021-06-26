@@ -175,7 +175,11 @@ export interface iPurchase {
 export interface iStockTrans {
   id?: string,
   purchaseId: string,
-  basket: iStockPack[]
+  storeId: string,
+  type: string,
+  total: number,
+  basket: iStockPack[],
+  time: Date
 }
 export interface iProduct {
   id?: string,

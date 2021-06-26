@@ -6,22 +6,24 @@ import { StoreContext } from '../data/store'
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
 import { stockTransTypes } from '../data/config'
+import { iStockTrans, iStore } from '../data/interfaces'
 
-const StockTrans = props => {
+interface ExtendedStockTrans extends iStockTrans {
+  storeInfo: iStore
+}
+const StockTrans = () => {
   const { state } = useContext(StoreContext)
-  const [stockTrans, setStockTrans] = useState([])
+  const [stockTrans, setStockTrans] = useState<ExtendedStockTrans[]>([])
   useEffect(() => {
     setStockTrans(() => {
       const stockTrans = state.stockTrans.map(t => {
-        const stockTransTypeInfo = stockTransTypes.find(ty => ty.id === t.type)
-        const storeInfo = state.stores.find(s => s.id === t.storeId)
+        const storeInfo = state.stores.find(s => s.id === t.storeId)!
         return {
           ...t,
-          stockTransTypeInfo,
           storeInfo
         }
       })
-      return stockTrans.sort((t1, t2) => t2.time.seconds - t1.time.seconds)
+      return stockTrans.sort((t1, t2) => t2.time > t1.time ? 1 : -1)
     })
   }, [state.stockTrans, state.stores])
   return(
@@ -38,8 +40,8 @@ const StockTrans = props => {
           : stockTrans.map(t => 
               <ListItem
                 link={`/stock-trans-details/${t.id}/type/n`}
-                title={`${t.stockTransTypeInfo.name} ${t.storeId ? t.storeInfo.name : ''}`}
-                subtitle={moment(t.time.toDate()).fromNow()}
+                title={`${stockTransTypes.find(tt => tt.id === t.type)?.name} ${t.storeId ? t.storeInfo.name : ''}`}
+                subtitle={moment(t.time).fromNow()}
                 after={(t.total / 100).toFixed(2)}
                 key={t.id}
               />

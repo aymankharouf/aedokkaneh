@@ -1159,7 +1159,7 @@ export const updateStoreBalance = (batch: firebase.firestore.WriteBatch, storeId
   })
 }
 
-const stockIn = (batch: firebase.firestore.WriteBatch, type: string, basket: iBasketPack[], packPrices: iPackPrice[], packs: iPack[], storeId: string, purchaseId: string) => {
+const stockIn = (batch: firebase.firestore.WriteBatch, type: string, basket: iStockPack[], packPrices: iPackPrice[], packs: iPack[], storeId?: string, purchaseId?: string) => {
   const transRef = firebase.firestore().collection('stock-trans').doc()
   const newBasket = basket.map(p => {
     return {
@@ -1388,4 +1388,33 @@ const addStockTrans = (batch: firebase.firestore.WriteBatch, returnBasket: iRetu
   if (returnBasket.type === 's') {
     updateStoreBalance(batch, storeId, -1 * total, new Date(), stores)
   }
+}
+
+export const unfoldStockPack = (stockPack: iPackPrice, packPrices: iPackPrice[], packs: iPack[], stores: iStore[]) => {
+  const batch = firebase.firestore().batch()
+  let pack = packs.find(p => p.id === stockPack.packId)!
+  const basket = [{
+    packId: pack.subPackId,
+    quantity: pack.subQuantity,
+    cost: Math.round(stockPack.cost / pack.subQuantity),
+    actual: Math.round(stockPack.price / pack.subQuantity),
+    price: Math.round(stockPack.price / pack.subQuantity),
+    weight: 0
+  }]
+  stockIn(batch, 'c', basket, packPrices, packs)
+  const returnBasket = {
+    type: 'u',
+    storeId: 's',
+    purchaseId: '',
+    packs: [{
+      packId: pack.id!,
+      quantity: 1,
+      cost: stockPack.cost,
+      price: stockPack.price,
+      actual: stockPack.price,
+      weight: 0
+    }]
+  }
+  addStockTrans (batch, returnBasket, packPrices, packs, stores, 's')
+  batch.commit()
 }

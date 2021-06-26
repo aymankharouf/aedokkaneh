@@ -25,7 +25,6 @@ const ConfirmPurchase = () => {
   }, [error])
   const handlePurchase = () => {
     try{
-      debugger
       if (store.id === 's') {
         stockOut(state.basket?.packs!, state.orders, state.packPrices, state.packs)
         showMessage(labels.purchaseSuccess)
