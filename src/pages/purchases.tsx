@@ -5,24 +5,28 @@ import moment from 'moment'
 import 'moment/locale/ar'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
+import { iPurchase, iStore } from '../data/interfaces'
 
-const Purchases = props => {
-  const { state, user } = useContext(StoreContext)
-  const [purchases, setPurchases] = useState([])
+interface ExtendedPurchase extends iPurchase {
+  storeInfo: iStore
+}
+const Purchases = () => {
+  const { state } = useContext(StoreContext)
+  const [purchases, setPurchases] = useState<ExtendedPurchase[]>([])
   useEffect(() => {
     setPurchases(() => {
       const purchases = state.purchases.map(p => {
-        const storeInfo = state.stores.find(s => s.id === p.storeId)
+        const storeInfo = state.stores.find(s => s.id === p.storeId)!
         return {
           ...p,
           storeInfo
         }
       })
-      return purchases.sort((p1, p2) => p2.time.seconds - p1.time.seconds)
+      return purchases.sort((p1, p2) => p2.time > p1.time ? 1 : -1)
     })
   }, [state.purchases, state.stores])
 
-  if (!user) return <Page><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></Page>
+  if (!state.user) return <Page><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></Page>
   return(
     <Page>
       <Navbar title={labels.purchases} backLink={labels.back} />
@@ -37,7 +41,7 @@ const Purchases = props => {
               <ListItem
                 link={`/purchase-details/${p.id}/type/n`}
                 title={p.storeInfo.name}
-                subtitle={moment(p.time.toDate()).fromNow()}
+                subtitle={moment(p.time).fromNow()}
                 after={(p.total / 100).toFixed(2)}
                 key={p.id}
               />

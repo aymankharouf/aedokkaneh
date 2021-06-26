@@ -2,13 +2,18 @@ import { useContext, useEffect, useState } from 'react'
 import { f7, Page, Navbar, List, ListInput, Fab, Icon, Toolbar } from 'framework7-react'
 import { StoreContext } from '../data/store'
 import BottomToolbar from './bottom-toolbar'
-import { approveInvitation, showMessage, showError, getMessage } from '../data/actions'
+import { approveInvitation, showMessage, showError, getMessage } from '../data/actionst'
 import labels from '../data/labels'
 
-const InvitationDetails = props => {
+interface Props {
+  userId: string,
+  mobile: string
+}
+const InvitationDetails = (props: Props) => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [userInfo] = useState(() => state.users.find(u => u.id === props.userId))
+  const [userInfo] = useState(() => state.users.find(u => u.id === props.userId)!)
+  const [invitation] = useState(() => state.invitations.find(i => i.userId === props.userId && i.mobile === props.mobile)!)
   const [mobileCheck, setMobileCheck] = useState('')
   useEffect(() => {
     setMobileCheck(() => {
@@ -29,7 +34,11 @@ const InvitationDetails = props => {
   }, [error])
   const handleApprove = () => {
     try{
-      approveInvitation(userInfo, props.mobile, mobileCheck)
+      const newInvitation = {
+        ...invitation,
+        status: mobileCheck
+      }
+      approveInvitation(newInvitation, state.invitations)
       showMessage(labels.approveSuccess)
       f7.views.current.router.back()
     } catch(err) {
@@ -54,7 +63,7 @@ const InvitationDetails = props => {
         <ListInput 
           name="friendName" 
           label={labels.friendName}
-          value={userInfo.friends.find(f => f.mobile === props.mobile).name}
+          value={invitation.name}
           type="text"
           readonly
         />

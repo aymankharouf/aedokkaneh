@@ -184,7 +184,9 @@ const Store = (props: any) => {
             orders.push({
               id: doc.id,
               userId: doc.data().userId,
-              basket: doc.data().basket
+              status: doc.data().status,
+              basket: doc.data().basket,
+              time: doc.data().time.toDate()
           })
           })
           dispatch({type: 'SET_ORDERS', payload: orders})
@@ -305,7 +307,9 @@ const Store = (props: any) => {
               id: doc.id,
               storeId: doc.data().storeId,
               total: doc.data().total,
-              time: doc.data().time.toDate()
+              time: doc.data().time.toDate(),
+              isArchived: doc.data().isArchived,
+              basket: doc.data().basket
             })
           })
           dispatch({type: 'SET_PURCHASES', payload: purchases})
@@ -315,7 +319,11 @@ const Store = (props: any) => {
         const unsubscribeStockTrans = firebase.firestore().collection('stock-trans').where('isArchived', '==', false).onSnapshot(docs => {
           let stockTrans: iStockTrans[] = []
           docs.forEach(doc => {
-            stockTrans.push({...doc.data(), id:doc.id})
+            stockTrans.push({
+              id: doc.id,
+              purchaseId: doc.data().purchaseId,
+              basket: doc.data().basket
+            })
           })
           dispatch({type: 'SET_STOCK_TRANS', payload: stockTrans})
         }, err => {

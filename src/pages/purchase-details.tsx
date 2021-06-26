@@ -3,22 +3,29 @@ import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Button, Badge } from 
 import BottomToolbar from './bottom-toolbar'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
-import { showMessage, showError, getMessage, quantityText } from '../data/actions'
+import { showMessage, showError, getMessage, quantityText } from '../data/actionst'
+import { iPack, iPurchase, iStockPack } from '../data/interfaces'
 
-
-const PurchaseDetails = props => {
+interface Props {
+  id: string,
+  type: string
+}
+interface ExtendedStockPack extends iStockPack {
+  packInfo: iPack
+}
+const PurchaseDetails = (props: Props) => {
   const { state, dispatch } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [purchase, setPurchase] = useState('')
-  const [purchaseBasket, setPurchaseBasket] = useState([])
+  const [purchase, setPurchase] = useState<iPurchase>()
+  const [purchaseBasket, setPurchaseBasket] = useState<ExtendedStockPack[]>([])
   useEffect(() => {
-    setPurchase(() => props.type === 'a' ? state.archivedPurchases.find(p => p.id === props.id) : state.purchases.find(p => p.id === props.id))
+    setPurchase(() => props.type === 'a' ? state.archivedPurchases.find(p => p.id === props.id)! : state.purchases.find(p => p.id === props.id)!)
   }, [state.purchases, state.archivedPurchases, props.id, props.type])
   useEffect(() => {
     setPurchaseBasket(() => {
       const purchaseBasket =  purchase ? purchase.basket.filter(p => !(state.returnBasket?.purchaseId === purchase.id && state.returnBasket?.packs?.find(bp => bp.packId === p.packId && (!bp.weight || bp.weight === p.weight)))) : []
       return purchaseBasket.map(p => {
-        const packInfo = state.packs.find(pa => pa.id === p.packId)
+        const packInfo = state.packs.find(pa => pa.id === p.packId)!
         return {
           ...p,
           packInfo,
@@ -32,13 +39,13 @@ const PurchaseDetails = props => {
       setError('')
     }
   }, [error])
-  const handleReturn = pack => {
+  const handleReturn = (pack: ExtendedStockPack) => {
     try{
-      const affectedOrders = state.orders.filter(o => o.basket.find(p => p.packId === pack.packId && p.lastPurchaseId === purchase.id) && ['p', 'd'].includes(o.status))
+      const affectedOrders = state.orders.filter(o => o.basket.find(p => p.packId === pack.packId && p.lastPurchaseId === purchase?.id) && ['p', 'd'].includes(o.status))
       if (affectedOrders.length > 0) {
         throw new Error('finishedOrdersAffected')
       }
-      if (state.returnBasket && state.returnBasket.purchase !== purchase) {
+      if (state.returnBasket && state.returnBasket.purchaseId !== purchase?.id) {
         throw new Error('diffPurchaseInReturnBasket')
       }
       const params = {
@@ -48,10 +55,10 @@ const PurchaseDetails = props => {
         price: pack.price,
         quantity: pack.quantity,
         weight: pack.weight,
-        storeId: purchase.storeId,
-        purchaseId: purchase.id
+        storeId: purchase!.storeId,
+        purchaseId: purchase!.id
       }
-      dispatch({type: 'ADD_TO_RETURN_BASKET', params})
+      dispatch({type: 'ADD_TO_RETURN_BASKET', payload: params})
       showMessage(labels.addToBasketSuccess)
     } catch(err) {
 			setError(getMessage(f7.views.current.router.currentRoute.path, err))

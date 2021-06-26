@@ -115,7 +115,7 @@ const PackDetails = (props: Props) => {
 			if (state.basket?.storeId && state.basket.storeId !== currentStorePack?.storeId){
 				throw new Error('twoDiffStores')
       }
-      if (state.basket?.packs.find(p => p.packId === pack.id)) {
+      if (state.basket?.packs?.find(p => p.packId === pack.id)) {
         throw new Error('alreadyInBasket')
       }
       let params
@@ -124,9 +124,9 @@ const PackDetails = (props: Props) => {
           params = {
             pack,
             packStore: currentStorePack,
-            quantity : pack.isDivided ? Number(weight) : 1,
+            quantity : pack.isDivided ? +weight : 1,
             price: currentStorePack?.price,
-            weight: Number(weight),
+            weight: +weight,
           }
           dispatch({type: 'ADD_TO_BASKET', payload: params})
           showMessage(labels.addToBasketSuccess)
@@ -137,7 +137,12 @@ const PackDetails = (props: Props) => {
           pack, 
           packStore: currentStorePack,
           quantity: 1,
-          price: currentStorePack?.price
+          price: currentStorePack?.price,
+          weight: 0,
+          orderId: '',
+          refPackId: '',
+          refPackQuantity: 0,
+          exceedPriceType: ''
         }
         dispatch({type: 'ADD_TO_BASKET', payload: params})
         showMessage(labels.addToBasketSuccess)

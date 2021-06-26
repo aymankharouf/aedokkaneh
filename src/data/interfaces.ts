@@ -102,13 +102,28 @@ export interface iCustomerInfo {
   deliveredOrdersTotal: number,
   time: Date
 }
-export interface iOraderBasketPack {
-  packId: string
+export interface iOrderBasketPack {
+  packId: string,
+  storeId: string,
+  price: number,
+  cost: number,
+  actual: number,
+  quantity: number,
+  weight: number,
+  purchased: number,
+  gross: number,
+  status: string,
+  lastPurchaseId: string,
+  lastPurchased: number,
+  lastWeight: number,
+  prevStoreId: string
 }
 export interface iOrder {
   id?: string,
   userId: string,
-  basket: iOraderBasketPack[]
+  status: string,
+  time: Date,
+  basket: iOrderBasketPack[]
 }
 export interface iAdvert {
   id?: string,
@@ -153,10 +168,14 @@ export interface iPurchase {
   id?: string,
   storeId: string,
   total: number,
-  time: Date
+  time: Date,
+  isArchived: boolean,
+  basket: iStockPack[]
 }
 export interface iStockTrans {
-
+  id?: string,
+  purchaseId: string,
+  basket: iStockPack[]
 }
 export interface iProduct {
   id?: string,
@@ -197,8 +216,39 @@ export interface iBasket {
   storeId: string,
   packs: iBasketPack[]
 }
+export interface iReturnBasket {
+  storeId: string,
+  purchaseId: string,
+  type: string,
+  packs: iStockPack[]
+}
 export interface iBasketPack {
-  packId: string
+  packId: string,
+  productName: string,
+  productAlias: string,
+  packName: string,
+  imageUrl: string,
+  price: number,
+  actual: number,
+  cost: number,
+  quantity: number,
+  weight: number,
+  requested: number,
+  orderId: string,
+  isOffer: boolean,
+  isDivided: boolean,
+  closeExpired: boolean,
+  exceedPriceType: string,
+  refPackId: string,
+  refPackQuantity: number
+}
+export interface iStockPack {
+  packId: string,
+  quantity: number,
+  cost: number,
+  price: number,
+  actual: number,
+  weight: number
 }
 export interface iState {
   user?: firebase.User,
@@ -229,7 +279,8 @@ export interface iState {
   ratings: iRating[],
   invitations: iFriend[],
   storePayments: iStorePayment[],
-  basket?: iBasket
+  basket?: iBasket,
+  returnBasket?: iReturnBasket
 }
 
 export interface iAction {

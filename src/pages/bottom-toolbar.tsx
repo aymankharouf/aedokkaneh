@@ -2,12 +2,12 @@ import { useContext, useState, useEffect } from 'react'
 import { Icon, Link, Badge} from 'framework7-react'
 import { StoreContext } from '../data/store'
 
-const BottomToolbar = props => {
+const BottomToolbar = () => {
   const { state } = useContext(StoreContext)
   const [basketLink, setBasketLink] = useState('')
-  const [basketCount, setBasketCount] = useState('')
+  const [basketCount, setBasketCount] = useState(0)
   useEffect(() => {
-    const basketCount = state.basket.packs?.length || 0
+    const basketCount = state.basket?.packs?.length || 0
     const returnBasketCount = state.returnBasket?.packs?.length || 0
     setBasketLink(() => {
       if (basketCount > 0) return '/basket/'
@@ -17,7 +17,7 @@ const BottomToolbar = props => {
     setBasketCount(() => {
       if (basketCount > 0) return basketCount
       if (returnBasketCount > 0 ) return returnBasketCount
-      return ''
+      return 0
     })
   }, [state.basket, state.returnBasket])
   return (

@@ -1,30 +1,31 @@
 import { useContext, useEffect, useState } from 'react'
 import { f7, Block, Fab, Page, Navbar, List, ListItem, Toolbar, Link, Icon, Stepper, Badge } from 'framework7-react'
 import { StoreContext } from '../data/store'
-import { quantityText } from '../data/actions'
+import { quantityText } from '../data/actionst'
 import labels from '../data/labels'
+import { iBasketPack } from '../data/interfaces'
 
-const Basket = props => {
+const Basket = () => {
   const { state, dispatch } = useContext(StoreContext)
-  const [store] = useState(() => state.stores.find(s => s.id === state.basket.storeId))
-  const [basket, setBasket] = useState([])
-  const [totalPrice, setTotalPrice] = useState('')
+  const [store] = useState(() => state.stores.find(s => s.id === state.basket?.storeId))
+  const [basket, setBasket] = useState<iBasketPack[]>([])
+  const [totalPrice, setTotalPrice] = useState(0)
   useEffect(() => {
-    if (!state.basket.packs) f7.views.current.router.navigate('/home/', {reloadAll: true})
+    if (!state.basket?.packs) f7.views.current.router.navigate('/home/', {reloadAll: true})
   }, [state.basket, f7.views.current.router])
   useEffect(() => {
     setBasket(() => state.basket?.packs || [])
-    setTotalPrice(() => state.basket.packs?.reduce((sum, p) => sum + Math.round(p.cost * (p.weight || p.quantity)), 0) || 0)
+    setTotalPrice(() => state.basket?.packs?.reduce((sum, p) => sum + Math.round(p.cost * (p.weight || p.quantity)), 0) || 0)
   }, [state.basket])
-  const handleAdd = pack => {
-    if (store.id === 's') {
+  const handleAdd = (pack: iBasketPack) => {
+    if (store?.id === 's') {
       const stock = state.packPrices.find(p => p.packId === pack.packId && p.storeId === 's')
       if (pack.quantity === pack.requested) return
-      if (pack.quantity === stock.quantity) return
+      if (pack.quantity === stock?.quantity) return
     }
     if (pack.isDivided) return
     if (pack.orderId && pack.quantity === pack.requested) return
-    dispatch({type: 'INCREASE_QUANTITY', pack})
+    dispatch({type: 'INCREASE_QUANTITY', payload: pack})
   }
   let i = 0  
   return (
@@ -49,7 +50,7 @@ const Basket = props => {
                 fill
                 buttonsOnly
                 onStepperPlusClick={() => handleAdd(p)}
-                onStepperMinusClick={() => dispatch({type: 'DECREASE_QUANTITY', pack: p})}
+                onStepperMinusClick={() => dispatch({type: 'DECREASE_QUANTITY', payload: p})}
               />
             </ListItem>
           )}

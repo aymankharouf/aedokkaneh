@@ -5,24 +5,32 @@ import { StoreContext } from '../data/store'
 import moment from 'moment'
 import 'moment/locale/ar'
 import labels from '../data/labels'
+import { iCategory, iPack, iPackPrice } from '../data/interfaces'
 
-const StorePacks = props => {
+interface Props {
+  id: string
+}
+interface ExtendedPackPrice extends iPackPrice {
+  packInfo: iPack,
+  categoryInfo: iCategory
+}
+const StorePacks = (props: Props) => {
   const { state } = useContext(StoreContext)
-  const [store] = useState(() => state.stores.find(s => s.id === props.id))
-  const [storePacks, setStorePacks] = useState([])
+  const [store] = useState(() => state.stores.find(s => s.id === props.id)!)
+  const [storePacks, setStorePacks] = useState<ExtendedPackPrice[]>([])
   useEffect(() => {
     setStorePacks(() => {
-      let storePacks = state.packPrices.filter(p => p.storeId === props.id && !p.isAuto)
-      storePacks = storePacks.map(p => {
-        const packInfo = state.packs.find(pa => pa.id === p.packId)
-        const categoryInfo = state.categories.find(c => c.id === packInfo.categoryId)
+      const storePacks = state.packPrices.filter(p => p.storeId === props.id && !p.isAuto)
+      const result = storePacks.map(p => {
+        const packInfo = state.packs.find(pa => pa.id === p.packId)!
+        const categoryInfo = state.categories.find(c => c.id === packInfo.categoryId)!
         return {
           ...p,
           packInfo,
           categoryInfo
         } 
       })
-      return storePacks.sort((p1, p2) => p1.packInfo.categoryId === p2.packInfo.categoryId ? p2.time.seconds - p1.time.seconds : (p1.categoryInfo.name > p2.categoryInfo.name ? 1 : -1))
+      return result.sort((p1, p2) => p1.packInfo.categoryId === p2.packInfo.categoryId ? (p2.time > p1.time ? 1 : -1) : (p1.categoryInfo.name > p2.categoryInfo.name ? 1 : -1))
     })
   }, [state.packPrices, state.packs, state.categories, props.id])
   useEffect(() => {
@@ -62,13 +70,13 @@ const StorePacks = props => {
                 title={p.packInfo.productName}
                 subtitle={p.packInfo.productAlias}
                 text={p.packInfo.name}
-                footer={moment(p.time.toDate()).fromNow()}
+                footer={moment(p.time).fromNow()}
                 key={i++}
               >
                 <div className="list-subtext1">{`${labels.cost}: ${(p.cost / 100).toFixed(2)}`}</div>
                 <div className="list-subtext2">{`${labels.price}: ${(p.price / 100).toFixed(2)}`}</div>
                 <div className="list-subtext3">{p.categoryInfo.name}</div>
-                <div className="list-subtext4">{p.offerEnd ? `${labels.offerUpTo}: ${moment(p.offerEnd.toDate()).format('Y/M/D')}` : ''}</div>
+                <div className="list-subtext4">{p.offerEnd ? `${labels.offerUpTo}: ${moment(p.offerEnd).format('Y/M/D')}` : ''}</div>
                 <img src={p.packInfo.imageUrl} slot="media" className="img-list" alt={labels.noImage} />
                 {p.packInfo.isOffer ? <Badge slot="title" color='green'>{labels.offer}</Badge> : ''}
                 {p.packInfo.closeExpired ? <Badge slot="text" color="red">{labels.closeExpired}</Badge> : ''}

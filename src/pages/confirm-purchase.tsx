@@ -1,22 +1,22 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, Link, Badge } from 'framework7-react'
 import { StoreContext } from '../data/store'
-import { confirmPurchase, stockOut, showMessage, showError, getMessage, quantityText } from '../data/actions'
+import { confirmPurchase, stockOut, showMessage, showError, getMessage, quantityText } from '../data/actionst'
 import labels from '../data/labels'
 
 
-const ConfirmPurchase = props => {
+const ConfirmPurchase = () => {
   const { state, dispatch } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [store] = useState(() => state.stores.find(s => s.id === state.basket.storeId))
-  const [basket] = useState(() => state.basket.packs.map(p => {
-    const packInfo = state.packs.find(pa => pa.id === p.packId)
+  const [store] = useState(() => state.stores.find(s => s.id === state.basket?.storeId)!)
+  const [basket] = useState(() => state.basket?.packs.map(p => {
+    const packInfo = state.packs.find(pa => pa.id === p.packId)!
     return {
       ...p,
       packInfo,
     }
   }))
-  const [total] = useState(() => state.basket.packs.reduce((sum, p) => sum + Math.round(p.cost * (p.weight || p.quantity)), 0))
+  const [total] = useState(() => state.basket?.packs.reduce((sum, p) => sum + Math.round(p.cost * (p.weight || p.quantity)), 0) || 0)
   useEffect(() => {
     if (error) {
       showError(error)
@@ -25,13 +25,14 @@ const ConfirmPurchase = props => {
   }, [error])
   const handlePurchase = () => {
     try{
+      debugger
       if (store.id === 's') {
-        stockOut(state.basket.packs, state.orders, state.packPrices, state.packs)
+        stockOut(state.basket?.packs!, state.orders, state.packPrices, state.packs)
         showMessage(labels.purchaseSuccess)
         f7.views.current.router.navigate('/home/', {reloadAll: true})
         dispatch({type: 'CLEAR_BASKET'})    
       } else {
-        confirmPurchase(state.basket.packs, state.orders, store.id, state.packPrices, state.packs, state.stores, total)
+        confirmPurchase(state.basket?.packs!, state.orders, store.id!, state.packPrices, state.packs, state.stores, total)
         showMessage(labels.purchaseSuccess)
         f7.views.current.router.navigate('/home/', {reloadAll: true})
         dispatch({type: 'CLEAR_BASKET'})    
@@ -50,7 +51,7 @@ const ConfirmPurchase = props => {
     <Navbar title={`${labels.confirmPurchase} ${store.name}`} backLink={labels.back} />
     <Block>
       <List mediaList>
-        {basket.map(p => 
+        {basket?.map(p => 
           <ListItem 
             key={i++} 
             title={p.packInfo.productName}

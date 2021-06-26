@@ -2,30 +2,36 @@ import { useContext, useEffect, useState } from 'react'
 import { f7, Block, Fab, Page, Navbar, List, ListItem, Toolbar, Link, Icon, Badge } from 'framework7-react'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
-import { confirmReturnBasket, showMessage, showError, getMessage, quantityText } from '../data/actions'
+import { confirmReturnBasket, showMessage, showError, getMessage, quantityText } from '../data/actionst'
 import { stockTransTypes } from '../data/config'
+import { iPack, iStockPack } from '../data/interfaces'
 
-const ReturnBasket = props => {
+interface Props {
+  id: string
+}
+interface ExtendedStockPack extends iStockPack {
+  packInfo: iPack
+}
+const ReturnBasket = (props: Props) => {
   const { state, dispatch } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [store] = useState(() => state.stores.find(s => s.id === state.returnBasket.storeId))
-  const [basket, setBasket] = useState([])
-  const [totalPrice, setTotalPrice] = useState('')
+  const [store] = useState(() => state.stores.find(s => s.id === state.returnBasket?.storeId))
+  const [basket, setBasket] = useState<ExtendedStockPack[]>([])
+  const [totalPrice, setTotalPrice] = useState(0)
   const [storeId, setStoreId] = useState('')
   const [stores] = useState(() => state.stores.filter(s => s.id !== 's'))
   useEffect(() => {
     setBasket(() => {
-      let basket = state.returnBasket?.packs || []
-      basket = basket.map(p => {
-        const packInfo = state.packs.find(pa => pa.id === p.packId) || ''
+      const basket = state.returnBasket?.packs || []
+      return basket.map(p => {
+        const packInfo = state.packs.find(pa => pa.id === p.packId)!
         return {
           ...p,
           packInfo
         }
       })
-      return basket.sort((p1, p2) => p1.time - p2.time)
     })
-    setTotalPrice(() => state.returnBasket.packs?.reduce((sum, p) => sum + Math.round(p.cost * (p.weight || p.quantity)), 0) || 0)
+    setTotalPrice(() => state.returnBasket?.packs?.reduce((sum, p) => sum + Math.round(p.cost * (p.weight || p.quantity)), 0) || 0)
   }, [state.returnBasket, state.packs])
   useEffect(() => {
     if (!state.returnBasket) f7.views.current.router.navigate('/home/', {reloadAll: true})
@@ -38,17 +44,12 @@ const ReturnBasket = props => {
   }, [error])
   const handleSubmit = () => {
     try{
-      let packs = state.returnBasket.packs.slice()
-      packs = packs.map(p => {
-        const { weight, ...others } = p
-        if (weight) others['weight'] = weight
-        return others
-      })
+      const packs = state.returnBasket!.packs.slice()
       const returnBasket = {
-        ...state.returnBasket,
+        ...state.returnBasket!,
         packs
       }
-      confirmReturnBasket(returnBasket, storeId || state.returnBasket.storeId, state.orders, state.stockTrans, state.packPrices, state.packs, state.purchases, state.stores)
+      confirmReturnBasket(returnBasket, storeId || state.returnBasket!.storeId, state.orders, state.stockTrans, state.packPrices, state.packs, state.purchases, state.stores)
       dispatch({type: 'CLEAR_RETURN_BASKET'})
       showMessage(labels.executeSuccess)
       f7.views.current.router.back()
@@ -59,7 +60,7 @@ const ReturnBasket = props => {
   let i = 0  
   return (
     <Page>
-      <Navbar title={`${labels.basket} ${stockTransTypes.find(t => t.id === state.returnBasket.type)?.name} ${store?.name || ''}`} backLink={labels.back} />
+      <Navbar title={`${labels.basket} ${stockTransTypes.find(t => t.id === state.returnBasket?.type)?.name} ${store?.name || ''}`} backLink={labels.back} />
       <Block>
         <List mediaList>
           {basket.map(p => 
@@ -73,12 +74,12 @@ const ReturnBasket = props => {
               <div className="list-subtext1">{`${labels.unitPrice}: ${(p.cost / 100).toFixed(2)}`}</div>
               <div className="list-subtext2">{`${labels.quantity}: ${quantityText(p.quantity, p.weight)}`}</div>
               {p.packInfo.closeExpired ? <Badge slot="text" color="red">{labels.closeExpired}</Badge> : ''}
-              <Link slot="after" iconMaterial="delete" iconColor="red" onClick={()=> dispatch({type: 'REMOVE_FROM_RETURN_BASKET', pack: p})}/>
+              <Link slot="after" iconMaterial="delete" iconColor="red" onClick={()=> dispatch({type: 'REMOVE_FROM_RETURN_BASKET', payload: p})}/>
             </ListItem>
           )}
         </List>
         <List form>
-          {state.returnBasket.type === 's' ? 
+          {state.returnBasket?.type === 's' ? 
             <ListItem
               title={labels.store}
               smartSelect
@@ -100,7 +101,7 @@ const ReturnBasket = props => {
           : ''}
         </List>
       </Block>
-      {state.returnBasket.type === 's' && !storeId ? '' :
+      {state.returnBasket?.type === 's' && !storeId ? '' :
         <Fab position="center-bottom" slot="fixed" text={`${labels.submit} ${(totalPrice / 100).toFixed(2)}`} color="green" onClick={() => handleSubmit()}>
           <Icon material="done"></Icon>
         </Fab>

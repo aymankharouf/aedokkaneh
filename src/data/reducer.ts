@@ -5,62 +5,64 @@ const Reducer = (state: iState, action: iAction) => {
     const increment = [0.125, 0.25, 0.5, 0.75, 1]
     switch (action.type){
       case 'ADD_TO_BASKET':
-        // pack = {
-        //   packId: action.params.pack.id,
-        //   productName: action.params.pack.productName,
-        //   productAlias: action.params.pack.productAlias,
-        //   packName: action.params.pack.name,
-        //   imageUrl: action.params.pack.imageUrl,
-        //   price: action.params.price,
-        //   quantity: action.params.quantity,
-        //   actual: action.params.packStore.price,
-        //   cost: action.params.packStore.cost,
-        //   requested: action.params.quantity,
-        //   orderId: action.params.orderId,
-        //   weight: action.params.weight,
-        //   isOffer: action.params.packStore.isOffer,
-        //   exceedPriceType: action.params.exceedPriceType,
-        //   isDivided: action.params.pack.isDivided,
-        //   closeExpired: action.params.pack.closeExpired,
-        //   refPackId: action.params.refPackId,
-        //   refPackQuantity: action.params.refPackQuantity
-        // }
-        // if (!state.basket.storeId) {
-        //   return {...state, basket: {storeId: action.params.packStore.storeId, packs: [pack]}}
-        // } else {
-        //   return {...state, basket: {...state.basket, packs: [...state.basket.packs, pack]}}
-        // }
+        pack = {
+          packId: action.payload.pack.id,
+          productName: action.payload.pack.productName,
+          productAlias: action.payload.pack.productAlias,
+          packName: action.payload.pack.name,
+          imageUrl: action.payload.pack.imageUrl,
+          price: action.payload.price,
+          quantity: action.payload.quantity,
+          actual: action.payload.packStore.price,
+          cost: action.payload.packStore.cost,
+          requested: action.payload.quantity,
+          orderId: action.payload.orderId,
+          weight: action.payload.weight,
+          isOffer: action.payload.packStore.isOffer,
+          exceedPriceType: action.payload.exceedPriceType,
+          isDivided: action.payload.pack.isDivided,
+          closeExpired: action.payload.pack.closeExpired,
+          refPackId: action.payload.refPackId,
+          refPackQuantity: action.payload.refPackQuantity
+        }
+        if (!state.basket?.storeId) {
+          return {...state, basket: {storeId: action.payload.packStore.storeId, packs: [pack]}}
+        } else {
+          return {...state, basket: {...state.basket, packs: [...state.basket.packs, pack]}}
+        }
       case 'INCREASE_QUANTITY':
-        // pack = {
-        //   ...action.pack,
-        //   quantity: action.pack.quantity + 1
-        // }
-        // packs = state.basket.packs.slice()
-        // packIndex = packs.findIndex(p => p.packId === action.pack.packId)
-        // packs.splice(packIndex, 1, pack)
-        // return {...state, basket: {...state.basket, packs}}
+        pack = {
+          ...action.payload,
+          quantity: action.payload.quantity + 1
+        }
+        packs = state.basket?.packs.slice()
+        if (!packs) return state
+        packIndex = packs.findIndex(p => p.packId === action.payload.packId)
+        packs.splice(packIndex, 1, pack)
+        return {...state, basket: {...state.basket!, packs}}
       case 'DECREASE_QUANTITY':
-        // packs = state.basket.packs.slice()
-        // if (action.pack.isDivided) {
-        //   nextQuantity = 0
-        //   packIndex = packs.findIndex(p => p.packId === action.pack.packId && p.orderId === action.pack.orderId)
-        // } else {
-        //   nextQuantity = action.pack.quantity - 1
-        //   packIndex = packs.findIndex(p => p.packId === action.pack.packId)
-        // }
-        // if (nextQuantity === 0) {
-        //   packs.splice(packIndex, 1)
-        //   if (packs.length === 0){
-        //     return {...state, basket: ''}
-        //   }
-        // } else {
-        //   pack = {
-        //     ...action.pack,
-        //     quantity: nextQuantity
-        //   }
-        //   packs.splice(packIndex, 1, pack)
-        // }
-        // return {...state, basket: {...state.basket, packs}}
+        packs = state.basket?.packs.slice()
+        if (!packs) return state
+        if (action.payload.isDivided) {
+          nextQuantity = 0
+          packIndex = packs.findIndex(p => p.packId === action.payload.packId && p.orderId === action.payload.orderId)
+        } else {
+          nextQuantity = action.payload.quantity - 1
+          packIndex = packs.findIndex(p => p.packId === action.payload.packId)
+        }
+        if (nextQuantity === 0) {
+          packs.splice(packIndex, 1)
+          if (packs.length === 0){
+            return {...state, basket: undefined}
+          }
+        } else {
+          pack = {
+            ...action.payload,
+            quantity: nextQuantity
+          }
+          packs.splice(packIndex, 1, pack)
+        }
+        return {...state, basket: {...state.basket!, packs}}
       case 'CLEAR_BASKET':
         return {...state, basket: undefined}
       case 'LOAD_ORDER_BASKET':
@@ -127,35 +129,37 @@ const Reducer = (state: iState, action: iAction) => {
         // packs.splice(packIndex, 1, pack)  
         // return {...state, orderBasket: packs}
       case 'ADD_TO_RETURN_BASKET':
-        // pack = {
-        //   packId: action.params.packId,
-        //   cost: action.params.cost,
-        //   price: action.params.price,
-        //   quantity: action.params.quantity,
-        //   weight: action.params.weight
-        // }
-        // if (!state.returnBasket?.type) {
-        //   return {
-        //     ...state, 
-        //     returnBasket: {
-        //       storeId: action.params.storeId, 
-        //       type: action.params.type, 
-        //       purchaseId: action.params.purchaseId, 
-        //       packs: [pack]
-        //     }
-        //   }
-        // } else {
-        //   return {...state, returnBasket: {...state.returnBasket, packs: [...state.returnBasket.packs, pack]}}
-        // }
+        pack = {
+          packId: action.payload.packId,
+          cost: action.payload.cost,
+          price: action.payload.price,
+          actual: action.payload.price,
+          quantity: action.payload.quantity,
+          weight: action.payload.weight
+        }
+        if (!state.returnBasket?.type) {
+          return {
+            ...state, 
+            returnBasket: {
+              storeId: action.payload.storeId, 
+              type: action.payload.type, 
+              purchaseId: action.payload.purchaseId, 
+              packs: [pack]
+            }
+          }
+        } else {
+          return {...state, returnBasket: {...state.returnBasket!, packs: [...state.returnBasket.packs, pack]}}
+        }
       case 'REMOVE_FROM_RETURN_BASKET':
-        // const basket = state.returnBasket.packs.slice()
-        // packIndex = basket.findIndex(p => p.packId === action.pack.packId)
-        // basket.splice(packIndex, 1)
-        // if (basket.length === 0) {
-        //   return {...state, returnBasket: undefined}
-        // } else {
-        //   return {...state, returnBasket: {...state.returnBasket, packs: basket}}  
-        // }
+        const basket = state.returnBasket?.packs.slice()
+        if (!basket) return state
+        packIndex = basket.findIndex(p => p.packId === action.payload.packId)
+        basket.splice(packIndex, 1)
+        if (basket.length === 0) {
+          return {...state, returnBasket: undefined}
+        } else {
+          return {...state, returnBasket: {...state.returnBasket!, packs: basket}}  
+        }
       case 'CLEAR_RETURN_BASKET':
         return {...state, returnBasket: undefined}  
       case 'SET_LOCATIONS':

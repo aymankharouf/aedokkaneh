@@ -3,15 +3,19 @@ import { Block, Page, Navbar, List, ListItem, Toolbar } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
+import { iFriend, iUserInfo } from '../data/interfaces'
 
-const Invitations = props => {
+interface ExtendedFriend extends iFriend {
+  userInfo: iUserInfo
+}
+const Invitations = () => {
   const { state } = useContext(StoreContext)
-  const [invitations, setInvitations] = useState([])
+  const [invitations, setInvitations] = useState<ExtendedFriend[]>([])
   useEffect(() => {
     setInvitations(() => {
       const invitations = state.invitations.filter(i => i.status === 'n')
       return invitations.map(i => {
-        const userInfo = state.users.find(u => u.id === i.userId)
+        const userInfo = state.users.find(u => u.id === i.userId)!
         return {
           ...i,
           userInfo
