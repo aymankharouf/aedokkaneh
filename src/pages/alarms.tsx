@@ -6,27 +6,31 @@ import 'moment/locale/ar'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
 import { alarmTypes } from '../data/config'
+import { iAlarm, iCustomerInfo, iPack, iUserInfo } from '../data/interfaces'
 
-const Alarms = props => {
+interface ExtendedAlarm extends iAlarm {
+  userInfo: iUserInfo,
+  packInfo: iPack,
+  customerInfo: iCustomerInfo
+}
+const Alarms = () => {
   const { state } = useContext(StoreContext)
-  const [alarms, setAlarms] = useState([])
+  const [alarms, setAlarms] = useState<ExtendedAlarm[]>([])
   useEffect(() => {
     setAlarms(() => {
-      let alarms = state.alarms.filter(a => a.status === 'n')
-      alarms = alarms.map(a => {
-        const userInfo = state.users.find(u => u.id === a.userId)
-        const alarmTypeInfo = alarmTypes.find(t => t.id === a.type)
-        const packInfo = state.packs.find(p => p.id === a.packId)
-        const customerInfo = state.customers.find(c => c.id === a.userId)
+      const alarms = state.alarms.filter(a => a.status === 'n')
+      const result = alarms.map(a => {
+        const userInfo = state.users.find(u => u.id === a.userId)!
+        const packInfo = state.packs.find(p => p.id === a.packId)!
+        const customerInfo = state.customers.find(c => c.id === a.userId)!
         return {
           ...a,
           userInfo,
           customerInfo,
           packInfo,
-          alarmTypeInfo
         }
       })
-      return alarms.sort((a1, a2) => a1.time.seconds - a2.time.seconds)
+      return result.sort((a1, a2) => a1.time > a2.time ? 1 : -1)
     })
   }, [state.alarms, state.packs, state.users, state.customers])
   return(
@@ -39,10 +43,10 @@ const Alarms = props => {
             : alarms.map(a => 
                 <ListItem
                   link={`/alarm-details/${a.id}/user/${a.userInfo.id}`}
-                  title={a.alarmTypeInfo.name}
+                  title={alarmTypes.find(t => t.id === a.type)?.name}
                   subtitle={a.customerInfo.name}
                   text={`${a.packInfo.productName} ${a.packInfo.name}`}
-                  footer={moment(a.time.toDate()).fromNow()}
+                  footer={moment(a.time).fromNow()}
                   key={a.id}
                 >
                   <img src={a.packInfo.imageUrl} slot="media" className="img-list" alt={labels.noImage} />

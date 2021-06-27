@@ -1,6 +1,6 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListItem, Button } from 'framework7-react'
-import { permitUser, showMessage, showError, getMessage } from '../data/actions'
+import { permitUser, showMessage, showError, getMessage } from '../data/actionst'
 import labels from '../data/labels'
 import { StoreContext } from '../data/store'
 

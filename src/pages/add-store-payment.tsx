@@ -1,30 +1,33 @@
 import { useState, useContext, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListInput, Fab, Icon, ListItem } from 'framework7-react'
 import { StoreContext } from '../data/store'
-import { addStorePayment, showMessage, showError, getMessage } from '../data/actions'
+import { addStorePayment, showMessage, showError, getMessage } from '../data/actionst'
 import labels from '../data/labels'
 import { paymentTypes } from '../data/config'
 
-const AddStorePayment = props => {
+interface Props {
+  id: string
+}
+const AddStorePayment = (props: Props) => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [store] = useState(() => state.stores.find(s => s.id === props.id))
+  const [store] = useState(() => state.stores.find(s => s.id === props.id)!)
   const [amount, setAmount] = useState('')
   const [type, setType] = useState('')
   const [description, setDescription] = useState('')
   const [paymentDate, setPaymentDate] = useState([new Date()])
   const [paymentDateErrorMessage, setPaymentDateErrorMessage] = useState('')
-  useEffect(() => {
-    const validateDate = value => {
-      if (new Date(value) > new Date()){
-        setPaymentDateErrorMessage(labels.invalidSpendingDate)
-      } else {
-        setPaymentDateErrorMessage('')
-      }
-    }
-    if (paymentDate.length > 0) validateDate(paymentDate)
-    else setPaymentDateErrorMessage('')
-  }, [paymentDate])
+  // useEffect(() => {
+  //   const validateDate = value => {
+  //     if (new Date(value) > new Date()){
+  //       setPaymentDateErrorMessage(labels.invalidSpendingDate)
+  //     } else {
+  //       setPaymentDateErrorMessage('')
+  //     }
+  //   }
+  //   if (paymentDate.length > 0) validateDate(paymentDate)
+  //   else setPaymentDateErrorMessage('')
+  // }, [paymentDate])
   useEffect(() => {
     if (error) {
       showError(error)
@@ -36,15 +39,17 @@ const AddStorePayment = props => {
       if (Number(amount) <= 0 || Number(amount) !== Number(Number(amount).toFixed(2))) {
         throw new Error('invalidValue')
       }
-      const formatedDate = paymentDate.length > 0 ? new Date(paymentDate) : ''
+      // const formatedDate = paymentDate.length > 0 ? new Date(paymentDate) : ''
+      const formatedDate = new Date()
       const payment = {
         type,
+        storeId: store.id!,
         description,
-        amount: amount * 100,
+        amount: +amount * 100,
         paymentDate: formatedDate,
         time: new Date()
       }
-      addStorePayment(store.id, payment, state.stores)
+      addStorePayment( payment, state.stores)
       showMessage(labels.addSuccess)
       f7.views.current.router.back()
     } catch(err) {

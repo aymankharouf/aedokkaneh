@@ -3,17 +3,21 @@ import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Searchbar, NavRight, 
 import BottomToolbar from './bottom-toolbar'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
-import { getCategoryName, getArchivedProducts, getArchivedPacks, getMessage, showError } from '../data/actions'
+import { getCategoryName, getArchivedProducts, getArchivedPacks, getMessage, showError } from '../data/actionst'
+import { iCategory, iProduct } from '../data/interfaces'
 
-const ArchivedProducts = props => {
-  const { state, user, dispatch } = useContext(StoreContext)
+interface ExtendedProduct extends iProduct {
+  categoryInfo: iCategory
+}
+const ArchivedProducts = () => {
+  const { state, dispatch } = useContext(StoreContext)
   const [error, setError] = useState('')
   const [inprocess, setInprocess] = useState(false)
-  const [products, setProducts] = useState([])
+  const [products, setProducts] = useState<ExtendedProduct[]>([])
   useEffect(() => {
     setProducts(() => {
       const products = state.archivedProducts.map(p => {
-        const categoryInfo = state.categories.find(c => c.id === p.categoryId)
+        const categoryInfo = state.categories.find(c => c.id === p.categoryId)!
         return {
           ...p,
           categoryInfo
@@ -40,11 +44,11 @@ const ArchivedProducts = props => {
       setInprocess(true)
       const products = await getArchivedProducts()
       if (products.length > 0) {
-        dispatch({type: 'SET_ARCHIVED_PRODUCTS', products})
+        dispatch({type: 'SET_ARCHIVED_PRODUCTS', payload: products})
       }
       const packs = await getArchivedPacks()
       if (packs.length > 0) {
-        dispatch({type: 'SET_ARCHIVED_PACKS', packs})
+        dispatch({type: 'SET_ARCHIVED_PACKS', payload: packs})
       }
       setInprocess(false)
     } catch(err) {
@@ -52,7 +56,7 @@ const ArchivedProducts = props => {
       setError(getMessage(f7.views.current.router.currentRoute.path, err))
     }
   }
-  if (!user) return <Page><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></Page>
+  if (!state.user) return <Page><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></Page>
   return(
     <Page>
       <Navbar title={labels.archivedProducts} backLink={labels.back}>

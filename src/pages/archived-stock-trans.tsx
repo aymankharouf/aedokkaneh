@@ -6,26 +6,28 @@ import { StoreContext } from '../data/store'
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
 import { stockTransTypes } from '../data/config'
-import { getArchivedStockTrans, getMessage, showError } from '../data/actions'
+import { getArchivedStockTrans, getMessage, showError } from '../data/actionst'
+import { iStockTrans, iStore } from '../data/interfaces'
 
-const ArchivedStockTrans = props => {
+interface ExtendedStockTrans extends iStockTrans {
+  storeInfo: iStore
+}
+const ArchivedStockTrans = () => {
   const { state, dispatch } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [stockTrans, setStockTrans] = useState([])
+  const [stockTrans, setStockTrans] = useState<ExtendedStockTrans[]>([])
   const [monthlyTrans] = useState(() => [...state.monthlyTrans.sort((t1, t2) => t2.id - t1.id)])
   const lastMonth = useRef(0)
   useEffect(() => {
     setStockTrans(() => {
       const stockTrans = state.stockTrans.map(t => {
-        const stockTransTypeInfo = stockTransTypes.find(ty => ty.id === t.type)
-        const storeInfo = state.stores.find(s => s.id === t.storeId)
+        const storeInfo = state.stores.find(s => s.id === t.storeId)!
         return {
           ...t,
-          stockTransTypeInfo,
           storeInfo
         }
       })
-      return stockTrans.sort((t1, t2) => t2.time.seconds - t1.time.seconds)
+      return stockTrans.sort((t1, t2) => t2.time > t1.time ? 1 : -1)
     })
   }, [state.stockTrans, state.stores])
   useEffect(() => {
@@ -42,7 +44,7 @@ const ArchivedStockTrans = props => {
       }
       const trans = getArchivedStockTrans(id)
       if (trans.length > 0) {
-        dispatch({type: 'ADD_ARCHIVED_STOCK_TRANS', trans})
+        dispatch({type: 'ADD_ARCHIVED_STOCK_TRANS', payload: trans})
       }
       lastMonth.current++
   } catch(err) {
@@ -60,8 +62,8 @@ const ArchivedStockTrans = props => {
           : stockTrans.map(t => 
               <ListItem
                 link={`/stock-trans-details/${t.id}/type/a`}
-                title={`${t.stockTransTypeInfo.name} ${t.storeId ? t.storeInfo.name : ''}`}
-                subtitle={moment(t.time.toDate()).fromNow()}
+                title={`${stockTransTypes.find(tt => tt.id === t.type)?.name} ${t.storeId ? t.storeInfo.name : ''}`}
+                subtitle={moment(t.time).fromNow()}
                 after={(t.total / 100).toFixed(2)}
                 key={t.id}
               />

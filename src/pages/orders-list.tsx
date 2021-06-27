@@ -6,31 +6,38 @@ import 'moment/locale/ar'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
 import { orderStatus } from '../data/config'
+import { iCustomerInfo, iOrder, iUserInfo } from '../data/interfaces'
 
-const OrdersList = props => {
+interface Props {
+  id: string,
+  type: string
+}
+interface ExtendedOrder extends iOrder {
+  userInfo: iUserInfo,
+  customerInfo: iCustomerInfo
+}
+const OrdersList = (props: Props) => {
   const { state } = useContext(StoreContext)
-  const [orders, setOrders] = useState([])
+  const [orders, setOrders] = useState<ExtendedOrder[]>([])
   useEffect(() => {
     setOrders(() => {
-      let orders = state.orders.filter(o => (props.type === 's' && o.status === props.id) || (props.type === 'u' && o.userId === props.id))
-      orders = orders.map(o => {
-        const userInfo = state.users.find(u => u.id === o.userId)
-        const customerInfo = state.customers.find(c => c.id === o.userId)
-        const statusInfo = orderStatus.find(s => s.id === o.status)
+      const orders = state.orders.filter(o => (props.type === 's' && o.status === props.id) || (props.type === 'u' && o.userId === props.id))
+      const result = orders.map(o => {
+        const userInfo = state.users.find(u => u.id === o.userId)!
+        const customerInfo = state.customers.find(c => c.id === o.userId)!
         return {
           ...o,
           userInfo,
           customerInfo,
-          statusInfo
         }
       })
-      return orders.sort((o1, o2) => o2.time.seconds - o1.time.seconds)
+      return result.sort((o1, o2) => o2.time > o1.time ? 1 : -1)
     })
   }, [state.orders, state.users, state.customers, props.id, props.type])
 
   return(
     <Page>
-      <Navbar title={`${labels.orders} ${props.type === 's' ? orderStatus.find(s => s.id === props.id).name : state.customers.find(c => c.id === props.id).name}`} backLink={labels.back}>
+      <Navbar title={`${labels.orders} ${props.type === 's' ? orderStatus.find(s => s.id === props.id)?.name : state.customers.find(c => c.id === props.id)?.name}`} backLink={labels.back}>
       <NavRight>
           <Link searchbarEnable=".searchbar" iconMaterial="search"></Link>
         </NavRight>
@@ -53,10 +60,10 @@ const OrdersList = props => {
           : orders.map(o => 
               <ListItem
                 link={`/order-details/${o.id}/type/n`}
-                title={props.type === 's' ? (o.customerInfo?.name || o.userInfo.name) : o.statusInfo.name}
+                title={props.type === 's' ? (o.customerInfo?.name || o.userInfo.name) : orderStatus.find(s => s.id === o.status)?.name}
                 subtitle={o.deliveryTime}
-                text={moment(o.time.toDate()).fromNow()}
-                footer={o.lastUpdate ? moment(o.lastUpdate.toDate()).fromNow() : ''}
+                text={moment(o.time).fromNow()}
+                footer={o.lastUpdate ? moment(o.lastUpdate).fromNow() : ''}
                 after={(o.total / 100).toFixed(2)}
                 key={o.id}
               />

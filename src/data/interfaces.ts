@@ -72,8 +72,24 @@ export interface iFriend {
   status: string
 }
 export interface iRating {
+  userId: string,
+  productId: string,
+  value: number,
+  status: string
 }
 export interface iAlarm {
+  id?: string,
+  userId: string,
+  packId: string,
+  storeId: string,
+  newPackId: string,
+  type: string,
+  status: string,
+  offerDays: number,
+  price: number,
+  alternative: string,
+  quantity: number,
+  time: Date
 }
 export interface iUserInfo {
   id: string,
@@ -104,6 +120,9 @@ export interface iCustomerInfo {
 }
 export interface iOrderBasketPack {
   packId: string,
+  productName: string,
+  productAlias: string,
+  packName: string,
   storeId: string,
   price: number,
   cost: number,
@@ -116,14 +135,36 @@ export interface iOrderBasketPack {
   lastPurchaseId: string,
   lastPurchased: number,
   lastWeight: number,
-  prevStoreId: string
+  prevStoreId: string,
+  overPriced: boolean,
+  closeExpired: boolean,
+  oldQuantity: number,
+  imageUrl: string,
+  returned: number,
+  offerId: string,
+  isAllocated: boolean
+}
+export interface iDiscount {
+  type: string,
+  value: number
 }
 export interface iOrder {
   id?: string,
   userId: string,
   status: string,
+  requestType: string,
+  total: number,
+  deliveryTime: string,
+  deliveryFees: number,
+  discount: iDiscount,
+  fixedFees: number,
+  fraction: number,
+  profit: number,
+  lastUpdate: Date | null,
+  requestTime: Date | null,
   time: Date,
-  basket: iOrderBasketPack[]
+  basket: iOrderBasketPack[],
+  requestBasket: iOrderBasketPack[]
 }
 export interface iAdvert {
   id?: string,
@@ -204,7 +245,26 @@ export interface iSpending {
   time: Date
 }
 export interface iMonthlyTrans {
-
+  id: number,
+  ordersCount: number,
+  deliveredOrdersCount: number,
+  finishedOrdersCount: number,
+  stock: number,
+  sales: number,
+  transProfit: number,
+  fixedFees: number,
+  deliveryFees: number,
+  fractions: number,
+  discounts: number,
+  specialDiscounts: number,
+  storesBalance: number,
+  donations: number,
+  damages: number,
+  storesProfit: number,
+  storeTransNet: number,
+  withdrawals: number,
+  expenses: number,
+  netProfit: number
 }
 export interface iLog {
   id: string,
@@ -214,7 +274,10 @@ export interface iLog {
   time: Date
 }
 export interface iStorePayment {
-  
+  storeId: string,
+  type: string,
+  amount: number,
+  paymentDate: Date,
 }
 export interface iBasket {
   storeId: string,
@@ -244,7 +307,8 @@ export interface iBasketPack {
   closeExpired: boolean,
   exceedPriceType: string,
   refPackId: string,
-  refPackQuantity: number
+  refPackQuantity: number,
+  refQuantity: number
 }
 export interface iStockPack {
   packId: string,
@@ -252,6 +316,15 @@ export interface iStockPack {
   cost: number,
   price: number,
   actual: number,
+  weight: number
+}
+export interface iRequestedPack {
+  packId: string,
+  price: number,
+  quantity: number,
+  orderId: string,
+  offerId: string,
+  packInfo: iPack,
   weight: number
 }
 export interface iState {
@@ -284,7 +357,8 @@ export interface iState {
   invitations: iFriend[],
   storePayments: iStorePayment[],
   basket?: iBasket,
-  returnBasket?: iReturnBasket
+  returnBasket?: iReturnBasket,
+  orderBasket?: iOrderBasketPack[]
 }
 
 export interface iAction {

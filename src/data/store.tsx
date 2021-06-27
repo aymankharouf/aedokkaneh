@@ -185,20 +185,31 @@ const Store = (props: any) => {
               id: doc.id,
               userId: doc.data().userId,
               status: doc.data().status,
+              requestType: doc.data().requestType,
+              total: doc.data().total,
+              deliveryTime: doc.data().deliveryTime,
+              deliveryFees: doc.data().deliveryFees,
+              discount: doc.data().discount,
+              fixedFees: doc.data().fixedFees,
+              fraction: doc.data().fraction,
+              profit: doc.data().profit,
+              lastUpdate: doc.data().lastUpdate?.toDate() || null,
+              requestTime: doc.data().requestTime?.toDate() || null,
               basket: doc.data().basket,
+              requestBasket: doc.data().requestBasket,
               time: doc.data().time.toDate()
-          })
+            })
           })
           dispatch({type: 'SET_ORDERS', payload: orders})
         }, err => {
           unsubscribeOrders()
         })  
         const unsubscribeUsers = firebase.firestore().collection('users').onSnapshot(docs => {
-          let users: iUserInfo[] = []
-          let notifications: iNotification[] = []
-          let alarms: iAlarm[] = []
-          let ratings: iRating[] = []
-          let invitations: iFriend[] = []
+          const users: iUserInfo[] = []
+          const notifications: iNotification[] = []
+          const alarms: iAlarm[] = []
+          const ratings: iRating[] = []
+          const invitations: iFriend[] = []
           docs.forEach(doc => {
             users.push({
               id: doc.id,
@@ -352,7 +363,28 @@ const Store = (props: any) => {
         const unsubscribeMonthlyTrans = firebase.firestore().collection('monthly-trans').onSnapshot(docs => {
           let monthlyTrans: iMonthlyTrans[] = []
           docs.forEach(doc => {
-            monthlyTrans.push({...doc.data(), id:doc.id})
+            monthlyTrans.push({
+              id: doc.data().id,
+              ordersCount: doc.data().ordersCount,
+              deliveredOrdersCount: doc.data().deliveredOrdersCount,
+              finishedOrdersCount: doc.data().finishedOrdersCount,
+              stock: doc.data().stock,
+              sales: doc.data().sales,
+              transProfit: doc.data().transProfit,
+              fixedFees: doc.data().fixedFees,
+              deliveryFees: doc.data().deliveryFees,
+              fractions: doc.data().fractions,
+              discounts: doc.data().discounts,
+              specialDiscounts: doc.data().specialDiscounts,
+              storesBalance: doc.data().storesBalance,
+              donations: doc.data().donations,
+              damages: doc.data().damages,
+              storesProfit: doc.data().storesProfit,
+              storeTransNet: doc.data().storeTransNet,
+              withdrawals: doc.data().withdrawals,
+              expenses: doc.data().expenses,
+              netProfit: doc.data().netProfit
+            })
           })
           dispatch({type: 'SET_MONTHLY_TRANS', payload: monthlyTrans})
         }, err => {

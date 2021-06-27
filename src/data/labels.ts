@@ -339,8 +339,6 @@ const labels: iLabel = {
   sellingLoss: 'خسائر البيع',
   grossLoss: 'اجمالي المصروفات',
   current: 'الحالي',
-  notifyFriends: 'ابلاغ الاصدقاء',
-  notifyFromFriend: 'تنبيه من صديقك',
   offerAvailableFor: 'هناك عرض على منتج',
   withPrice: 'بسعر',
   balance: 'الرصيد',

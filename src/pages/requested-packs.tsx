@@ -2,22 +2,27 @@ import { useContext, useEffect, useState } from 'react'
 import { Block, Page, Navbar, List, ListItem, Toolbar, Badge } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
 import { StoreContext } from '../data/store'
-import { quantityText, getRequestedPacks, getPackStores } from '../data/actions'
+import { quantityText, getRequestedPacks, getPackStores } from '../data/actionst'
 import labels from '../data/labels'
+import { iRequestedPack } from '../data/interfaces'
 
-const RequestedPacks = props => {
+interface Props {
+	id: string
+}
+const RequestedPacks = (props: Props) => {
 	const { state } = useContext(StoreContext)
-	const [requestedPacks, setRequestedPacks] = useState([])
+	const [requestedPacks, setRequestedPacks] = useState<iRequestedPack[]>([])
 	useEffect(() => {
 		setRequestedPacks(() => {
-			let packs = getRequestedPacks(state.orders, state.basket, state.packs)
+			const packs = getRequestedPacks(state.orders, state.basket!, state.packs)
 			if (props.id){
-				packs = packs.filter(p => {
-					const basketStock = state.basket.storeId === 's' && state.basket.packs.find(bp => bp.packId === p.packId || state.packs.find(pa => pa.id === bp.packId && (pa.subPackId === p.packId || pa.bonusPackId === p.packId)))
-					const basketStockQuantity = (basketStock?.quantity * basketStock?.refQuantity) || 0
-					const packStores = getPackStores(p.packInfo, state.packPrices, state.stores, state.packs, basketStockQuantity)
+				const result = packs.filter(p => {
+					const basketStock = state.basket?.storeId === 's' ? state.basket.packs.find(bp => bp.packId === p.packId || state.packs.find(pa => pa.id === bp.packId && (pa.subPackId === p.packId || pa.bonusPackId === p.packId))) : undefined
+					const basketStockQuantity = ((basketStock?.quantity || 0) * (basketStock?.refQuantity || 0)) || 0
+					const packStores = getPackStores(p.packInfo, state.packPrices, state.packs, basketStockQuantity)
 					return packStores.find(ps => ps.storeId === props.id)
 				})	
+				return result
 			}
 			return packs
 		})
@@ -25,7 +30,7 @@ const RequestedPacks = props => {
 	let i = 0
 	return(
     <Page>
-      <Navbar title={`${labels.requestedPacks} ${props.id ? '-' + state.stores.find(s => s.id === props.id).name : ''}`} backLink={labels.back} />
+      <Navbar title={`${labels.requestedPacks} ${props.id ? '-' + state.stores.find(s => s.id === props.id)?.name : ''}`} backLink={labels.back} />
       <Block>
 				<List mediaList>
 					{requestedPacks.length === 0 ? 

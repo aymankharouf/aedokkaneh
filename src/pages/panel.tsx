@@ -1,13 +1,13 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListItem } from 'framework7-react'
 import { StoreContext } from '../data/store'
-import { logout } from '../data/actions'
+import { logout } from '../data/actionst'
 import labels from '../data/labels'
 
-const Panel = props => {
+const Panel = () => {
   const { state, dispatch } = useContext(StoreContext)
-  const [approvalsCount, setApprovalsAcount] = useState('')
-  const [offersCount, setOffersAcount] = useState('')
+  const [approvalsCount, setApprovalsAcount] = useState(0)
+  const [offersCount, setOffersAcount] = useState(0)
   useEffect(() => {
     const newOrders = state.orders.filter(o => o.status === 'n').length
     const orderRequests = state.orders.filter(r => r.requestType).length
@@ -17,12 +17,11 @@ const Panel = props => {
     const invitations = state.invitations.filter(i => i.status === 'n').length
     const passwordRequests = state.passwordRequests.length
     const newStoresOwners = state.customers.filter(c => c.storeName && !c.storeId).length
-    const notifyFriends = state.users.filter(u => u.notifyFriends?.length > 0).length
-    setApprovalsAcount(newOrders + orderRequests + newUsers + alarms + ratings + invitations + passwordRequests + newStoresOwners + notifyFriends)
+    setApprovalsAcount(newOrders + orderRequests + newUsers + alarms + ratings + invitations + passwordRequests + newStoresOwners)
   }, [state.orders, state.users, state.customers, state.passwordRequests, state.alarms, state.ratings, state.invitations])
   useEffect(() => {
     const today = (new Date()).setHours(0, 0, 0, 0)
-    setOffersAcount(() => state.packPrices.filter(p => p.offerEnd && p.offerEnd.toDate().setHours(0, 0, 0, 0) <= today).length)
+    setOffersAcount(() => state.packPrices.filter(p => p.offerEnd && p.offerEnd.setHours(0, 0, 0, 0) <= today).length)
   }, [state.packPrices])
 
   const handleLogout = () => {

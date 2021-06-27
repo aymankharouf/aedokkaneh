@@ -2,27 +2,36 @@ import { useContext, useState, useEffect } from 'react'
 import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Button } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
 import { StoreContext } from '../data/store'
-import { allocateOrderPack, showMessage, getMessage, showError } from '../data/actions'
+import { allocateOrderPack, showMessage, getMessage, showError } from '../data/actionst'
 import labels from '../data/labels'
+import { iCustomerInfo, iOrder, iOrderBasketPack } from '../data/interfaces'
 
-const PrepareOrdersList = props => {
+interface Props {
+  packId: string,
+  orderId: string
+}
+interface ExtendedOrder extends iOrder {
+  customerInfo: iCustomerInfo,
+  basketInfo: iOrderBasketPack
+}
+const PrepareOrdersList = (props: Props) => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [orders, setOrders] = useState([])
-  const [pack] = useState(() => state.packs.find(p => p.id === props.packId))
+  const [orders, setOrders] = useState<ExtendedOrder[]>([])
+  const [pack] = useState(() => state.packs.find(p => p.id === props.packId)!)
   useEffect(() => {
     setOrders(() => {
-      let orders = state.orders.filter(o => o.id === props.orderId || (props.orderId === '0' && o.status === 'f' && o.basket.find(p => p.packId === props.packId && !p.isAllocated)))
-      orders = orders.map(o => {
-        const customerInfo = state.customers.find(c => c.id === o.userId)
-        const basketInfo = o.basket.find(p => p.packId === props.packId)
+      const orders = state.orders.filter(o => o.id === props.orderId || (props.orderId === '0' && o.status === 'f' && o.basket.find(p => p.packId === props.packId && !p.isAllocated)))
+      const result = orders.map(o => {
+        const customerInfo = state.customers.find(c => c.id === o.userId)!
+        const basketInfo = o.basket.find(p => p.packId === props.packId)!
         return {
           ...o,
           customerInfo,
           basketInfo
         }
       })
-      return orders.sort((o1, o2) => o2.time.seconds - o1.time.seconds)
+      return result.sort((o1, o2) => o2.time > o1.time ? 1 : -1)
     })
   }, [state.orders, state.customers, props.orderId, props.packId])
   useEffect(() => {
@@ -31,7 +40,7 @@ const PrepareOrdersList = props => {
       setError('')
     }
   }, [error])
-  const handleAllocate = order => {
+  const handleAllocate = (order: ExtendedOrder) => {
     try{
       allocateOrderPack(order, pack)
       showMessage(labels.editSuccess)

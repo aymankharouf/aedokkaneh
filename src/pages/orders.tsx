@@ -5,25 +5,29 @@ import { StoreContext } from '../data/store'
 import labels from '../data/labels'
 import { randomColors, orderStatus } from '../data/config'
 
-
-const Orders = props => {
-  const { state, user } = useContext(StoreContext)
-  const [orderStatuses, setOrderStatuses] = useState([])
-  const [orderRequests, setOrderRequests] = useState([])
-  const [finishedOrders, setFinishedOrders] = useState([])
+interface OrderStatus {
+  id: string,
+  name: string,
+  count: number
+}
+const Orders = () => {
+  const { state } = useContext(StoreContext)
+  const [orderStatuses, setOrderStatuses] = useState<OrderStatus[]>([])
+  const [orderRequests, setOrderRequests] = useState(0)
+  const [finishedOrders, setFinishedOrders] = useState(0)
   useEffect(() => {
     setOrderStatuses(() => orderStatus.map(s => {
-      const orders = state.orders.filter(o => o.status === s.id)
+      const orders = state.orders.filter(o => o.status === s.id).length
       return {
         ...s,
-        orders
+        count: orders
       }
     }))
-    setOrderRequests(() => state.orders.filter(o => o.requestType))
-    setFinishedOrders(() => state.orders.filter(o => o.status === 'f'))
+    setOrderRequests(() => state.orders.filter(o => o.requestType).length)
+    setFinishedOrders(() => state.orders.filter(o => o.status === 'f').length)
   }, [state.orders])
   let i = 0
-  if (!user) return <Page><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></Page>
+  if (!state.user) return <Page><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></Page>
   return(
     <Page>
       <Navbar title={labels.orders} backLink={labels.back} />
@@ -35,20 +39,20 @@ const Orders = props => {
           <ListItem 
             link="/order-requests/" 
             title={labels.orderRequests} 
-            badge={orderRequests.length} 
+            badge={orderRequests} 
             badgeColor={randomColors[i++ % 10].name} 
           />
           <ListItem 
             link="/prepare-orders/" 
             title={labels.prepareOrders} 
-            badge={finishedOrders.length} 
+            badge={finishedOrders} 
             badgeColor={randomColors[i++ % 10].name} 
           />
           {orderStatuses.map(s => 
             <ListItem 
               link={`/orders-list/${s.id}/type/s`} 
               title={s.name} 
-              badge={s.orders.length} 
+              badge={s.count} 
               badgeColor={randomColors[i++ % 10].name} 
               key={s.id}
             />

@@ -4,7 +4,7 @@ import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
 
 
-const MonthlyTransCall = props => {
+const MonthlyTransCall = () => {
   const [month, setMonth] = useState('')
   const [year, setYear] = useState('')
   return (
@@ -31,7 +31,7 @@ const MonthlyTransCall = props => {
         />
       </List>
       {!month || !year ? '' : 
-        <Fab position="left-top" slot="fixed" color="green" className="top-fab" href={`/monthly-trans/${year * 100 + Number(month)}`}>
+        <Fab position="left-top" slot="fixed" color="green" className="top-fab" href={`/monthly-trans/${+year * 100 + Number(month)}`}>
           <Icon material="done"></Icon>
         </Fab>
       }

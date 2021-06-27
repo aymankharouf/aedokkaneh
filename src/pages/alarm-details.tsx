@@ -4,46 +4,55 @@ import BottomToolbar from './bottom-toolbar'
 import { StoreContext } from '../data/store'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { approveAlarm, showMessage, showError, getMessage } from '../data/actions'
+import { approveAlarm, showMessage, showError, getMessage } from '../data/actionst'
 import labels from '../data/labels'
 import { alarmTypes } from '../data/config'
+import { iPack, iPackPrice, iStore } from '../data/interfaces'
 
-const AlarmDetails = props => {
+interface Props {
+  id: string,
+  userId: string
+}
+interface ExtendedPackPrice extends iPackPrice {
+  storeInfo: iStore
+}
+const AlarmDetails = (props: Props) => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
   const [newPackId, setNewPackId] = useState('')
   const [userInfo] = useState(() => state.users.find(u => u.id === props.userId))
-  const [customerInfo] = useState(() => state.customers.find(c => c.id === props.userId))
-  const [alarm] = useState(() => userInfo.alarms.find(a => a.id === props.id))
-  const [pack] = useState(() => state.packs.find(p => p.id === alarm.packId))
-  const [storeName] = useState(() => state.stores.find(s => s.id === customerInfo.storeId).name)
+  const [customerInfo] = useState(() => state.customers.find(c => c.id === props.userId)!)
+  const [alarm] = useState(() => state.alarms.find(a => a.id === props.id)!)
+  const [pack] = useState(() => state.packs.find(p => p.id === alarm.packId)!)
+  const [storeName] = useState(() => state.stores.find(s => s.id === customerInfo.storeId)?.name)
+  const [prices, setPrices] = useState<ExtendedPackPrice[]>([])
   const [packs] = useState(() => {
-    let packs = state.packs.filter(p => p.id !== pack.id)
+    const packs = state.packs.filter(p => p.id !== pack.id)
+    let result: iPack[] = []
     if (alarm.type === 'go') {
-      packs = packs.filter(p => p.productId === pack.productId && p.isOffer)
-    } else if (alarmTypes.type === 'eo') {
-      packs = packs.filter(p => p.productId === pack.productId && p.isOffer && p.closeExpired)
+      result = packs.filter(p => p.productId === pack.productId && p.isOffer)
+    } else if (alarm.type === 'eo') {
+      result = packs.filter(p => p.productId === pack.productId && p.isOffer && p.closeExpired)
     }
-    packs = packs.map(p => {
+    const output = result.map(p => {
       return {
         id: p.id,
         name: `${p.productName} ${p.name}`
       }
     })
-    return packs.sort((p1, p2) => p1.name > p2.name ? 1 : -1)
+    return output.sort((p1, p2) => p1.name > p2.name ? 1 : -1)
   })
-  const [prices, setPrices] = useState([])
   useEffect(() => {
     setPrices(() => {
-      let prices = state.packPrices.filter(p => p.storeId !== customerInfo.storeId && p.packId === (newPackId || pack.id))
-      prices = prices.map(p => {
-        const storeInfo = state.stores.find(s => s.id === p.storeId)
+      const prices = state.packPrices.filter(p => p.storeId !== customerInfo.storeId && p.packId === (newPackId || pack.id))
+      const result = prices.map(p => {
+        const storeInfo = state.stores.find(s => s.id === p.storeId)!
         return {
           ...p,
           storeInfo
         }
       })
-      return prices.sort((p1, p2) => p1.price - p2.price)
+      return result.sort((p1, p2) => p1.price - p2.price)
     })
   }, [state.packPrices, state.stores, customerInfo, pack, newPackId])
   useEffect(() => {
@@ -54,7 +63,7 @@ const AlarmDetails = props => {
   }, [error])
   const handleApprove = () => {
     try{
-      approveAlarm(userInfo, alarm, newPackId, customerInfo, state.packPrices, state.packs)
+      approveAlarm(alarm, state.alarms, newPackId, customerInfo, state.packPrices, state.packs)
       showMessage(labels.approveSuccess)
 			f7.views.current.router.back()
     } catch(err) {
@@ -64,7 +73,7 @@ const AlarmDetails = props => {
   let i = 0
   return (
     <Page>
-      <Navbar title={alarmTypes.find(t => t.id === alarm.type).name} backLink={labels.back} />
+      <Navbar title={alarmTypes.find(t => t.id === alarm.type)?.name} backLink={labels.back} />
       <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleApprove()}>
         <Icon material="done"></Icon>
       </Fab>
@@ -165,7 +174,7 @@ const AlarmDetails = props => {
           <ListItem 
             title={p.storeInfo.name}
             subtitle={p.quantity ? `${labels.quantity}: ${p.quantity}` : ''}
-            text={moment(p.time.toDate()).fromNow()} 
+            text={moment(p.time).fromNow()} 
             after={(p.price / 100).toFixed(2)} 
             key={i++} 
           />

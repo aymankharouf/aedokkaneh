@@ -3,24 +3,21 @@ import { Block, Page, Navbar, List, ListItem, Toolbar } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
+import { iBalance } from '../data/interfaces'
 
-const StoreBalance = props => {
+interface Props {
+  id: string
+}
+const StoreBalance = (props: Props) => {
   const { state } = useContext(StoreContext)
-  const [store, setStore] = useState(() => state.stores.find(s => s.id === props.id))
-  const [balances, setBalances] = useState([])
+  const [store, setStore] = useState(() => state.stores.find(s => s.id === props.id)!)
+  const [balances, setBalances] = useState<iBalance[]>([])
   useEffect(() => {
-    setStore(() => state.stores.find(s => s.id === props.id))
+    setStore(() => state.stores.find(s => s.id === props.id)!)
   }, [state.stores, props.id])
   useEffect(() => {
     setBalances(() => {
-      let balances = store.balances?.slice() || []
-      balances = balances.map(b => {
-        const monthDesc = `${Math.trunc(b.month / 100)}-${b.month % 100}`
-        return {
-          ...b,
-          monthDesc,
-        }
-      })
+      const balances = store.balances?.slice() || []
       return balances.sort((b1, b2) => b2.month - b1.month)
     })
   }, [store])
@@ -36,7 +33,7 @@ const StoreBalance = props => {
               return (
                 <ListItem
                   link={`/store-balance-trans/${props.id}/month/${b.month}`}
-                  title={b.monthDesc}
+                  title={`${Math.trunc(b.month / 100)}-${b.month % 100}`}
                   after={(b.balance / 100).toFixed(2)}
                   key={b.month}
                 />

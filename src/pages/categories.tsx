@@ -3,7 +3,7 @@ import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, FabButton,
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
 import BottomToolbar from './bottom-toolbar'
-import { deleteCategory, showMessage, showError, getMessage } from '../data/actions'
+import { deleteCategory, showMessage, showError, getMessage } from '../data/actionst'
 import { iCategory } from '../data/interfaces'
 
 interface Props {
@@ -17,7 +17,7 @@ const Categories = (props: Props) => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
   const [categories, setCategories] = useState<ExtendedCategory[]>([])
-  const [currentCategory] = useState(() => state.categories.find(c => c.id === props.id))
+  const [currentCategory] = useState(() => state.categories.find(c => c.id === props.id)!)
   const [categoryChildrenCount] = useState(() => state.categories.filter(c => c.parentId === currentCategory?.id).length)
   const [categoryProductsCount] = useState(() => state.products.filter(p => p.categoryId === currentCategory?.id).length)
   useEffect(() => {

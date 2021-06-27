@@ -7,7 +7,7 @@ import { showMessage, showError, getMessage, quantityText, unfoldStockPack } fro
 import labels from '../data/labels'
 import { stockTransTypes } from '../data/config'
 import BottomToolbar from './bottom-toolbar'
-import { iPurchase, iStockPack, iStore } from '../data/interfaces'
+import { iStockPack, iStore } from '../data/interfaces'
 
 interface Props {
   id: string

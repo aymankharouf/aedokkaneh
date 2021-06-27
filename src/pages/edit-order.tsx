@@ -1,28 +1,39 @@
 import { useContext, useEffect, useState } from 'react'
 import { f7, Block, Fab, Page, Navbar, List, ListItem, Toolbar, Link, Icon, Stepper } from 'framework7-react'
 import { StoreContext } from '../data/store'
-import { updateOrderStatus, editOrder, showMessage, showError, getMessage, quantityDetails, returnOrder } from '../data/actions'
+import { updateOrderStatus, editOrder, showMessage, showError, getMessage, quantityDetails, returnOrder } from '../data/actionst'
 import labels from '../data/labels'
+import { iOrderBasketPack, iPack } from '../data/interfaces'
 
-const EditOrder = props => {
+interface Props {
+  id: string,
+  type: string
+}
+interface ExtendedOrderBasketPack extends iOrderBasketPack {
+  packInfo: iPack
+}
+const EditOrder = (props: Props) => {
   const { state, dispatch } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [order] = useState(() => state.orders.find(o => o.id === props.id))
-  const [orderBasket, setOrderBasket] = useState([])
-  const [total, setTotal] = useState('')
+  const [order] = useState(() => state.orders.find(o => o.id === props.id)!)
+  const [orderBasket, setOrderBasket] = useState<ExtendedOrderBasketPack[]>([])
+  const [total, setTotal] = useState(0)
   const [hasChanged, setHasChanged] = useState(false)
   useEffect(() => {
-    const params = {
-      type: props.type,
-      order
-    }
-    dispatch({type: 'LOAD_ORDER_BASKET', params})
+    const basket = order.basket.map(p => {
+      return {
+        ...p,
+        quantity: props.type === 'e' ? p.quantity : p.purchased,
+        oldQuantity: props.type === 'e' ? p.quantity : p.purchased
+      }
+    })
+    dispatch({type: 'LOAD_ORDER_BASKET', payload: basket})
   }, [dispatch, order, props.type])
   useEffect(() => {
     setOrderBasket(() => {
       const orderBasket = state.orderBasket?.filter(p => p.quantity > 0) || []
       return orderBasket.map(p => {
-        const packInfo = state.packs.find(pa => pa.id === p.packId) || ''
+        const packInfo = state.packs.find(pa => pa.id === p.packId)!
         return {
           ...p,
           packInfo
@@ -58,11 +69,11 @@ const EditOrder = props => {
   const handleSubmit = () => {
     try{
       if (props.type === 'e') {
-        editOrder(order, state.orderBasket, state.packPrices, state.packs)
+        editOrder(order, state.orderBasket!, state.packPrices, state.packs)
       } else {
-        const userLocation = state.users.find(c => c.id === order.userId).locationId
-        const locationFees = state.locations.find(l => l.id === userLocation).fees
-        returnOrder(order, state.orderBasket, locationFees, state.packPrices, state.packs)
+        const userLocation = state.users.find(c => c.id === order.userId)?.locationId
+        const locationFees = state.locations.find(l => l.id === userLocation)?.fees || 0
+        returnOrder(order, state.orderBasket!, locationFees, state.packPrices, state.packs)
       }
       showMessage(labels.editSuccess)
       dispatch({type: 'CLEAR_ORDER_BASKET'})
@@ -71,17 +82,17 @@ const EditOrder = props => {
 			setError(getMessage(f7.views.current.router.currentRoute.path, err))
 		}
   }
-  const handleIncrease = pack => {
+  const handleIncrease = (pack: ExtendedOrderBasketPack) => {
     if (props.type === 'e' || (props.type === 'r' && pack.quantity < pack.oldQuantity)) {
-      dispatch({type: 'INCREASE_ORDER_QUANTITY', pack})
+      dispatch({type: 'INCREASE_ORDER_QUANTITY', payload: pack})
     }
   }
-  const handleDecrease = pack => {
+  const handleDecrease = (pack: ExtendedOrderBasketPack) => {
     const params = {
       type: props.type,
       pack
     }
-    dispatch({type: 'DECREASE_ORDER_QUANTITY', params})
+    dispatch({type: 'DECREASE_ORDER_QUANTITY', payload: params})
   }
   return (
     <Page>

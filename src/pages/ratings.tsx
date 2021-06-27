@@ -3,18 +3,23 @@ import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Button } from 'framew
 import BottomToolbar from './bottom-toolbar'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
-import { approveRating, showMessage, showError, getMessage } from '../data/actions'
+import { approveRating, showMessage, showError, getMessage } from '../data/actionst'
+import { iProduct, iRating, iUserInfo } from '../data/interfaces'
 
-const Ratings = props => {
+interface ExtendedRating extends iRating {
+  userInfo: iUserInfo,
+  productInfo: iProduct
+}
+const Ratings = () => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [ratings, setRatings] = useState([])
+  const [ratings, setRatings] = useState<ExtendedRating[]>([])
   useEffect(() => {
     setRatings(() => {
       const ratings = state.ratings.filter(r => r.status === 'n')
       return ratings.map(r => {
-        const userInfo = state.users.find(u => u.id === r.userId)
-        const productInfo = state.products.find(p => p.id === r.productId)
+        const userInfo = state.users.find(u => u.id === r.userId)!
+        const productInfo = state.products.find(p => p.id === r.productId)!
         return {
           ...r,
           userInfo,
@@ -29,9 +34,9 @@ const Ratings = props => {
       setError('')
     }
   }, [error])
-  const handleApprove = rating => {
+  const handleApprove = (rating: ExtendedRating) => {
     try{
-      approveRating(rating, state.packs)
+      approveRating(rating, state.ratings, state.products, state.packs)
       showMessage(labels.approveSuccess)
     } catch(err) {
 			setError(getMessage(f7.views.current.router.currentRoute.path, err))

@@ -1,41 +1,44 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, Badge } from 'framework7-react'
 import { StoreContext } from '../data/store'
-import { showMessage, showError, getMessage, quantityDetails, approveOrderRequest, addQuantity } from '../data/actions'
+import { showMessage, showError, getMessage, quantityDetails, approveOrderRequest, addQuantity } from '../data/actionst'
 import labels from '../data/labels'
 import { orderPackStatus, orderRequestTypes, setup } from '../data/config'
 import BottomToolbar from './bottom-toolbar'
 
-const OrderRequestDetails = props => {
+interface Props {
+  id: string
+}
+const OrderRequestDetails = (props: Props) => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [order] = useState(() => state.orders.find(o => o.id === props.id))
+  const [order] = useState(() => state.orders.find(o => o.id === props.id)!)
   const [orderBasket] = useState(() => {
-    let basket = order.basket.slice()
-    basket = basket.map(p => {
+    const basket = order.basket.slice()
+    const result = basket.map(p => {
       return {
         ...p,
         change: 0
       }
     })
     order.requestBasket.forEach(p => {
-      const index = basket.findIndex(bp => bp.packId === p.packId)
+      const index = result.findIndex(bp => bp.packId === p.packId)
       if (index === -1) {
-        basket.push({
+        result.push({
           ...p,
           change: p.quantity
         })
       } else {
-        basket.splice(index, 1, {
-          ...basket[index],
+        result.splice(index, 1, {
+          ...result[index],
           quantity: p.quantity,
-          change: addQuantity(p.quantity, -1 * basket[index].quantity)
+          change: addQuantity(p.quantity, -1 * result[index].quantity)
         })
       }
     })
-    return basket.map(p => {
-      const storeName = p.storeId ? (p.storeId === 'm' ? labels.multipleStores : state.stores.find(s => s.id === p.storeId).name) : ''
-      const statusNote = `${orderPackStatus.find(s => s.id === p.status).name} ${p.overPriced ? labels.overPricedNote : ''}`
+    return result.map(p => {
+      const storeName = p.storeId ? (p.storeId === 'm' ? labels.multipleStores : state.stores.find(s => s.id === p.storeId)?.name) : ''
+      const statusNote = `${orderPackStatus.find(s => s.id === p.status)?.name} ${p.overPriced ? labels.overPricedNote : ''}`
       const changeQuantityNote = p.change === 0 ? '' : p.change > 0 ? `${labels.increase} ${p.change}` : `${labels.decrease} ${-1 * p.change}`
       return {
         ...p,
@@ -65,7 +68,7 @@ const OrderRequestDetails = props => {
   }
   return(
     <Page>
-      <Navbar title={`${labels.request} ${orderRequestTypes.find(t => t.id === order.requestType).name}`} backLink={labels.back} />
+      <Navbar title={`${labels.request} ${orderRequestTypes.find(t => t.id === order.requestType)?.name}`} backLink={labels.back} />
       <Block>
         <List mediaList>
           {orderBasket.map(p => 

@@ -5,24 +5,28 @@ import moment from 'moment'
 import 'moment/locale/ar'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
-import { getArchivedPurchases, getMessage, showError } from '../data/actions'
+import { getArchivedPurchases, getMessage, showError } from '../data/actionst'
+import { iPurchase, iStore } from '../data/interfaces'
 
-const ArchivedPurchases = props => {
+interface ExtendedPurchase extends iPurchase {
+  storeInfo: iStore
+}
+const ArchivedPurchases = () => {
   const { state, dispatch } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [purchases, setPurchases] = useState([])
+  const [purchases, setPurchases] = useState<ExtendedPurchase[]>([])
   const [monthlyTrans] = useState(() => [...state.monthlyTrans.sort((t1, t2) => t2.id - t1.id)])
   const lastMonth = useRef(0)
   useEffect(() => {
     setPurchases(() => {
       const purchases = state.archivedPurchases.map(p => {
-        const storeInfo = state.stores.find(s => s.id === p.storeId)
+        const storeInfo = state.stores.find(s => s.id === p.storeId)!
         return {
           ...p,
           storeInfo
         }
       })
-      return purchases.sort((p1, p2) => p2.time.seconds - p1.time.seconds)
+      return purchases.sort((p1, p2) => p2.time > p1.time ? 1 : -1)
     })
   }, [state.archivedPurchases, state.stores])
   useEffect(() => {
@@ -39,7 +43,7 @@ const ArchivedPurchases = props => {
       }
       const purchases = getArchivedPurchases(id)
       if (purchases.length > 0) {
-        dispatch({type: 'ADD_ARCHIVED_PURCHASES', purchases})
+        dispatch({type: 'ADD_ARCHIVED_PURCHASES', payload: purchases})
       }
       lastMonth.current++
   } catch(err) {
@@ -73,7 +77,7 @@ const ArchivedPurchases = props => {
               <ListItem
                 link={`/purchase-details/${p.id}/type/a`}
                 title={p.storeInfo.name}
-                subtitle={moment(p.time.toDate()).fromNow()}
+                subtitle={moment(p.time).fromNow()}
                 after={(p.total / 100).toFixed(2)}
                 key={p.id}
               />

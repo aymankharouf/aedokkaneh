@@ -1,27 +1,43 @@
 import { useContext, useState, useEffect, useRef } from 'react'
 import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, Actions, ActionsButton, Badge } from 'framework7-react'
 import { StoreContext } from '../data/store'
-import { updateOrderStatus, showMessage, showError, getMessage, quantityDetails, mergeOrder, setDeliveryTime } from '../data/actions'
+import { updateOrderStatus, showMessage, showError, getMessage, quantityDetails, mergeOrder, setDeliveryTime } from '../data/actionst'
 import labels from '../data/labels'
 import { orderPackStatus } from '../data/config'
 import BottomToolbar from './bottom-toolbar'
+import { iOrder, iOrderBasketPack } from '../data/interfaces'
 
-const OrderDetails = props => {
+interface Props {
+  id: string,
+  type: string
+}
+interface ExtendedOrderBasketPack extends iOrderBasketPack {
+  storeName: string,
+  priceNote: string,
+  statusNote: string
+}
+interface StatusAction {
+  id: string,
+  name: string,
+  status: string[],
+  path: string
+}
+const OrderDetails = (props: Props) => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [order, setOrder] = useState(() => props.type === 'a' ? state.archivedOrders.find(o => o.id === props.id) : state.orders.find(o => o.id === props.id))
-  const [orderBasket, setOrderBasket] = useState([])
-  const [statusActions, setStatusActions] = useState([])
-  const [lastOrder, setLastOrder] = useState('')
-  const actionsList = useRef('')
+  const [order, setOrder] = useState(() => props.type === 'a' ? state.archivedOrders.find(o => o.id === props.id)! : state.orders.find(o => o.id === props.id)!)
+  const [orderBasket, setOrderBasket] = useState<ExtendedOrderBasketPack[]>([])
+  const [statusActions, setStatusActions] = useState<StatusAction[]>([])
+  const [lastOrder, setLastOrder] = useState<iOrder>()
+  const actionsList = useRef<Actions>(null)
   useEffect(() => {
-    setOrder(() => state.orders.find(o => o.id === props.id))
+    setOrder(() => state.orders.find(o => o.id === props.id)!)
   }, [state.orders, props.id])
   useEffect(() => {
     setOrderBasket(() => order.basket.map(p => {
-      const storeName = p.storeId ? (p.storeId === 'm' ? labels.multipleStores : state.stores.find(s => s.id === p.storeId).name) : ''
+      const storeName = p.storeId ? (p.storeId === 'm' ? labels.multipleStores : state.stores.find(s => s.id === p.storeId)?.name || '') : ''
       const priceNote = p.actual && p.actual !== p.price ? `${labels.orderPrice}: ${(p.price / 100).toFixed(2)}, ${labels.currentPrice}: ${(p.actual / 100).toFixed(2)}` : `${labels.unitPrice}: ${(p.price / 100).toFixed(2)}`
-      const statusNote = `${orderPackStatus.find(s => s.id === p.status).name} ${p.overPriced ? labels.overPricedNote : ''}`
+      const statusNote = `${orderPackStatus.find(s => s.id === p.status)?.name} ${p.overPriced ? labels.overPricedNote : ''}`
       return {
         ...p,
         storeName,
@@ -33,13 +49,13 @@ const OrderDetails = props => {
   useEffect(() => {
     setStatusActions(() => {
       const statusActions = [
-        {id: 'a', name: 'اعتماد', status: ['n', 's']},
-        {id: 's', name: 'تعليق', status: ['n', 'a']},
-        {id: 'r', name: 'رفض', status: ['n', 's']},
-        {id: 'c', name: 'الغاء', status: ['n', 's', 'a']},
-        {id: 'i', name: 'استيداع', status: ['f', 'e', 'p']},
-        {id: 't', name: 'تحديد موعد التسليم', status: ['p']},
-        {id: 'd', name: 'تسليم', status: ['p']},
+        {id: 'a', name: 'اعتماد', status: ['n', 's'], path: ''},
+        {id: 's', name: 'تعليق', status: ['n', 'a'], path: ''},
+        {id: 'r', name: 'رفض', status: ['n', 's'], path: ''},
+        {id: 'c', name: 'الغاء', status: ['n', 's', 'a'], path: ''},
+        {id: 'i', name: 'استيداع', status: ['f', 'e', 'p'], path: ''},
+        {id: 't', name: 'تحديد موعد التسليم', status: ['p'], path: ''},
+        {id: 'd', name: 'تسليم', status: ['p'], path: ''},
         {id: 'e', name: 'تعديل', status: ['n', 'a', 'e', 's', 'f'], path: `/edit-order/${order.id}/type/e`},
         {id: 'b', name: 'ارجاع', status: ['p', 'd'], path: `/edit-order/${props.id}/type/r`}
       ]
@@ -49,8 +65,8 @@ const OrderDetails = props => {
   useEffect(() => {
     setLastOrder(() => {
       const userOrders = state.orders.filter(o => o.id !== order.id && o.userId === order.userId && !['c', 'm', 'r'].includes(o.status))
-      userOrders.sort((o1, o2) => o2.time.seconds - o1.time.seconds)
-      return ['a', 'e'].includes(userOrders[0]?.status) ? userOrders[0] : ''
+      userOrders.sort((o1, o2) => o2.time > o1.time ? 1 : -1)
+      return ['a', 'e'].includes(userOrders[0]?.status) ? userOrders[0] : undefined
     })
   }, [state.orders, order])
   useEffect(() => {
@@ -59,7 +75,7 @@ const OrderDetails = props => {
       setError('')
     }
   }, [error])
-  const handleAction = action => {
+  const handleAction = (action: StatusAction) => {
     try{
       if (action.path) {
         f7.views.current.router.navigate(action.path)
@@ -75,11 +91,11 @@ const OrderDetails = props => {
                 if (found && found.price !== p.price) {
                   throw new Error('samePackWithDiffPrice')
                 }
-                if (found && found.weight > 0 && state.packs.find(pa => pa.id === p.packId).isDivided) {
+                if (found && found.weight > 0 && state.packs.find(pa => pa.id === p.packId)?.isDivided) {
                   throw new Error('samePackPurchasedByWeight')
                 }
               }
-              mergeOrder(lastOrder, order.basket, order.id)
+              mergeOrder(lastOrder, order.basket, order.id!)
               showMessage(labels.mergeSuccess)
               f7.views.current.router.back()
             } catch(err) {
@@ -119,7 +135,7 @@ const OrderDetails = props => {
         } else if (action.id === 't') {
           f7.dialog.prompt(labels.enterDeliveryTime, labels.deliveryTimeTitle, value => {
             try{
-              setDeliveryTime(order.id, value)
+              setDeliveryTime(order.id!, value)
               showMessage(labels.editSuccess)
               f7.views.current.router.back()
             } catch(err) {
@@ -184,7 +200,7 @@ const OrderDetails = props => {
           : ''}
         </List>
       </Block>
-      <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => actionsList.current.open()}>
+      <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => actionsList.current?.open()}>
         <Icon material="build"></Icon>
       </Fab>
       <Actions ref={actionsList}>

@@ -90,7 +90,6 @@ import PermissionList from './pages/permission-list'
 import ArchivedStockTrans from './pages/archived-stock-trans'
 import ArchivedProducts from './pages/archived-products'
 import ReturnBasket from './pages/return-basket'
-import NotifyFriends from './pages/notify-friends'
 import StoreBalance from './pages/store-balance'
 import StoreBalanceTrans from './pages/store-balance-trans'
 
@@ -476,10 +475,6 @@ const routes = [
   {
     path: '/return-basket/',
     component: ReturnBasket
-  },
-  {
-    path: '/notify-friends/',
-    component: NotifyFriends
   },
   {
     path: '/store-balance/:id',

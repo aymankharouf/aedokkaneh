@@ -7,41 +7,51 @@ import moment from 'moment'
 import 'moment/locale/ar'
 import { paymentTypes } from '../data/config'
 
-const StoreBalanceTrans = props => {
+interface Props {
+  id: string,
+  storeId: string,
+  month: string
+}
+interface Trans {
+  name: string,
+  amount: number,
+  time: Date
+}
+const StoreBalanceTrans = (props: Props) => {
   const { state } = useContext(StoreContext)
-  const [store] = useState(() => state.stores.find(s => s.id === props.storeId))
-  const [trans, setTrans] = useState([])
+  const [store] = useState(() => state.stores.find(s => s.id === props.storeId)!)
+  const [trans, setTrans] = useState<Trans[]>([])
   const month = (Number(props.month) % 100) - 1
   const year = Math.trunc(Number(props.month) / 100)
   useEffect(() => {
     setTrans(() => {
-      let storePayments = state.storePayments.filter(p => p.storeId === props.storeId && p.paymentDate.getFullYear() === year && p.paymentDate.getMonth() === month)
-      storePayments = storePayments.map(p => {
-        const paymentTypeInfo = paymentTypes.find(t => t.id === p.type)
+      const storePayments = state.storePayments.filter(p => p.storeId === props.storeId && p.paymentDate.getFullYear() === year && p.paymentDate.getMonth() === month)
+      const result1 = storePayments.map(p => {
+        const paymentTypeInfo = paymentTypes.find(t => t.id === p.type)!
         return {
           amount: p.amount,
           time: p.paymentDate,
           name: paymentTypeInfo.name
         }
       })
-      let purchases = state.purchases.filter(p => p.storeId === props.storeId && (p.time.toDate()).getFullYear() === year && (p.time.toDate()).getMonth() === month)
-      purchases = purchases.map(p => {
+      const purchases = state.purchases.filter(p => p.storeId === props.storeId && (p.time).getFullYear() === year && (p.time).getMonth() === month)
+      const result2 = purchases.map(p => {
         return {
           amount: p.total,
           time: p.time,
           name: labels.purchase
         }
       })
-      let stockTrans = state.stockTrans.filter(t => t.storeId === props.id && t.type === 's' && (t.time.toDate()).getFullYear() === year && (t.time.toDate()).getMonth() === month)
-      stockTrans = stockTrans.map(t => {
+      const stockTrans = state.stockTrans.filter(t => t.storeId === props.id && t.type === 's' && (t.time).getFullYear() === year && (t.time).getMonth() === month)
+      const result3 = stockTrans.map(t => {
         return {
           amount: t.total,
           time: t.time,
           name: labels.sale
         }
       })
-      const trans = [...storePayments, ...purchases, ...stockTrans]
-      return trans.sort((t1, t2) => t2.time.seconds - t1.time.seconds)
+      const result = [...result1, ...result2, ...result3]
+      return result.sort((t1, t2) => t2.time > t1.time ? 1 : -1)
     })
   }, [store, state.purchases, state.stockTrans, state.storePayments, props.id, month, year, props.storeId])
   let i = 0
@@ -58,7 +68,7 @@ const StoreBalanceTrans = props => {
           : trans.map(t => 
               <ListItem
                 title={t.name}
-                subtitle={moment(t.time.toDate()).fromNow()}
+                subtitle={moment(t.time).fromNow()}
                 after={(t.amount / 100).toFixed(2)}
                 key={i++}
               />

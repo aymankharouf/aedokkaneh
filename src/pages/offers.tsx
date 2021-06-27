@@ -4,25 +4,30 @@ import BottomToolbar from './bottom-toolbar'
 import { StoreContext } from '../data/store'
 import moment from 'moment'
 import labels from '../data/labels'
-import { changeStorePackStatus, showMessage, getMessage, showError } from '../data/actions'
+import { changeStorePackStatus, showMessage, getMessage, showError } from '../data/actionst'
+import { iPack, iPackPrice } from '../data/interfaces'
 
-const Offers = props => {
+interface ExtendedPackPrice extends iPackPrice {
+  packInfo: iPack,
+  storeName: string
+}
+const Offers = () => {
   const { state } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [offers, setOffers] = useState([])
+  const [offers, setOffers] = useState<ExtendedPackPrice[]>([])
   useEffect(() => {
     setOffers(() => {
-      let offers = state.packPrices.filter(p => p.offerEnd)
-      offers = offers.map(o => {
-        const packInfo = state.packs.find(p => p.id === o.packId)
-        const storeName = o.storeId ? (o.storeId === 'm' ? labels.multipleStores : state.stores.find(s => s.id === o.storeId).name) : ''
+      const offers = state.packPrices.filter(p => p.offerEnd)
+      const result = offers.map(o => {
+        const packInfo = state.packs.find(p => p.id === o.packId)!
+        const storeName = o.storeId ? (o.storeId === 'm' ? labels.multipleStores : state.stores.find(s => s.id === o.storeId)?.name || '') : ''
         return {
           ...o,
           packInfo,
           storeName
         }
       })
-      return offers.sort((o1, o2) => o1.offerEnd.seconds - o2.offerEnd.seconds)
+      return result.sort((o1, o2) => (o1.offerEnd || new Date()) > (o2.offerEnd || new Date()) ? 1 : -1)
     })
   }, [state.packPrices, state.packs, state.stores])
   useEffect(() => {
@@ -31,11 +36,11 @@ const Offers = props => {
       setError('')
     }
   }, [error])
-  const handleHaltOffer = storePack => {
+  const handleHaltOffer = (storePack: ExtendedPackPrice) => {
     try{
-      const offerEndDate = storePack.offerEnd.toDate().setHours(0, 0, 0, 0)
+      const offerEndDate = storePack.offerEnd?.setHours(0, 0, 0, 0)
       const today = (new Date()).setHours(0, 0, 0, 0)
-      if (offerEndDate > today) {
+      if (offerEndDate && offerEndDate > today) {
         f7.dialog.confirm(labels.confirmationText, labels.confirmationTitle, () => {
           try{
             changeStorePackStatus(storePack, state.packPrices, state.packs)
@@ -65,7 +70,7 @@ const Offers = props => {
                 title={p.packInfo.productName}
                 subtitle={p.packInfo.productAlias}
                 text={p.packInfo.name}
-                footer={moment(p.offerEnd.toDate()).format('Y/M/D')}
+                footer={moment(p.offerEnd).format('Y/M/D')}
                 key={i++}
               >
                 <img src={p.packInfo.imageUrl} slot="media" className="img-list" alt={labels.noImage} />

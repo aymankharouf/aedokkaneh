@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { addStore, showMessage, showError, getMessage } from '../data/actions'
+import { addStore, showMessage, showError, getMessage } from '../data/actionst'
 import { f7, Page, Navbar, List, ListItem, ListInput, Fab, Icon, Toolbar, Toggle } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'

@@ -6,26 +6,28 @@ import 'moment/locale/ar'
 import { StoreContext } from '../data/store'
 import labels from '../data/labels'
 import { orderStatus } from '../data/config'
-import { getArchivedOrders, getMessage, showError } from '../data/actions'
+import { getArchivedOrders, getMessage, showError } from '../data/actionst'
+import { iCustomerInfo, iOrder } from '../data/interfaces'
 
-const ArchivedOrders = props => {
+interface ExtendedOrder extends iOrder {
+  customerInfo: iCustomerInfo
+}
+const ArchivedOrders = () => {
   const { state, dispatch } = useContext(StoreContext)
   const [error, setError] = useState('')
-  const [orders, setOrders] = useState([])
+  const [orders, setOrders] = useState<ExtendedOrder[]>([])
   const [monthlyTrans] = useState(() => [...state.monthlyTrans.sort((t1, t2) => t2.id - t1.id)])
   const lastMonth = useRef(0)
   useEffect(() => {
     setOrders(() => {
       const orders = state.archivedOrders.map(o => {
-        const customerInfo = state.customers.find(c => c.id === o.userId)
-        const statusInfo = orderStatus.find(s => s.id === o.status)
+        const customerInfo = state.customers.find(c => c.id === o.userId)!
         return {
           ...o,
-          customerInfo,
-          statusInfo
+          customerInfo
         }
       })
-      return orders.sort((o1, o2) => o2.time.seconds - o1.time.seconds)  
+      return orders.sort((o1, o2) => o2.time > o1.time ? 1 : -1)  
     })
   }, [state.archivedOrders, state.customers])
   useEffect(() => {
@@ -42,7 +44,7 @@ const ArchivedOrders = props => {
       }
       const orders = getArchivedOrders(id)
       if (orders.length > 0) {
-        dispatch({type: 'ADD_ARCHIVED_ORDERS', orders})
+        dispatch({type: 'ADD_ARCHIVED_ORDERS', payload: orders})
       }
       lastMonth.current++
   } catch(err) {
@@ -75,8 +77,8 @@ const ArchivedOrders = props => {
               <ListItem
                 link={`/order-details/${o.id}/type/a`}
                 title={o.customerInfo.name}
-                subtitle={o.statusInfo.name}
-                text={moment(o.time.toDate()).fromNow()}
+                subtitle={orderStatus.find(s => s.id === o.status)?.name}
+                text={moment(o.time).fromNow()}
                 key={o.id}
               />
             )
