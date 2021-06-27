@@ -1,19 +1,19 @@
 import { useContext, useEffect, useState } from 'react'
 import { f7, Block, Fab, Page, Navbar, List, ListItem, Toolbar, Link, Icon, Stepper } from 'framework7-react'
-import { StoreContext } from '../data/store'
-import { updateOrderStatus, editOrder, showMessage, showError, getMessage, quantityDetails, returnOrder } from '../data/actionst'
+import { StateContext } from '../data/state-provider'
+import { updateOrderStatus, editOrder, showMessage, showError, getMessage, quantityDetails, returnOrder } from '../data/actions'
 import labels from '../data/labels'
-import { iOrderBasketPack, iPack } from '../data/interfaces'
+import { OrderBasketPack, Pack } from '../data/types'
 
-interface Props {
+type Props = {
   id: string,
   type: string
 }
-interface ExtendedOrderBasketPack extends iOrderBasketPack {
-  packInfo: iPack
+type ExtendedOrderBasketPack = OrderBasketPack & {
+  packInfo: Pack
 }
 const EditOrder = (props: Props) => {
-  const { state, dispatch } = useContext(StoreContext)
+  const { state, dispatch } = useContext(StateContext)
   const [error, setError] = useState('')
   const [order] = useState(() => state.orders.find(o => o.id === props.id)!)
   const [orderBasket, setOrderBasket] = useState<ExtendedOrderBasketPack[]>([])
@@ -71,9 +71,9 @@ const EditOrder = (props: Props) => {
       if (props.type === 'e') {
         editOrder(order, state.orderBasket!, state.packPrices, state.packs)
       } else {
-        const userLocation = state.users.find(c => c.id === order.userId)?.locationId
-        const locationFees = state.locations.find(l => l.id === userLocation)?.fees || 0
-        returnOrder(order, state.orderBasket!, locationFees, state.packPrices, state.packs)
+        const userRegion = state.users.find(c => c.id === order.userId)?.regionId
+        const regionFees = state.regions.find(r => r.id === userRegion)?.fees || 0
+        returnOrder(order, state.orderBasket!, regionFees, state.packPrices, state.packs)
       }
       showMessage(labels.editSuccess)
       dispatch({type: 'CLEAR_ORDER_BASKET'})

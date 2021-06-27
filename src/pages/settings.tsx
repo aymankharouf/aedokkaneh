@@ -9,7 +9,7 @@ const Settings = () => {
   const [sections] = useState(() => [
     {id: '1', name: labels.countries, path: '/countries/'},
     {id: '2', name: labels.categories, path: '/categories/0'},
-    {id: '3', name: labels.locations, path: '/locations/'},
+    {id: '3', name: labels.regions, path: '/regions/'},
     {id: '4', name: labels.adverts, path: '/adverts/'}
   ])
   let i = 0

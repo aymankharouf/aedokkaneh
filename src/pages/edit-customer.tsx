@@ -1,39 +1,39 @@
 import { useState, useContext, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListInput, Fab, Icon, Toolbar, ListItem, Toggle } from 'framework7-react'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import BottomToolbar from './bottom-toolbar'
-import { editCustomer, showMessage, showError, getMessage } from '../data/actionst'
+import { editCustomer, showMessage, showError, getMessage } from '../data/actions'
 import labels from '../data/labels'
 
-interface Props {
+type Props = {
   id: string
 }
 const EditCustomer = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [customer] = useState(() => state.customers.find(c => c.id === props.id)!)
   const [userInfo] = useState(() => state.users.find(u => u.id === props.id)!)
   const [name, setName] = useState(userInfo.name)
   const [address, setAddress] = useState(customer.address)
-  const [locationId, setLocationId] = useState(userInfo.locationId)
+  const [regionId, setRegionId] = useState(userInfo.regionId)
   const [mapPosition, setMapPosition] = useState(customer.mapPosition)
   const [isBlocked, setIsBlocked] = useState(customer.isBlocked)
   const [deliveryFees, setDeliveryFees] = useState((customer.deliveryFees / 100).toFixed(2))
   const [orderLimit, setOrderLimit] = useState((customer.orderLimit / 100).toFixed(2))
   const [specialDiscount, setSpecialDiscount] = useState((customer.specialDiscount / 100).toFixed(2))
   const [hasChanged, setHasChanged] = useState(false)
-  const [locations] = useState(() => [...state.locations].sort((l1, l2) => l1.name > l2.name ? 1 : -1))
+  const [regions] = useState(() => [...state.regions].sort((l1, l2) => l1.name > l2.name ? 1 : -1))
   useEffect(() => {
     if (name !== userInfo.name
     || address !== customer.address
-    || locationId !== userInfo.locationId
+    || regionId !== userInfo.regionId
     || mapPosition !== customer.mapPosition
     || isBlocked !== customer.isBlocked
     || +deliveryFees * 100 !== customer.deliveryFees
     || +specialDiscount * 100 !== customer.specialDiscount
     || +orderLimit * 100 !== customer.orderLimit) setHasChanged(true)
     else setHasChanged(false)
-  }, [customer, userInfo, name, address, locationId, mapPosition, isBlocked, deliveryFees, orderLimit, specialDiscount])
+  }, [customer, userInfo, name, address, regionId, mapPosition, isBlocked, deliveryFees, orderLimit, specialDiscount])
   useEffect(() => {
     if (error) {
       showError(error)
@@ -60,7 +60,7 @@ const EditCustomer = (props: Props) => {
         orderLimit: +orderLimit * 100,
         specialDiscount: +specialDiscount * 100
       }
-      editCustomer(newCustomer, name, locationId, userInfo.mobile, customer.storeId, state.stores)
+      editCustomer(newCustomer, name, regionId, userInfo.mobile, customer.storeId, state.stores)
       showMessage(labels.editSuccess)
       f7.views.current.router.back()    
     } catch(err) {
@@ -81,7 +81,7 @@ const EditCustomer = (props: Props) => {
           onInputClear={() => setName('')}
         />
         <ListItem
-          title={labels.location}
+          title={labels.region}
           smartSelect
           smartSelectParams={{
             openIn: "popup", 
@@ -91,10 +91,10 @@ const EditCustomer = (props: Props) => {
             popupCloseLinkText: labels.close
           }}
         >
-          <select name="locationId" value={locationId} onChange={e => setLocationId(e.target.value)}>
+          <select name="regionId" value={regionId} onChange={e => setRegionId(e.target.value)}>
             <option value=""></option>
-            {locations.map(l => 
-              <option key={l.id} value={l.id}>{l.name}</option>
+            {regions.map(r => 
+              <option key={r.id} value={r.id}>{r.name}</option>
             )}
           </select>
         </ListItem>
@@ -151,7 +151,7 @@ const EditCustomer = (props: Props) => {
       <Toolbar bottom>
         <BottomToolbar/>
       </Toolbar>
-      {!name || !locationId || !hasChanged ? '' :
+      {!name || !regionId || !hasChanged ? '' :
         <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleSubmit()}>
           <Icon material="done"></Icon>
         </Fab>

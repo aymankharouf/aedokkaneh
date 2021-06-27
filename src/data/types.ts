@@ -1,9 +1,9 @@
 import firebase from './firebase'
 
-export interface iLabel {
+export type Label = {
     [key: string]: string
 }
-export interface iCategory {
+export type Category = {
   id?: string,
   parentId: string,
   name: string,
@@ -11,11 +11,11 @@ export interface iCategory {
   isLeaf: boolean,
   isActive: boolean
 }
-export interface iError {
+export type Error = {
   code: string,
   message: string
 }
-export interface iPack {
+export type Pack = {
   id?: string,
   name: string,
   productId: string,
@@ -45,7 +45,7 @@ export interface iPack {
   byWeight: boolean,
   isDivided: boolean
 }
-export interface iPackPrice {
+export type PackPrice = {
   packId: string,
   storeId: string,
   quantity: number,
@@ -57,7 +57,7 @@ export interface iPackPrice {
   time: Date,
   isAuto: boolean
 }
-export interface iNotification {
+export type Notification = {
   id: string,
   userId: string,
   title: string,
@@ -65,19 +65,19 @@ export interface iNotification {
   status: string,
   time: Date
 }
-export interface iFriend {
+export type Friend = {
   userId: string,
   mobile: string,
   name: string,
   status: string
 }
-export interface iRating {
+export type Rating = {
   userId: string,
   productId: string,
   value: number,
   status: string
 }
-export interface iAlarm {
+export type Alarm = {
   id?: string,
   userId: string,
   packId: string,
@@ -91,16 +91,16 @@ export interface iAlarm {
   quantity: number,
   time: Date
 }
-export interface iUserInfo {
+export type UserInfo = {
   id: string,
   name: string,
   mobile: string,
   storeName: string,
   colors: string[],
-  locationId: string,
+  regionId: string,
   time: Date
 }
-export interface iCustomerInfo {
+export type CustomerInfo = {
   id: string,
   name: string,
   storeId: string,
@@ -118,7 +118,7 @@ export interface iCustomerInfo {
   deliveredOrdersTotal: number,
   time: Date
 }
-export interface iOrderBasketPack {
+export type OrderBasketPack = {
   packId: string,
   productName: string,
   productAlias: string,
@@ -144,11 +144,11 @@ export interface iOrderBasketPack {
   offerId: string,
   isAllocated: boolean
 }
-export interface iDiscount {
+export type Discount = {
   type: string,
   value: number
 }
-export interface iOrder {
+export type Order = {
   id?: string,
   userId: string,
   status: string,
@@ -156,17 +156,17 @@ export interface iOrder {
   total: number,
   deliveryTime: string,
   deliveryFees: number,
-  discount: iDiscount,
+  discount: Discount,
   fixedFees: number,
   fraction: number,
   profit: number,
   lastUpdate: Date | null,
   requestTime: Date | null,
   time: Date,
-  basket: iOrderBasketPack[],
-  requestBasket: iOrderBasketPack[]
+  basket: OrderBasketPack[],
+  requestBasket: OrderBasketPack[]
 }
-export interface iAdvert {
+export type Advert = {
   id?: string,
   type: string,
   title: string,
@@ -175,23 +175,23 @@ export interface iAdvert {
   imageUrl: string,
   time: Date
 }
-export interface iLocation {
+export type Region = {
   id: string,
   name: string,
   fees: number,
   ordering: number
 }
-export interface iPasswordRequest {
+export type PasswordRequest = {
   id: string,
   mobile: string,
   status: string,
   time: Date
 }
-export interface iBalance {
+export type Balance = {
   month: number,
   balance: number
 }
-export interface iStore {
+export type Store = {
   id?: string,
   name: string,
   type: string,
@@ -203,26 +203,26 @@ export interface iStore {
   openTime: string,
   address: string,
   time: Date,
-  balances: iBalance[]
+  balances: Balance[]
 }
-export interface iPurchase {
+export type Purchase = {
   id?: string,
   storeId: string,
   total: number,
   time: Date,
   isArchived: boolean,
-  basket: iStockPack[]
+  basket: StockPack[]
 }
-export interface iStockTrans {
+export type StockOperation = {
   id?: string,
   purchaseId: string,
   storeId: string,
   type: string,
   total: number,
-  basket: iStockPack[],
+  basket: StockPack[],
   time: Date
 }
-export interface iProduct {
+export type Product = {
   id?: string,
   name: string,
   alias: string,
@@ -236,7 +236,7 @@ export interface iProduct {
   ratingCount: number,
   isArchived: boolean
 }
-export interface iSpending {
+export type Spending = {
   id?: string,
   type: string,
   amount: number,
@@ -244,14 +244,14 @@ export interface iSpending {
   description: string,
   time: Date
 }
-export interface iMonthlyTrans {
+export type MonthlyOperation = {
   id: number,
   ordersCount: number,
   deliveredOrdersCount: number,
   finishedOrdersCount: number,
   stock: number,
   sales: number,
-  transProfit: number,
+  operationProfit: number,
   fixedFees: number,
   deliveryFees: number,
   fractions: number,
@@ -261,35 +261,35 @@ export interface iMonthlyTrans {
   donations: number,
   damages: number,
   storesProfit: number,
-  storeTransNet: number,
+  operationNet: number,
   withdrawals: number,
   expenses: number,
   netProfit: number
 }
-export interface iLog {
+export type Log = {
   id: string,
   userId: string,
   page: string,
   error: string,
   time: Date
 }
-export interface iStorePayment {
+export type StorePayment = {
   storeId: string,
   type: string,
   amount: number,
   paymentDate: Date,
 }
-export interface iBasket {
+export type Basket = {
   storeId: string,
-  packs: iBasketPack[]
+  packs: BasketPack[]
 }
-export interface iReturnBasket {
+export type ReturnBasket = {
   storeId: string,
   purchaseId: string,
   type: string,
-  packs: iStockPack[]
+  packs: StockPack[]
 }
-export interface iBasketPack {
+export type BasketPack = {
   packId: string,
   productName: string,
   productAlias: string,
@@ -310,7 +310,7 @@ export interface iBasketPack {
   refPackQuantity: number,
   refQuantity: number
 }
-export interface iStockPack {
+export type StockPack = {
   packId: string,
   quantity: number,
   cost: number,
@@ -318,55 +318,55 @@ export interface iStockPack {
   actual: number,
   weight: number
 }
-export interface iRequestedPack {
+export type RequestedPack = {
   packId: string,
   price: number,
   quantity: number,
   orderId: string,
   offerId: string,
-  packInfo: iPack,
+  packInfo: Pack,
   weight: number
 }
-export interface iState {
+export type State = {
   user?: firebase.User,
-  categories: iCategory[], 
-  locations: iLocation[], 
+  categories: Category[], 
+  regions: Region[], 
   countries: string[],
-  stores: iStore[], 
-  users: iUserInfo[],
-  purchases: iPurchase[],
-  orders: iOrder[],
-  stockTrans: iStockTrans[],
-  products: iProduct[],
-  packs: iPack[],
-  passwordRequests: iPasswordRequest[],
-  customers: iCustomerInfo[],
-  spendings: iSpending[],
-  monthlyTrans: iMonthlyTrans[],
-  packPrices: iPackPrice[],
-  logs: iLog[],
-  archivedOrders: iOrder[],
-  adverts: iAdvert[],
-  archivedPurchases: iPurchase[],
-  archivedStockTrans: iStockTrans[],
-  archivedProducts: iProduct[],
-  archivedPacks: iPack[],
-  notifications: iNotification[],
-  alarms: iAlarm[],
-  ratings: iRating[],
-  invitations: iFriend[],
-  storePayments: iStorePayment[],
-  basket?: iBasket,
-  returnBasket?: iReturnBasket,
-  orderBasket?: iOrderBasketPack[]
+  stores: Store[], 
+  users: UserInfo[],
+  purchases: Purchase[],
+  orders: Order[],
+  stockOperations: StockOperation[],
+  products: Product[],
+  packs: Pack[],
+  passwordRequests: PasswordRequest[],
+  customers: CustomerInfo[],
+  spendings: Spending[],
+  monthlyOperations: MonthlyOperation[],
+  packPrices: PackPrice[],
+  logs: Log[],
+  archivedOrders: Order[],
+  adverts: Advert[],
+  archivedPurchases: Purchase[],
+  archivedStockOperations: StockOperation[],
+  archivedProducts: Product[],
+  archivedPacks: Pack[],
+  notifications: Notification[],
+  alarms: Alarm[],
+  ratings: Rating[],
+  invitations: Friend[],
+  storePayments: StorePayment[],
+  basket?: Basket,
+  returnBasket?: ReturnBasket,
+  orderBasket?: OrderBasketPack[]
 }
 
-export interface iAction {
+export type Action = {
   type: string
   payload?: any
 }
 
-export interface iContext {
-  state: iState;
-  dispatch: React.Dispatch<iAction>
+export type Context = {
+  state: State
+  dispatch: React.Dispatch<Action>
 }

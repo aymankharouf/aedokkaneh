@@ -3,14 +3,14 @@ import { Block, Page, Navbar, List, ListItem, Toolbar } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { iUserInfo } from '../data/interfaces'
+import { UserInfo } from '../data/types'
 
 
 const NewUsers = () => {
-  const { state } = useContext(StoreContext)
-  const [newUsers, setNewUsers] = useState<iUserInfo[]>([])
+  const { state } = useContext(StateContext)
+  const [newUsers, setNewUsers] = useState<UserInfo[]>([])
   useEffect(() => {
     setNewUsers(() => {
       const newUsers = state.users.filter(u => !state.customers.find(c => c.id === u.id))

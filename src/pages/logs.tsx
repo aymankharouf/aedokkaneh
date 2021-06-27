@@ -3,16 +3,16 @@ import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Button } from 'framew
 import BottomToolbar from './bottom-toolbar'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { deleteLog, showMessage, showError, getMessage } from '../data/actionst'
-import { iLog, iUserInfo } from '../data/interfaces'
+import { deleteLog, showMessage, showError, getMessage } from '../data/actions'
+import { Log, UserInfo } from '../data/types'
 
-interface ExtendedLog extends iLog {
-  userInfo: iUserInfo
+type ExtendedLog = Log & {
+  userInfo: UserInfo
 }
 const Logs = () => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [logs, setLogs] = useState<ExtendedLog[]>([])
   useEffect(() => {
@@ -33,7 +33,7 @@ const Logs = () => {
       setError('')
     }
   }, [error])
-  const handleDelete = (log: iLog) => {
+  const handleDelete = (log: Log) => {
     f7.dialog.confirm(labels.confirmationText, labels.confirmationTitle, () => {
       try{
         deleteLog(log)

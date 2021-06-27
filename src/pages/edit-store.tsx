@@ -1,16 +1,16 @@
 import { useState, useContext, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListItem, ListInput, Fab, Icon, Toolbar, Toggle } from 'framework7-react'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
 import { storeTypes } from '../data/config'
-import { editStore, showMessage, showError, getMessage } from '../data/actionst'
+import { editStore, showMessage, showError, getMessage } from '../data/actions'
 
-interface Props {
+type Props = {
   id: string
 }
 const EditStore = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [store] = useState(() => state.stores.find(s => s.id === props.id)!)
   const [type, setType] = useState(store.type)

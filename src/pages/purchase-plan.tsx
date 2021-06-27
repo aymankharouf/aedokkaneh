@@ -1,18 +1,18 @@
 import { useContext, useEffect, useState } from 'react'
 import { Block, Page, Navbar, List, ListItem, Toolbar } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
-import { getRequestedPacks, getPackStores } from '../data/actionst'
+import { StateContext } from '../data/state-provider'
+import { getRequestedPacks, getPackStores } from '../data/actions'
 import labels from '../data/labels'
-import { iStore } from '../data/interfaces'
+import { Store } from '../data/types'
 
-interface ExtendedStore extends iStore {
+type ExtendedStore = Store & {
 	sales: number,
 	lastPack: string,
 	packsCount: number
 }
 const PurchasePlan = () => {
-	const { state } = useContext(StoreContext)
+	const { state } = useContext(StateContext)
 	const [stores, setStores] = useState<ExtendedStore[]>([])
 	const [approvedOrders] = useState(() => state.orders.filter(o => ['a', 'e'].includes(o.status)))
 	useEffect(() => {

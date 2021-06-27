@@ -1,17 +1,17 @@
 import { useContext, useEffect, useState } from 'react'
 import { Block, Page, Navbar, List, ListItem, Toolbar, Badge } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
-import { quantityText, getRequestedPacks, getPackStores } from '../data/actionst'
+import { StateContext } from '../data/state-provider'
+import { quantityText, getRequestedPacks, getPackStores } from '../data/actions'
 import labels from '../data/labels'
-import { iRequestedPack } from '../data/interfaces'
+import { RequestedPack } from '../data/types'
 
-interface Props {
+type Props = {
 	id: string
 }
 const RequestedPacks = (props: Props) => {
-	const { state } = useContext(StoreContext)
-	const [requestedPacks, setRequestedPacks] = useState<iRequestedPack[]>([])
+	const { state } = useContext(StateContext)
+	const [requestedPacks, setRequestedPacks] = useState<RequestedPack[]>([])
 	useEffect(() => {
 		setRequestedPacks(() => {
 			const packs = getRequestedPacks(state.orders, state.basket!, state.packs)

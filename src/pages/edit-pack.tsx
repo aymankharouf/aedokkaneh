@@ -1,14 +1,14 @@
 import { useState, useContext, useEffect, ChangeEvent } from 'react'
-import { editPack, showMessage, showError, getMessage } from '../data/actionst'
+import { editPack, showMessage, showError, getMessage } from '../data/actions'
 import { f7, Page, Navbar, List, ListItem, ListInput, Fab, Icon, Toggle } from 'framework7-react'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 
-interface Props {
+type Props = {
   id: string
 }
 const EditPack = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [pack] = useState(() => state.packs.find(p => p.id === props.id)!)
   const [name, setName] = useState(pack.name)

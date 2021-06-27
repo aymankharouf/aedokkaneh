@@ -1,17 +1,17 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Block, Page, Navbar, Toolbar, List, ListItem, Fab, Icon } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { randomColors, orderStatus } from '../data/config'
 
-interface OrderStatus {
+type OrderStatus = {
   id: string,
   name: string,
   count: number
 }
 const Orders = () => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [orderStatuses, setOrderStatuses] = useState<OrderStatus[]>([])
   const [orderRequests, setOrderRequests] = useState(0)
   const [finishedOrders, setFinishedOrders] = useState(0)

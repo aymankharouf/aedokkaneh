@@ -2,34 +2,34 @@ import { useContext, useState, useEffect, useRef } from 'react'
 import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon } from 'framework7-react'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
-import { stockTransTypes } from '../data/config'
-import { getArchivedStockTrans, getMessage, showError } from '../data/actionst'
-import { iStockTrans, iStore } from '../data/interfaces'
+import { stockOperationTypes } from '../data/config'
+import { getArchivedStockOperations, getMessage, showError } from '../data/actions'
+import { StockOperation, Store } from '../data/types'
 
-interface ExtendedStockTrans extends iStockTrans {
-  storeInfo: iStore
+type ExtendedStockOperation = StockOperation & {
+  storeInfo: Store
 }
-const ArchivedStockTrans = () => {
-  const { state, dispatch } = useContext(StoreContext)
+const ArchivedStockOperations = () => {
+  const { state, dispatch } = useContext(StateContext)
   const [error, setError] = useState('')
-  const [stockTrans, setStockTrans] = useState<ExtendedStockTrans[]>([])
-  const [monthlyTrans] = useState(() => [...state.monthlyTrans.sort((t1, t2) => t2.id - t1.id)])
+  const [stockOperations, setStockOperations] = useState<ExtendedStockOperation[]>([])
+  const [monthlyOperations] = useState(() => [...state.monthlyOperations.sort((t1, t2) => t2.id - t1.id)])
   const lastMonth = useRef(0)
   useEffect(() => {
-    setStockTrans(() => {
-      const stockTrans = state.stockTrans.map(t => {
+    setStockOperations(() => {
+      const stockOperations = state.stockOperations.map(t => {
         const storeInfo = state.stores.find(s => s.id === t.storeId)!
         return {
           ...t,
           storeInfo
         }
       })
-      return stockTrans.sort((t1, t2) => t2.time > t1.time ? 1 : -1)
+      return stockOperations.sort((t1, t2) => t2.time > t1.time ? 1 : -1)
     })
-  }, [state.stockTrans, state.stores])
+  }, [state.stockOperations, state.stores])
   useEffect(() => {
     if (error) {
       showError(error)
@@ -38,13 +38,13 @@ const ArchivedStockTrans = () => {
   }, [error])
   const handleRetreive = () => {
     try{
-      const id = monthlyTrans[lastMonth.current]?.id
+      const id = monthlyOperations[lastMonth.current]?.id
       if (!id) {
         throw new Error('noMoreArchive')
       }
-      const trans = getArchivedStockTrans(id)
-      if (trans.length > 0) {
-        dispatch({type: 'ADD_ARCHIVED_STOCK_TRANS', payload: trans})
+      const operations = getArchivedStockOperations(id)
+      if (operations.length > 0) {
+        dispatch({type: 'ADD_ARCHIVED_STOCK_OPERATIONS', payload: operations})
       }
       lastMonth.current++
   } catch(err) {
@@ -54,15 +54,15 @@ const ArchivedStockTrans = () => {
 
   return(
     <Page>
-      <Navbar title={labels.archivedStockTrans} backLink={labels.back} />
+      <Navbar title={labels.archivedStockOperations} backLink={labels.back} />
       <Block>
         <List mediaList>
-          {stockTrans.length === 0 ? 
+          {stockOperations.length === 0 ? 
             <ListItem title={labels.noData} /> 
-          : stockTrans.map(t => 
+          : stockOperations.map(t => 
               <ListItem
-                link={`/stock-trans-details/${t.id}/type/a`}
-                title={`${stockTransTypes.find(tt => tt.id === t.type)?.name} ${t.storeId ? t.storeInfo.name : ''}`}
+                link={`/stock-operation-details/${t.id}/type/a`}
+                title={`${stockOperationTypes.find(tt => tt.id === t.type)?.name} ${t.storeId ? t.storeInfo.name : ''}`}
                 subtitle={moment(t.time).fromNow()}
                 after={(t.total / 100).toFixed(2)}
                 key={t.id}
@@ -81,4 +81,4 @@ const ArchivedStockTrans = () => {
   )
 }
 
-export default ArchivedStockTrans
+export default ArchivedStockOperations

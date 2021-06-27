@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListItem, ListInput, Fab, Icon } from 'framework7-react'
 import labels from '../data/labels'
 import { spendingTypes } from '../data/config'
-import { addSpending, showMessage, showError, getMessage } from '../data/actionst'
+import { addSpending, showMessage, showError, getMessage } from '../data/actions'
 
 const AddSpending = () => {
   const [error, setError] = useState('')

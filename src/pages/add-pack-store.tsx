@@ -1,22 +1,22 @@
 import { useState, useContext, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListItem, ListInput, Fab, Icon, Toggle } from 'framework7-react'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { addPackPrice, showMessage, showError, getMessage } from '../data/actionst'
-import { iStore } from '../data/interfaces'
+import { addPackPrice, showMessage, showError, getMessage } from '../data/actions'
+import { Store } from '../data/types'
 
-interface Props {
+type Props = {
   id: string
 }
 const AddPackStore = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [cost, setCost] = useState('')
   const [price, setPrice] = useState('')
   const [offerDays, setOfferDays] = useState('')
   const [isActive, setIsActive] = useState(false)
   const [storeId, setStoreId] = useState('')
-  const [store, setStore] = useState<iStore>()
+  const [store, setStore] = useState<Store>()
   const [stores] = useState(() => state.stores.filter(s => s.id !== 's'))
   const [pack] = useState(() => state.packs.find(p => p.id === props.id)!)
   useEffect(() => {

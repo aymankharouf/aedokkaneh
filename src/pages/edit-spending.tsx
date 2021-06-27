@@ -1,16 +1,16 @@
 import { useState, useContext, useEffect } from 'react'
-import { editSpending, showMessage, showError, getMessage } from '../data/actionst'
+import { editSpending, showMessage, showError, getMessage } from '../data/actions'
 import { f7, Page, Navbar, List, ListInput, Fab, Icon, Toolbar, ListItem } from 'framework7-react'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
 import { spendingTypes } from '../data/config'
 
-interface Props {
+type Props = {
   id: string
 }
 const EditSpending = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [spending] = useState(() => state.spendings.find(s => s.id === props.id)!)
   const [type, setType] = useState(spending.type)

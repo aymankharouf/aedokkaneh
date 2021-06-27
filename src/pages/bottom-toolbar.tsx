@@ -1,9 +1,9 @@
 import { useContext, useState, useEffect } from 'react'
 import { Icon, Link, Badge} from 'framework7-react'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 
 const BottomToolbar = () => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [basketLink, setBasketLink] = useState('')
   const [basketCount, setBasketCount] = useState(0)
   useEffect(() => {

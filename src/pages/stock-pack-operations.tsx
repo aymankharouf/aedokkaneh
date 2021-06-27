@@ -2,37 +2,37 @@ import { useContext, useState, useEffect, useRef } from 'react'
 import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, Actions, ActionsButton } from 'framework7-react'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StoreContext } from '../data/store'
-import { showMessage, showError, getMessage, quantityText, unfoldStockPack } from '../data/actionst'
+import { StateContext } from '../data/state-provider'
+import { showMessage, showError, getMessage, quantityText, unfoldStockPack } from '../data/actions'
 import labels from '../data/labels'
-import { stockTransTypes } from '../data/config'
+import { stockOperationTypes } from '../data/config'
 import BottomToolbar from './bottom-toolbar'
-import { iStockPack, iStore } from '../data/interfaces'
+import { StockPack, Store } from '../data/types'
 
-interface Props {
+type Props = {
   id: string
 }
-interface ExtendedStockPack extends iStockPack {
-  storeInfo: iStore,
+type ExtendedStockPack = StockPack & {
+  storeInfo: Store,
   id: string,
   purchaseId: string,
   type: string,
   time: Date
 }
-const StockPackTrans = (props: Props) => {
-  const { state, dispatch } = useContext(StoreContext)
+const StockPackOperations = (props: Props) => {
+  const { state, dispatch } = useContext(StateContext)
   const [error, setError] = useState('')
   const [pack] = useState(() => state.packs.find(p => p.id === props.id)!)
   const [stockPackInfo] = useState(() => state.packPrices.find(p => p.storeId === 's' && p.packId === props.id)!)
   const actionsList = useRef<Actions>(null)
-  const [packTrans, setPackTrans] = useState<ExtendedStockPack[]>([])
+  const [packOperations, setPackOperations] = useState<ExtendedStockPack[]>([])
   const [lastPurchase] = useState<ExtendedStockPack>(() => {
     const purchases = state.purchases.filter(p => p.basket.find(bp => bp.packId === pack.id))
     const result = purchases.map(p => {
-      const transPack = p.basket.find(bp => bp.packId === pack.id)!
+      const operationPack = p.basket.find(bp => bp.packId === pack.id)!
       const storeInfo = state.stores.find(s => s.id === p.storeId)!
       return {
-        ...transPack,
+        ...operationPack,
         storeInfo,
         id: '',
         type: '',
@@ -44,13 +44,13 @@ const StockPackTrans = (props: Props) => {
     return result[0]
   })
   useEffect(() => {
-    setPackTrans(() => {
-      const packTrans = state.stockTrans.filter(t => t.basket.find(p => p.packId === pack.id))
-      const result = packTrans.map(t => {
-        const transPack = t.basket.find(p => p.packId === pack.id)!
+    setPackOperations(() => {
+      const packOperations = state.stockOperations.filter(t => t.basket.find(p => p.packId === pack.id))
+      const result = packOperations.map(t => {
+        const operationPack = t.basket.find(p => p.packId === pack.id)!
         const storeInfo = state.stores.find(s => s.id === t.storeId)!
         return {
-          ...transPack,
+          ...operationPack,
           id: t.id!,
           purchaseId: t.purchaseId,
           type: t.type,
@@ -60,14 +60,14 @@ const StockPackTrans = (props: Props) => {
       })
       return result.sort((t1, t2) => t2.time > t1.time ? 1 : -1)
     })
-  }, [state.stockTrans, state.stores, pack])
+  }, [state.stockOperations, state.stores, pack])
   useEffect(() => {
     if (error) {
       showError(error)
       setError('')
     }
   }, [error])
-  const handleAddTrans = (type: string) => {
+  const handleAddOperation = (type: string) => {
     f7.dialog.prompt(labels.enterQuantity, labels.quantity, quantity => {
       try{
         if (state.returnBasket?.packs?.find(p => p.packId === pack.id)) {
@@ -113,11 +113,11 @@ const StockPackTrans = (props: Props) => {
       <Navbar title={`${pack.productName} ${pack.name}`} backLink={labels.back} />
       <Block>
         <List mediaList>
-          {packTrans.length === 0 ? 
+          {packOperations.length === 0 ? 
             <ListItem title={labels.noData} /> 
-          : packTrans.map(t => 
+          : packOperations.map(t => 
               <ListItem
-                title={`${stockTransTypes.find(tt => tt.id === t.type)?.name} ${t.storeInfo?.name || ''}`}
+                title={`${stockOperationTypes.find(tt => tt.id === t.type)?.name} ${t.storeInfo?.name || ''}`}
                 subtitle={`${labels.quantity}: ${quantityText(t.quantity, t.weight)}`}
                 text={`${labels.price}: ${(t.cost / 100).toFixed(2)}`}
                 footer={moment(t.time).fromNow()}
@@ -137,11 +137,11 @@ const StockPackTrans = (props: Props) => {
           <ActionsButton onClick={() => handleOpen()}>{labels.open}</ActionsButton>
         : ''}
         {lastPurchase?.storeInfo?.allowReturn ? 
-          <ActionsButton onClick={() => handleAddTrans('r')}>{labels.return}</ActionsButton>
+          <ActionsButton onClick={() => handleAddOperation('r')}>{labels.return}</ActionsButton>
         : ''}
-        <ActionsButton onClick={() => handleAddTrans('g')}>{labels.donate}</ActionsButton>
-        <ActionsButton onClick={() => handleAddTrans('d')}>{labels.destroy}</ActionsButton>
-        <ActionsButton onClick={() => handleAddTrans('s')}>{labels.sell}</ActionsButton>
+        <ActionsButton onClick={() => handleAddOperation('g')}>{labels.donate}</ActionsButton>
+        <ActionsButton onClick={() => handleAddOperation('d')}>{labels.destroy}</ActionsButton>
+        <ActionsButton onClick={() => handleAddOperation('s')}>{labels.sell}</ActionsButton>
       </Actions>
       <Toolbar bottom>
         <BottomToolbar/>
@@ -150,4 +150,4 @@ const StockPackTrans = (props: Props) => {
   )
 }
 
-export default StockPackTrans
+export default StockPackOperations

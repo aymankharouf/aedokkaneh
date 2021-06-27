@@ -1,13 +1,13 @@
 import { useContext, useState, useEffect } from 'react'
-import { sendNotification, showMessage, showError, getMessage } from '../data/actionst'
+import { sendNotification, showMessage, showError, getMessage } from '../data/actions'
 import { f7, Page, Navbar, List, ListInput, Fab, Icon, Toolbar, ListItem } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 
 
 const AddNotification = () => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [userId, setUserId] = useState('')
   const [title, setTitle] = useState('')

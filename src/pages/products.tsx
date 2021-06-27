@@ -1,19 +1,19 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Searchbar, NavRight, Link, Fab, Icon, FabButton, FabButtons, FabBackdrop } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { productOfText, getCategoryName } from '../data/actionst'
-import { iCategory, iProduct } from '../data/interfaces'
+import { productOfText, getCategoryName } from '../data/actions'
+import { Category, Product } from '../data/types'
 
-interface Props {
+type Props = {
   id: string
 }
-interface ExtendedProduct extends iProduct {
-  categoryInfo: iCategory
+type ExtendedProduct = Product & {
+  categoryInfo: Category
 }
 const Products = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [category] = useState(() => state.categories.find(c => c.id === props.id))
   const [products, setProducts] = useState<ExtendedProduct[]>([])
   useEffect(() => {

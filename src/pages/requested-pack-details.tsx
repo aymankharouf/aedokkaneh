@@ -1,28 +1,28 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Page, Navbar, Card, CardContent, List, ListItem, CardFooter, Toolbar, Button, Badge } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
-import { packUnavailable, showMessage, showError, getMessage, addQuantity, getPackStores } from '../data/actionst'
+import { StateContext } from '../data/state-provider'
+import { packUnavailable, showMessage, showError, getMessage, addQuantity, getPackStores } from '../data/actions'
 import labels from '../data/labels'
 import moment from 'moment'
-import { iPack, iPackPrice, iStore } from '../data/interfaces'
+import { Pack, PackPrice, Store } from '../data/types'
 
-interface Props {
+type Props = {
   packId: string,
   orderId: string,
   quantity: string,
   price: string
 }
-interface ExtendedPackPrice extends iPackPrice {
+type ExtendedPackPrice = PackPrice & {
   subQuantity: number,
   unitPrice: number,
   unitCost: number,
   isOffer: boolean,
-  packInfo: iPack,
-  storeInfo: iStore
+  packInfo: Pack,
+  storeInfo: Store
 }
 const RequestedPackDetails = (props: Props) => {
-	const { state, dispatch } = useContext(StoreContext)
+	const { state, dispatch } = useContext(StateContext)
   const [error, setError] = useState('')
   const [pack] = useState(() => state.packs.find(p => p.id === props.packId)!)
   const [basketStockQuantity, setBasketStockQuantity] = useState(0)

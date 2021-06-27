@@ -3,20 +3,20 @@ import { f7, Block, Page, Navbar, List, ListItem, Toolbar, NavRight, Searchbar, 
 import BottomToolbar from './bottom-toolbar'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { orderStatus } from '../data/config'
-import { getArchivedOrders, getMessage, showError } from '../data/actionst'
-import { iCustomerInfo, iOrder } from '../data/interfaces'
+import { getArchivedOrders, getMessage, showError } from '../data/actions'
+import { CustomerInfo, Order } from '../data/types'
 
-interface ExtendedOrder extends iOrder {
-  customerInfo: iCustomerInfo
+type ExtendedOrder = Order & {
+  customerInfo: CustomerInfo
 }
 const ArchivedOrders = () => {
-  const { state, dispatch } = useContext(StoreContext)
+  const { state, dispatch } = useContext(StateContext)
   const [error, setError] = useState('')
   const [orders, setOrders] = useState<ExtendedOrder[]>([])
-  const [monthlyTrans] = useState(() => [...state.monthlyTrans.sort((t1, t2) => t2.id - t1.id)])
+  const [monthlyOperations] = useState(() => [...state.monthlyOperations.sort((t1, t2) => t2.id - t1.id)])
   const lastMonth = useRef(0)
   useEffect(() => {
     setOrders(() => {
@@ -38,7 +38,7 @@ const ArchivedOrders = () => {
   }, [error])
   const handleRetreive = () => {
     try{
-      const id = monthlyTrans[lastMonth.current]?.id
+      const id = monthlyOperations[lastMonth.current]?.id
       if (!id) {
         throw new Error('noMoreArchive')
       }

@@ -1,15 +1,15 @@
 import { useContext, useState, useEffect } from 'react'
 import { Block, Page, Navbar, List, ListItem, Toolbar } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { iFriend, iUserInfo } from '../data/interfaces'
+import { Friend, UserInfo } from '../data/types'
 
-interface ExtendedFriend extends iFriend {
-  userInfo: iUserInfo
+type ExtendedFriend = Friend & {
+  userInfo: UserInfo
 }
 const Invitations = () => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [invitations, setInvitations] = useState<ExtendedFriend[]>([])
   useEffect(() => {
     setInvitations(() => {

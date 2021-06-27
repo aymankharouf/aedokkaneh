@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Icon } from 'framework7-react'
 
-interface Props {
+type Props = {
   rating: number,
   count: number
 }

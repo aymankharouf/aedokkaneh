@@ -1,15 +1,15 @@
 import { useState, useContext, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListInput, Fab, Icon, Toolbar, ListItem, Toggle } from 'framework7-react'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
-import { editCategory, showMessage, showError, getMessage, getCategoryName } from '../data/actionst'
+import { editCategory, showMessage, showError, getMessage, getCategoryName } from '../data/actions'
 
-interface Props {
+type Props = {
   id: string
 }
 const EditCategory = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [category] = useState(() => state.categories.find(c => c.id === props.id)!)
   const [name, setName] = useState(category.name)

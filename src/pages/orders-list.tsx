@@ -3,21 +3,21 @@ import { Block, Page, Navbar, List, ListItem, Toolbar, NavRight, Searchbar, Link
 import BottomToolbar from './bottom-toolbar'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { orderStatus } from '../data/config'
-import { iCustomerInfo, iOrder, iUserInfo } from '../data/interfaces'
+import { CustomerInfo, Order, UserInfo } from '../data/types'
 
-interface Props {
+type Props = {
   id: string,
   type: string
 }
-interface ExtendedOrder extends iOrder {
-  userInfo: iUserInfo,
-  customerInfo: iCustomerInfo
+type ExtendedOrder = Order & {
+  userInfo: UserInfo,
+  customerInfo: CustomerInfo
 }
 const OrdersList = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [orders, setOrders] = useState<ExtendedOrder[]>([])
   useEffect(() => {
     setOrders(() => {

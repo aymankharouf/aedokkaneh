@@ -1,21 +1,21 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Button } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
-import { allocateOrderPack, showMessage, getMessage, showError } from '../data/actionst'
+import { StateContext } from '../data/state-provider'
+import { allocateOrderPack, showMessage, getMessage, showError } from '../data/actions'
 import labels from '../data/labels'
-import { iCustomerInfo, iOrder, iOrderBasketPack } from '../data/interfaces'
+import { CustomerInfo, Order, OrderBasketPack } from '../data/types'
 
-interface Props {
+type Props = {
   packId: string,
   orderId: string
 }
-interface ExtendedOrder extends iOrder {
-  customerInfo: iCustomerInfo,
-  basketInfo: iOrderBasketPack
+type ExtendedOrder = Order & {
+  customerInfo: CustomerInfo,
+  basketInfo: OrderBasketPack
 }
 const PrepareOrdersList = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [orders, setOrders] = useState<ExtendedOrder[]>([])
   const [pack] = useState(() => state.packs.find(p => p.id === props.packId)!)

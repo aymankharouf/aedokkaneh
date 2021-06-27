@@ -1,34 +1,34 @@
 import { useContext, useState, useEffect, useRef } from 'react'
 import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, Actions, ActionsButton, Badge } from 'framework7-react'
-import { StoreContext } from '../data/store'
-import { updateOrderStatus, showMessage, showError, getMessage, quantityDetails, mergeOrder, setDeliveryTime } from '../data/actionst'
+import { StateContext } from '../data/state-provider'
+import { updateOrderStatus, showMessage, showError, getMessage, quantityDetails, mergeOrder, setDeliveryTime } from '../data/actions'
 import labels from '../data/labels'
 import { orderPackStatus } from '../data/config'
 import BottomToolbar from './bottom-toolbar'
-import { iOrder, iOrderBasketPack } from '../data/interfaces'
+import { Order, OrderBasketPack } from '../data/types'
 
-interface Props {
+type Props = {
   id: string,
   type: string
 }
-interface ExtendedOrderBasketPack extends iOrderBasketPack {
+type ExtendedOrderBasketPack = OrderBasketPack & {
   storeName: string,
   priceNote: string,
   statusNote: string
 }
-interface StatusAction {
+type StatusAction = {
   id: string,
   name: string,
   status: string[],
   path: string
 }
 const OrderDetails = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [order, setOrder] = useState(() => props.type === 'a' ? state.archivedOrders.find(o => o.id === props.id)! : state.orders.find(o => o.id === props.id)!)
   const [orderBasket, setOrderBasket] = useState<ExtendedOrderBasketPack[]>([])
   const [statusActions, setStatusActions] = useState<StatusAction[]>([])
-  const [lastOrder, setLastOrder] = useState<iOrder>()
+  const [lastOrder, setLastOrder] = useState<Order>()
   const actionsList = useRef<Actions>(null)
   useEffect(() => {
     setOrder(() => state.orders.find(o => o.id === props.id)!)

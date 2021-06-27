@@ -1,87 +1,87 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
-import { addMonthlyTrans, showMessage, showError, getMessage } from '../data/actionst'
+import { StateContext } from '../data/state-provider'
+import { addMonthlyOperation, showMessage, showError, getMessage } from '../data/actions'
 import labels from '../data/labels'
 
-interface Props {
+type Props = {
   id: string
 }
-const MonthlyTrans = (props: Props) => {
-  const { state } = useContext(StoreContext)
+const MonthlyOperations = (props: Props) => {
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [buttonVisisble, setButtonVisible] = useState(false)
   const month = (Number(props.id) % 100) - 1
   const year = Math.trunc(Number(props.id) / 100)
-  const [monthlyTrans] = useState(() => state.monthlyTrans.find(t => t.id === Number(props.id))!)
+  const [monthlyOperation] = useState(() => state.monthlyOperations.find(t => t.id === Number(props.id))!)
   const [orders] = useState(() => state.orders.filter(o => ['a', 'e', 'f', 'p', 'd'].includes(o.status) && (o.time).getFullYear() === year && (o.time).getMonth() === month))
   const [finishedOrders] = useState(() => orders.filter(o => ['f', 'p'].includes(o.status)))
   const [deliveredOrders] = useState(() => orders.filter(o => o.status === 'd'))
-  const [ordersCount] = useState(() => monthlyTrans.ordersCount ?? orders.length)
-  const [deliveredOrdersCount] = useState(() => monthlyTrans.deliveredOrdersCount ?? deliveredOrders.length)
-  const [finishedOrdersCount] = useState(() => monthlyTrans.finishedOrdersCount ?? finishedOrders.length)
+  const [ordersCount] = useState(() => monthlyOperation.ordersCount ?? orders.length)
+  const [deliveredOrdersCount] = useState(() => monthlyOperation.deliveredOrdersCount ?? deliveredOrders.length)
+  const [finishedOrdersCount] = useState(() => monthlyOperation.finishedOrdersCount ?? finishedOrders.length)
   const [stock] = useState(() => {
-    if (monthlyTrans) return monthlyTrans.stock
+    if (monthlyOperation) return monthlyOperation.stock
     const stockPacks = state.packPrices.filter(p => p.storeId === 's' && p.quantity > 0)
     return stockPacks.reduce((sum, p) => sum + Math.round(p.cost * p.quantity), 0)
   })
-  const [sales] = useState(() => monthlyTrans.sales ?? deliveredOrders.reduce((sum, o) => sum + o.total, 0))
-  const [transProfit] = useState(() => monthlyTrans.transProfit ?? deliveredOrders.reduce((sum, o) => sum + o.profit, 0))
-  const [fixedFees] = useState(() => monthlyTrans.fixedFees ?? deliveredOrders.reduce((sum, o) => sum + o.fixedFees, 0))
-  const [deliveryFees] = useState(() => monthlyTrans.deliveryFees ?? deliveredOrders.reduce((sum, o) => sum + o.deliveryFees, 0))
-  const [fractions] = useState(() => monthlyTrans.fractions ?? deliveredOrders.reduce((sum, o) => sum + o.fraction, 0))
-  const [discounts] = useState(() => monthlyTrans.discounts ?? deliveredOrders.reduce((sum, o) => sum + (o.discount.type === 's' ? 0 : o.discount.value), 0))
-  const [specialDiscounts] = useState(() => monthlyTrans.specialDiscounts ?? deliveredOrders.reduce((sum, o) => sum + (o.discount.type === 's' ? o.discount.value : 0), 0))
+  const [sales] = useState(() => monthlyOperation.sales ?? deliveredOrders.reduce((sum, o) => sum + o.total, 0))
+  const [operationProfit] = useState(() => monthlyOperation.operationProfit ?? deliveredOrders.reduce((sum, o) => sum + o.profit, 0))
+  const [fixedFees] = useState(() => monthlyOperation.fixedFees ?? deliveredOrders.reduce((sum, o) => sum + o.fixedFees, 0))
+  const [deliveryFees] = useState(() => monthlyOperation.deliveryFees ?? deliveredOrders.reduce((sum, o) => sum + o.deliveryFees, 0))
+  const [fractions] = useState(() => monthlyOperation.fractions ?? deliveredOrders.reduce((sum, o) => sum + o.fraction, 0))
+  const [discounts] = useState(() => monthlyOperation.discounts ?? deliveredOrders.reduce((sum, o) => sum + (o.discount.type === 's' ? 0 : o.discount.value), 0))
+  const [specialDiscounts] = useState(() => monthlyOperation.specialDiscounts ?? deliveredOrders.reduce((sum, o) => sum + (o.discount.type === 's' ? o.discount.value : 0), 0))
   const [storesBalance] = useState(() => {
     let sum = 0
     state.stores.forEach(s => {
       sum += s.balances?.filter(b => b.month === year * 100 + month)?.reduce((sum, b) => sum + b.balance, 0) || 0
     })
-    return monthlyTrans.storesBalance ?? sum
+    return monthlyOperation.storesBalance ?? sum
   })
   const [storePayments] = useState(() => state.storePayments.filter(p => (p.paymentDate).getFullYear() === year && (p.paymentDate).getMonth() === month))
   const [spendings] = useState(() => state.spendings.filter(s => (s.spendingDate).getFullYear() === year && (s.spendingDate).getMonth() === month))
-  const [stockTrans] = useState(() => state.stockTrans.filter(t => (t.time).getFullYear() === year && (t.time).getMonth() === month))
-  const [donations] = useState(() => monthlyTrans.donations ?? stockTrans.reduce((sum, t) => sum + (t.type === 'g' ? t.total : 0), 0))
-  const [damages] = useState(() => monthlyTrans.damages ?? stockTrans.reduce((sum, t) => sum + (t.type === 'd' ? t.total : 0), 0))
-  const [storesProfit] = useState(() => monthlyTrans.storesProfit ?? storePayments.reduce((sum, p) => sum + (p.type === 'c' ? p.amount : 0), 0))
-  const [storeTransNet] = useState(() => monthlyTrans.storeTransNet ?? storePayments.reduce((sum, p) => sum + (['pp', 'sp', 'rp'].includes(p.type) ? -1 * p.amount : (['pl', 'sl', 'rl'].includes(p.type) ? p.amount : 0)), 0))
+  const [stockOperations] = useState(() => state.stockOperations.filter(t => (t.time).getFullYear() === year && (t.time).getMonth() === month))
+  const [donations] = useState(() => monthlyOperation.donations ?? stockOperations.reduce((sum, t) => sum + (t.type === 'g' ? t.total : 0), 0))
+  const [damages] = useState(() => monthlyOperation.damages ?? stockOperations.reduce((sum, t) => sum + (t.type === 'd' ? t.total : 0), 0))
+  const [storesProfit] = useState(() => monthlyOperation.storesProfit ?? storePayments.reduce((sum, p) => sum + (p.type === 'c' ? p.amount : 0), 0))
+  const [operationNet] = useState(() => monthlyOperation.operationNet ?? storePayments.reduce((sum, p) => sum + (['pp', 'sp', 'rp'].includes(p.type) ? -1 * p.amount : (['pl', 'sl', 'rl'].includes(p.type) ? p.amount : 0)), 0))
   const [withdrawals] = useState(() => {
-    if (monthlyTrans) return monthlyTrans.withdrawals
+    if (monthlyOperation) return monthlyOperation.withdrawals
     const withdrawals = spendings.filter(s => s.type === 'w')
     return withdrawals.reduce((sum, s) => sum + s.amount, 0)
   })
   const [expenses] = useState(() => {
-    if (monthlyTrans) return monthlyTrans.expenses
+    if (monthlyOperation) return monthlyOperation.expenses
     const expenses = spendings.filter(s => s.type !== 'w')
     return expenses.reduce((sum, s) => sum + s.amount, 0)
   })
-  const [netProfit] = useState(() => monthlyTrans.netProfit ?? (transProfit + storesProfit + storeTransNet + fixedFees + deliveryFees) - (discounts + expenses + damages + fractions))
+  const [netProfit] = useState(() => monthlyOperation.netProfit ?? (operationProfit + storesProfit + operationNet + fixedFees + deliveryFees) - (discounts + expenses + damages + fractions))
   useEffect(() => {
     const today = new Date()
     if ((today.getFullYear() * 100 + Number(today.getMonth())) > year * 100 + month) {
-      setButtonVisible(monthlyTrans ? false : true)
+      setButtonVisible(monthlyOperation ? false : true)
     } else {
       setButtonVisible(false)
     }
-  }, [year, month, monthlyTrans])
+  }, [year, month, monthlyOperation])
   useEffect(() => {
     if (error) {
       showError(error)
       setError('')
     }
   }, [error])
-  const handleMonthlyTrans = () => {
+  const handleMonthlyOperation = () => {
     try{
-      const trans = {
+      const operation = {
         id: Number(props.id),
         ordersCount,
         finishedOrdersCount,
         deliveredOrdersCount,
         stock,
         sales,
-        transProfit,
+        operationProfit,
         fixedFees,
         deliveryFees,
         fractions,
@@ -92,11 +92,11 @@ const MonthlyTrans = (props: Props) => {
         donations,
         damages,
         storesProfit,
-        storeTransNet,
+        operationNet,
         specialDiscounts,
         netProfit
       }
-      addMonthlyTrans(trans, state.orders, state.purchases, state.stockTrans)
+      addMonthlyOperation(operation, state.orders, state.purchases, state.stockOperations)
       showMessage(labels.addSuccess)
       f7.views.current.router.back()
     } catch(err) {
@@ -105,7 +105,7 @@ const MonthlyTrans = (props: Props) => {
   }
   return(
     <Page>
-      <Navbar title={`${labels.monthlyTrans} ${month + 1}-${year}`} backLink={labels.back} />
+      <Navbar title={`${labels.monthlyOperations} ${month + 1}-${year}`} backLink={labels.back} />
       <Block>
         <List>
           <ListItem
@@ -129,8 +129,8 @@ const MonthlyTrans = (props: Props) => {
             after={(sales / 100).toFixed(2)}
           />
           <ListItem
-            title={labels.transProfit}
-            after={(transProfit / 100).toFixed(2)}
+            title={labels.operationProfit}
+            after={(operationProfit / 100).toFixed(2)}
           />
           <ListItem
             title={labels.storesProfit}
@@ -150,7 +150,7 @@ const MonthlyTrans = (props: Props) => {
           />
           <ListItem
             title={labels.grossProfit}
-            after={((transProfit + storesProfit + storeTransNet + fixedFees + deliveryFees) / 100).toFixed(2)}
+            after={((operationProfit + storesProfit + operationNet + fixedFees + deliveryFees) / 100).toFixed(2)}
           />
           <ListItem
             title={labels.discounts}
@@ -169,8 +169,8 @@ const MonthlyTrans = (props: Props) => {
             after={(damages / 100).toFixed(2)}
           />
           <ListItem
-            title={labels.storeTransNet}
-            after={(storeTransNet / 100).toFixed(2)}
+            title={labels.operationNet}
+            after={(operationNet / 100).toFixed(2)}
           />
           <ListItem
             title={labels.grossLoss}
@@ -203,7 +203,7 @@ const MonthlyTrans = (props: Props) => {
         </List>
       </Block>
       {buttonVisisble ? 
-        <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleMonthlyTrans()}>
+        <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleMonthlyOperation()}>
           <Icon material="done"></Icon>
         </Fab>
       : ''}
@@ -214,4 +214,4 @@ const MonthlyTrans = (props: Props) => {
   )
 }
 
-export default MonthlyTrans
+export default MonthlyOperations

@@ -1,20 +1,20 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, FabButton, FabButtons, Badge, FabBackdrop } from 'framework7-react'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import BottomToolbar from './bottom-toolbar'
-import { deleteCategory, showMessage, showError, getMessage } from '../data/actionst'
-import { iCategory } from '../data/interfaces'
+import { deleteCategory, showMessage, showError, getMessage } from '../data/actions'
+import { Category } from '../data/types'
 
-interface Props {
+type Props = {
   id: string
 }
-interface ExtendedCategory extends iCategory {
+type ExtendedCategory = Category & {
   childrenCount: number,
   productsCount: number
 }
 const Categories = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [categories, setCategories] = useState<ExtendedCategory[]>([])
   const [currentCategory] = useState(() => state.categories.find(c => c.id === props.id)!)

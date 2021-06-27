@@ -1,35 +1,38 @@
-import { createContext, useReducer, useEffect, useState } from 'react'
+import { createContext, useReducer, useEffect } from 'react'
 import Reducer from './reducer'
 import firebase from './firebase'
-import { iAdvert, iAlarm, iCategory, iContext, iCustomerInfo, iFriend, iLog, iMonthlyTrans, iNotification, iOrder, iPack, iPackPrice, iPasswordRequest, iProduct, iPurchase, iRating, iSpending, iStockTrans, iStore, iStorePayment, iUserInfo } from './interfaces'
+import { Advert, Alarm, Category, Context, CustomerInfo, Friend, Log, MonthlyOperation, Notification, Order, Pack, PackPrice, PasswordRequest, Product, Purchase, Rating, Spending, StockOperation, Store, StorePayment, UserInfo } from './types'
 
-export const StoreContext = createContext({} as iContext)
+export const StateContext = createContext({} as Context)
 
-const Store = (props: any) => {
+type Props = {
+  children: React.ReactElement
+}
+const StateProvider = ({children}: Props) => {
   const localData = localStorage.getItem('basket')
   const basket = localData ? JSON.parse(localData) : ''
   const initState = {
     categories: [], 
-    locations: [], 
+    regions: [], 
     countries: [],
     stores: [], 
     basket, 
     users: [],
     purchases: [],
     orders: [],
-    stockTrans: [],
+    stockOperations: [],
     products: [],
     packs: [],
     passwordRequests: [],
     customers: [],
     spendings: [],
-    monthlyTrans: [],
+    monthlyOperations: [],
     packPrices: [],
     logs: [],
     archivedOrders: [],
     adverts: [],
     archivedPurchases: [],
-    archivedStockTrans: [],
+    archivedStockOperations: [],
     archivedProducts: [],
     archivedPacks: [],
     notifications: [],
@@ -41,7 +44,7 @@ const Store = (props: any) => {
   const [state, dispatch] = useReducer(Reducer, initState)
   useEffect(() => {
     const unsubscribeCategories = firebase.firestore().collection('categories').onSnapshot(docs => {
-      let categories: iCategory[] = []
+      let categories: Category[] = []
       docs.forEach(doc => {
         categories.push({
           id: doc.id,
@@ -57,8 +60,8 @@ const Store = (props: any) => {
       unsubscribeCategories()
     })
     const unsubscribePacks = firebase.firestore().collection('packs').where('isArchived', '==', false).onSnapshot(docs => {
-      let packs: iPack[] = []
-      let packPrices: iPackPrice[] = []
+      let packs: Pack[] = []
+      let packPrices: PackPrice[] = []
       docs.forEach(doc => {
         packs.push({
           id: doc.id,
@@ -113,7 +116,7 @@ const Store = (props: any) => {
       unsubscribePacks()
     })
     const unsubscribePasswordRequests = firebase.firestore().collection('password-requests').onSnapshot(docs => {
-      let passwordRequests: iPasswordRequest[] = []
+      let passwordRequests: PasswordRequest[] = []
       docs.forEach(doc => {
         passwordRequests.push({
           id: doc.id,
@@ -127,7 +130,7 @@ const Store = (props: any) => {
       unsubscribePasswordRequests()
     })
     const unsubscribeAdverts = firebase.firestore().collection('adverts').onSnapshot(docs => {
-      let adverts: iAdvert[] = []
+      let adverts: Advert[] = []
       docs.forEach(doc => {
         adverts.push({
           id: doc.id,
@@ -146,10 +149,10 @@ const Store = (props: any) => {
     firebase.auth().onAuthStateChanged(user => {
       if (user){
         dispatch({type: 'LOGIN', payload: user})
-        const unsubscribeLocations = firebase.firestore().collection('lookups').doc('l').onSnapshot(doc => {
-          if (doc.exists) dispatch({type: 'SET_LOCATIONS', payload: doc.data()?.values})
+        const unsubscribeRegions = firebase.firestore().collection('lookups').doc('r').onSnapshot(doc => {
+          if (doc.exists) dispatch({type: 'SET_REGIONS', payload: doc.data()?.values})
         }, err => {
-          unsubscribeLocations()
+          unsubscribeRegions()
         })  
         const unsubscribeCountries = firebase.firestore().collection('lookups').doc('c').onSnapshot(doc => {
           if (doc.exists) dispatch({type: 'SET_COUNTRIES', payload: doc.data()?.values})
@@ -157,7 +160,7 @@ const Store = (props: any) => {
           unsubscribeCountries()
         })
         const unsubscribeProducts = firebase.firestore().collection('products').where('isArchived', '==', false).onSnapshot(docs => {
-          let products: iProduct[] = []
+          let products: Product[] = []
           docs.forEach(doc => {
             products.push({
               id: doc.id,
@@ -179,7 +182,7 @@ const Store = (props: any) => {
           unsubscribeProducts()
         })    
         const unsubscribeOrders = firebase.firestore().collection('orders').where('isArchived', '==', false).onSnapshot(docs => {
-          let orders: iOrder[] = []
+          let orders: Order[] = []
           docs.forEach(doc => {
             orders.push({
               id: doc.id,
@@ -205,11 +208,11 @@ const Store = (props: any) => {
           unsubscribeOrders()
         })  
         const unsubscribeUsers = firebase.firestore().collection('users').onSnapshot(docs => {
-          const users: iUserInfo[] = []
-          const notifications: iNotification[] = []
-          const alarms: iAlarm[] = []
-          const ratings: iRating[] = []
-          const invitations: iFriend[] = []
+          const users: UserInfo[] = []
+          const notifications: Notification[] = []
+          const alarms: Alarm[] = []
+          const ratings: Rating[] = []
+          const invitations: Friend[] = []
           docs.forEach(doc => {
             users.push({
               id: doc.id,
@@ -217,7 +220,7 @@ const Store = (props: any) => {
               mobile: doc.data().mobile,
               storeName: doc.data().storeName,
               colors: doc.data().colors,
-              locationId: doc.data().locationId,
+              regionId: doc.data().regionId,
               time: doc.data().time.toDate()
             })
             if (doc.data().notifications) {
@@ -257,7 +260,7 @@ const Store = (props: any) => {
           unsubscribeUsers()
         })  
         const unsubscribeCustomers = firebase.firestore().collection('customers').onSnapshot(docs => {
-          let customers: iCustomerInfo[] = []
+          let customers: CustomerInfo[] = []
           docs.forEach(doc => {
             customers.push({
               id: doc.id,
@@ -283,8 +286,8 @@ const Store = (props: any) => {
           unsubscribeCustomers()
         })  
         const unsubscribeStores = firebase.firestore().collection('stores').onSnapshot(docs => {
-          let stores: iStore[] = []
-          let storePayments: iStorePayment[] = []
+          let stores: Store[] = []
+          let storePayments: StorePayment[] = []
           docs.forEach(doc => {
             stores.push({
               id: doc.id,
@@ -312,7 +315,7 @@ const Store = (props: any) => {
           unsubscribeStores()
         })  
         const unsubscribePurchases = firebase.firestore().collection('purchases').where('isArchived', '==', false).onSnapshot(docs => {
-          let purchases: iPurchase[] = []
+          let purchases: Purchase[] = []
           docs.forEach(doc => {
             purchases.push({
               id: doc.id,
@@ -327,10 +330,10 @@ const Store = (props: any) => {
         }, err => {
           unsubscribePurchases()
         })  
-        const unsubscribeStockTrans = firebase.firestore().collection('stock-trans').where('isArchived', '==', false).onSnapshot(docs => {
-          let stockTrans: iStockTrans[] = []
+        const unsubscribeStockOperations = firebase.firestore().collection('stock-operations').where('isArchived', '==', false).onSnapshot(docs => {
+          const stockOperations: StockOperation[] = []
           docs.forEach(doc => {
-            stockTrans.push({
+            stockOperations.push({
               id: doc.id,
               purchaseId: doc.data().purchaseId,
               type: doc.data().type,
@@ -340,12 +343,12 @@ const Store = (props: any) => {
               basket: doc.data().basket
             })
           })
-          dispatch({type: 'SET_STOCK_TRANS', payload: stockTrans})
+          dispatch({type: 'SET_STOCK_OPERATIONS', payload: stockOperations})
         }, err => {
-          unsubscribeStockTrans()
+          unsubscribeStockOperations()
         })  
         const unsubscribeSpendings = firebase.firestore().collection('spendings').onSnapshot(docs => {
-          let spendings: iSpending[] = []
+          let spendings: Spending[] = []
           docs.forEach(doc => {
             spendings.push({
               id: doc.id,
@@ -360,17 +363,17 @@ const Store = (props: any) => {
         }, err => {
           unsubscribeSpendings()
         })  
-        const unsubscribeMonthlyTrans = firebase.firestore().collection('monthly-trans').onSnapshot(docs => {
-          let monthlyTrans: iMonthlyTrans[] = []
+        const unsubscribeMonthlyOperations = firebase.firestore().collection('monthly-operations').onSnapshot(docs => {
+          let monthlyOperations: MonthlyOperation[] = []
           docs.forEach(doc => {
-            monthlyTrans.push({
+            monthlyOperations.push({
               id: doc.data().id,
               ordersCount: doc.data().ordersCount,
               deliveredOrdersCount: doc.data().deliveredOrdersCount,
               finishedOrdersCount: doc.data().finishedOrdersCount,
               stock: doc.data().stock,
               sales: doc.data().sales,
-              transProfit: doc.data().transProfit,
+              operationProfit: doc.data().operationProfit,
               fixedFees: doc.data().fixedFees,
               deliveryFees: doc.data().deliveryFees,
               fractions: doc.data().fractions,
@@ -380,18 +383,18 @@ const Store = (props: any) => {
               donations: doc.data().donations,
               damages: doc.data().damages,
               storesProfit: doc.data().storesProfit,
-              storeTransNet: doc.data().storeTransNet,
+              operationNet: doc.data().operationNet,
               withdrawals: doc.data().withdrawals,
               expenses: doc.data().expenses,
               netProfit: doc.data().netProfit
             })
           })
-          dispatch({type: 'SET_MONTHLY_TRANS', payload: monthlyTrans})
+          dispatch({type: 'SET_MONTHLY_OPERATIONS', payload: monthlyOperations})
         }, err => {
-          unsubscribeMonthlyTrans()
+          unsubscribeMonthlyOperations()
         })  
         const unsubscribeLogs = firebase.firestore().collection('logs').onSnapshot(docs => {
-          let logs: iLog[] = []
+          let logs: Log[] = []
           docs.forEach(doc => {
             logs.push({
               id: doc.id,
@@ -411,11 +414,11 @@ const Store = (props: any) => {
     })
   }, [])
   return (
-    <StoreContext.Provider value={{state, dispatch}}>
-      {props.children}
-    </StoreContext.Provider>
+    <StateContext.Provider value={{state, dispatch}}>
+      {children}
+    </StateContext.Provider>
   )
 }
  
-export default Store
+export default StateProvider
 

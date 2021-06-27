@@ -1,16 +1,16 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, Badge } from 'framework7-react'
-import { StoreContext } from '../data/store'
-import { showMessage, showError, getMessage, quantityDetails, approveOrderRequest, addQuantity } from '../data/actionst'
+import { StateContext } from '../data/state-provider'
+import { showMessage, showError, getMessage, quantityDetails, approveOrderRequest, addQuantity } from '../data/actions'
 import labels from '../data/labels'
 import { orderPackStatus, orderRequestTypes, setup } from '../data/config'
 import BottomToolbar from './bottom-toolbar'
 
-interface Props {
+type Props = {
   id: string
 }
 const OrderRequestDetails = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [order] = useState(() => state.orders.find(o => o.id === props.id)!)
   const [orderBasket] = useState(() => {

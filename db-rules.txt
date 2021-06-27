@@ -1,63 +1,63 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /users/{userId} {
-      allow get: if request.auth.uid == userId;
+    match /users/{id} {
+      allow get: if request.auth.uid == id;
       allow list: if request.auth.token.name == 'a';
-      allow create: if request.auth.uid == userId;
-      allow update: if request.auth.uid == userId || request.auth.token.name == 'a';
+      allow create: if request.auth.uid == id;
+      allow update: if request.auth.uid == id || request.auth.token.name == 'a';
       allow delete: if request.auth.token.name == 'a';
     }
-    match /products/{productId} {
+    match /products/{id} {
     	allow read, write: if request.auth.token.name == 'a';
     }
-    match /packs/{packId} {
+    match /packs/{id} {
     	allow read;
     	allow write: if request.auth.token.name == 'a';
     }
-    match /purchases/{purshaseId} {
+    match /purchases/{id} {
     	allow read, write: if request.auth.token.name == 'a';
     }
-    match /orders/{orderId} {
+    match /orders/{id} {
     	allow read: if request.auth.uid == resource.data.userId || request.auth.token.name == 'a';
       allow create: if request.auth.uid == request.resource.data.userId;
       allow update: if request.auth.uid == resource.data.userId || request.auth.token.name == 'a';
       allow delete: if request.auth.token.name == 'a';
     }
-		match /customers/{customerId} {
-			allow get: if request.auth.uid == customerId;
+		match /customers/{id} {
+			allow get: if request.auth.uid == id;
       allow list: if request.auth.token.name == 'a';
       allow write: if request.auth.token.name == 'a';
 		}
-		match /stock-trans/{transId} {
+		match /stock-operations/{id} {
 			allow read, write: if request.auth.token.name == 'a';
 		}
-    match /stores/{storeId} {
+    match /stores/{id} {
     	allow read, write: if request.auth.token.name == 'a';
     }
-    match /lookups/{lookupId} {
+    match /lookups/{id} {
     	allow read;
       allow write: if request.auth.token.name == 'a';
     }
-    match /categories/{categoryId} {
+    match /categories/{id} {
     	allow read;
     	allow write: if request.auth.token.name == 'a';
     }
-    match /password-requests/{requestId} {
+    match /password-requests/{id} {
     	allow read, write;
     }
-    match /spendings/{spendingId} {
+    match /spendings/{id} {
     	allow read, write: if request.auth.token.name == 'a';
     }
-    match /monthly-trans/{transId} {
+    match /monthly-operations/{id} {
     	allow read, write : if request.auth.token.name == 'a';
     }
-    match /logs/{logId} {
+    match /logs/{id} {
     	allow read: if request.auth.token.name == 'a';
       allow create: if request.auth.uid != null;
       allow update, delete: if request.auth.token.name == 'a';
     }
-     match /adverts/{advertId} {
+     match /adverts/{id} {
     	allow read;
       allow write: if request.auth.token.name == 'a';
     }

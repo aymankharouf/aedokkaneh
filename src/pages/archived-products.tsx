@@ -1,16 +1,16 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Searchbar, NavRight, Link, Fab, Icon } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { getCategoryName, getArchivedProducts, getArchivedPacks, getMessage, showError } from '../data/actionst'
-import { iCategory, iProduct } from '../data/interfaces'
+import { getCategoryName, getArchivedProducts, getArchivedPacks, getMessage, showError } from '../data/actions'
+import { Category, Product } from '../data/types'
 
-interface ExtendedProduct extends iProduct {
-  categoryInfo: iCategory
+type ExtendedProduct = Product & {
+  categoryInfo: Category
 }
 const ArchivedProducts = () => {
-  const { state, dispatch } = useContext(StoreContext)
+  const { state, dispatch } = useContext(StateContext)
   const [error, setError] = useState('')
   const [inprocess, setInprocess] = useState(false)
   const [products, setProducts] = useState<ExtendedProduct[]>([])

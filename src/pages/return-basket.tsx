@@ -1,19 +1,19 @@
 import { useContext, useEffect, useState } from 'react'
 import { f7, Block, Fab, Page, Navbar, List, ListItem, Toolbar, Link, Icon, Badge } from 'framework7-react'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { confirmReturnBasket, showMessage, showError, getMessage, quantityText } from '../data/actionst'
-import { stockTransTypes } from '../data/config'
-import { iPack, iStockPack } from '../data/interfaces'
+import { confirmReturnBasket, showMessage, showError, getMessage, quantityText } from '../data/actions'
+import { stockOperationTypes } from '../data/config'
+import { Pack, StockPack } from '../data/types'
 
-interface Props {
+type Props = {
   id: string
 }
-interface ExtendedStockPack extends iStockPack {
-  packInfo: iPack
+type ExtendedStockPack = StockPack & {
+  packInfo: Pack
 }
 const ReturnBasket = (props: Props) => {
-  const { state, dispatch } = useContext(StoreContext)
+  const { state, dispatch } = useContext(StateContext)
   const [error, setError] = useState('')
   const [store] = useState(() => state.stores.find(s => s.id === state.returnBasket?.storeId))
   const [basket, setBasket] = useState<ExtendedStockPack[]>([])
@@ -49,7 +49,7 @@ const ReturnBasket = (props: Props) => {
         ...state.returnBasket!,
         packs
       }
-      confirmReturnBasket(returnBasket, storeId || state.returnBasket!.storeId, state.orders, state.stockTrans, state.packPrices, state.packs, state.purchases, state.stores)
+      confirmReturnBasket(returnBasket, storeId || state.returnBasket!.storeId, state.orders, state.stockOperations, state.packPrices, state.packs, state.purchases, state.stores)
       dispatch({type: 'CLEAR_RETURN_BASKET'})
       showMessage(labels.executeSuccess)
       f7.views.current.router.back()
@@ -60,7 +60,7 @@ const ReturnBasket = (props: Props) => {
   let i = 0  
   return (
     <Page>
-      <Navbar title={`${labels.basket} ${stockTransTypes.find(t => t.id === state.returnBasket?.type)?.name} ${store?.name || ''}`} backLink={labels.back} />
+      <Navbar title={`${labels.basket} ${stockOperationTypes.find(t => t.id === state.returnBasket?.type)?.name} ${store?.name || ''}`} backLink={labels.back} />
       <Block>
         <List mediaList>
           {basket.map(p => 

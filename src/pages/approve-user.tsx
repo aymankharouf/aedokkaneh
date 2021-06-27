@@ -1,22 +1,22 @@
 import { useState, useContext, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListInput, Fab, Icon, Toolbar, ListItem, FabBackdrop, FabButton, FabButtons } from 'framework7-react'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import BottomToolbar from './bottom-toolbar'
-import { approveUser, deleteUser, showMessage, showError, getMessage } from '../data/actionst'
+import { approveUser, deleteUser, showMessage, showError, getMessage } from '../data/actions'
 import labels from '../data/labels'
 
-interface Props {
+type Props = {
   id: string
 }
 const ApproveUser = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [inprocess, setInprocess] = useState(false)
   const [userInfo] = useState(() => state.users.find(u => u.id === props.id)!)
   const [name, setName] = useState(userInfo.name)
-  const [locationId, setLocationId] = useState(userInfo.locationId)
+  const [regionId, setRegionId] = useState(userInfo.regionId)
   const [address, setAddress] = useState('')
-  const [locations] = useState(() => [...state.locations].sort((l1, l2) => l1.ordering - l2.ordering))
+  const [regions] = useState(() => [...state.regions].sort((l1, l2) => l1.ordering - l2.ordering))
   useEffect(() => {
     if (error) {
       showError(error)
@@ -32,7 +32,7 @@ const ApproveUser = (props: Props) => {
   }, [inprocess])
   const handleSubmit = () => {
     try {
-      approveUser(props.id, name, userInfo.mobile, locationId, userInfo.storeName, address, state.users, state.invitations)
+      approveUser(props.id, name, userInfo.mobile, regionId, userInfo.storeName, address, state.users, state.invitations)
       showMessage(labels.approveSuccess)
       f7.views.current.router.back()  
     } catch(err) {
@@ -79,7 +79,7 @@ const ApproveUser = (props: Props) => {
           readonly
         />
         <ListItem
-          title={labels.location}
+          title={labels.region}
           smartSelect
           smartSelectParams={{
             openIn: "popup", 
@@ -89,10 +89,10 @@ const ApproveUser = (props: Props) => {
             popupCloseLinkText: labels.close
           }}
         >
-          <select name="locationId" value={locationId} onChange={e => setLocationId(e.target.value)}>
+          <select name="regionId" value={regionId} onChange={e => setRegionId(e.target.value)}>
             <option value=""></option>
-            {locations.map(l => 
-              <option key={l.id} value={l.id}>{l.name}</option>
+            {regions.map(r => 
+              <option key={r.id} value={r.id}>{r.name}</option>
             )}
           </select>
         </ListItem>
@@ -111,7 +111,7 @@ const ApproveUser = (props: Props) => {
         <Icon material="keyboard_arrow_down"></Icon>
         <Icon material="close"></Icon>
         <FabButtons position="bottom">
-          {!name || !locationId ? '' :
+          {!name || !regionId ? '' :
             <FabButton color="green" onClick={() => handleSubmit()}>
               <Icon material="done"></Icon>
             </FabButton>

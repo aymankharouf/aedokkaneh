@@ -3,13 +3,13 @@ import { Block, Page, Navbar, List, ListItem, Toolbar, NavRight, Link, Searchbar
 import BottomToolbar from './bottom-toolbar'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { iCustomerInfo } from '../data/interfaces'
+import { CustomerInfo } from '../data/types'
 
 const Customers = () => {
-  const { state } = useContext(StoreContext)
-  const [customers, setCustomers] = useState<iCustomerInfo[]>([])
+  const { state } = useContext(StateContext)
+  const [customers, setCustomers] = useState<CustomerInfo[]>([])
   useEffect(() => {
     setCustomers(() => [...state.customers].sort((c1, c2) => c2.time > c1.time ? 1 : -1))
   }, [state.customers])

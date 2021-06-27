@@ -1,21 +1,21 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Block, Fab, Icon, Page, Navbar, List, ListItem, Toolbar, Searchbar, NavRight, Link, Badge } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import moment from 'moment'
 import 'moment/locale/ar'
 import labels from '../data/labels'
-import { iCategory, iPack, iPackPrice } from '../data/interfaces'
+import { Category, Pack, PackPrice } from '../data/types'
 
-interface Props {
+type Props = {
   id: string
 }
-interface ExtendedPackPrice extends iPackPrice {
-  packInfo: iPack,
-  categoryInfo: iCategory
+type ExtendedPackPrice = PackPrice & {
+  packInfo: Pack,
+  categoryInfo: Category
 }
 const StorePacks = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [store] = useState(() => state.stores.find(s => s.id === props.id)!)
   const [storePacks, setStorePacks] = useState<ExtendedPackPrice[]>([])
   useEffect(() => {

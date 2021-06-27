@@ -1,15 +1,15 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListItem, ListInput, Fab, Icon, Toolbar, Toggle, FabButton, FabButtons, FabBackdrop } from 'framework7-react'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
 import { storeTypes } from '../data/config'
 
-interface Props {
+type Props = {
   id: string
 }
 const StoreDetails = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [store, setStore] = useState(() => state.stores.find(s => s.id === props.id)!)
   useEffect(() => {
     setStore(() => state.stores.find(s => s.id === props.id)!)
@@ -97,7 +97,7 @@ const StoreDetails = (props: Props) => {
           <FabButton color="blue" onClick={() => f7.views.current.router.navigate(`/edit-store/${props.id}`)}>
             <Icon material="edit"></Icon>
           </FabButton>
-          <FabButton color="yellow" onClick={() => f7.views.current.router.navigate(`/store-trans/${store.id}`)}>
+          <FabButton color="yellow" onClick={() => f7.views.current.router.navigate(`/store-operations/${store.id}`)}>
             <Icon material="import_export"></Icon>
           </FabButton>
           <FabButton color="red" onClick={() => f7.views.current.router.navigate(`/store-owners/${store.id}`)}>

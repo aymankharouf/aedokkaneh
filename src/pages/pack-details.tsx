@@ -1,25 +1,25 @@
 import { useContext, useState, useEffect, useRef } from 'react'
 import { f7, Page, Navbar, Card, CardContent, CardFooter, Link, List, ListItem, Icon, Fab, Toolbar, Badge, FabButton, FabButtons, FabBackdrop, Actions, ActionsButton } from 'framework7-react'
-import { StoreContext } from '../data/store'
-import { getPackStores, deleteStorePack, refreshPackPrice, deletePack, changeStorePackStatus, showMessage, showError, getMessage, quantityText } from '../data/actionst'
+import { StateContext } from '../data/state-provider'
+import { getPackStores, deleteStorePack, refreshPackPrice, deletePack, changeStorePackStatus, showMessage, showError, getMessage, quantityText } from '../data/actions'
 import BottomToolbar from './bottom-toolbar'
 import moment from 'moment'
 import labels from '../data/labels'
-import { iPack, iPackPrice, iStore } from '../data/interfaces'
+import { Pack, PackPrice, Store } from '../data/types'
 
-interface Props {
+type Props = {
   id: string
 }
-interface ExtendedPackPrice extends iPackPrice {
+type ExtendedPackPrice = PackPrice & {
   subQuantity: number,
   unitPrice: number,
   unitCost: number,
   isOffer: boolean,
-  packInfo: iPack,
-  storeInfo: iStore
+  packInfo: Pack,
+  storeInfo: Store
 }
 const PackDetails = (props: Props) => {
-  const { state, dispatch } = useContext(StoreContext)
+  const { state, dispatch } = useContext(StateContext)
   const [error, setError] = useState('')
   const [currentStorePack, setCurrentStorePack] = useState<ExtendedPackPrice>()
   const actionsList = useRef<Actions>(null)
@@ -217,7 +217,7 @@ const PackDetails = (props: Props) => {
           <FabButton color="yellow" onClick={() => handleRefreshPrice()}>
             <Icon material="cached"></Icon>
           </FabButton>
-          <FabButton color="pink" onClick={() => f7.views.current.router.navigate(`/pack-trans/${props.id}`)}>
+          <FabButton color="pink" onClick={() => f7.views.current.router.navigate(`/pack-operations/${props.id}`)}>
             <Icon material="import_export"></Icon>
           </FabButton>
           {detailsCount === 0 ? 

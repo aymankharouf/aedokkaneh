@@ -3,14 +3,14 @@ import { Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon } from 'framewo
 import BottomToolbar from './bottom-toolbar'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { spendingTypes } from '../data/config'
-import { iSpending } from '../data/interfaces'
+import { Spending } from '../data/types'
 
 const Spendings = () => {
-  const { state } = useContext(StoreContext)
-  const [spendings, setSpendings] = useState<iSpending[]>([])
+  const { state } = useContext(StateContext)
+  const [spendings, setSpendings] = useState<Spending[]>([])
   useEffect(() => {
     setSpendings(() => [...state.spendings].sort((s1, s2) => s2.time > s1.time ? 1 : -1))
   }, [state.spendings])

@@ -3,16 +3,16 @@ import { Block, Page, Navbar, List, ListItem, Toolbar } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { orderStatus, orderRequestTypes } from '../data/config'
-import { iCustomerInfo, iOrder } from '../data/interfaces'
+import { CustomerInfo, Order } from '../data/types'
 
-interface ExtendedOrder extends iOrder {
-  customerInfo: iCustomerInfo
+type ExtendedOrder = Order & {
+  customerInfo: CustomerInfo
 } 
 const OrderRequests = () => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [orderRequests, setOrderRequests] = useState<ExtendedOrder[]>([])
   useEffect(() => {
     setOrderRequests(() => {

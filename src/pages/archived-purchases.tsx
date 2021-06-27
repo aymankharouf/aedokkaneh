@@ -3,19 +3,19 @@ import { f7, Block, Page, Navbar, List, ListItem, Toolbar, NavRight, Searchbar, 
 import BottomToolbar from './bottom-toolbar'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { getArchivedPurchases, getMessage, showError } from '../data/actionst'
-import { iPurchase, iStore } from '../data/interfaces'
+import { getArchivedPurchases, getMessage, showError } from '../data/actions'
+import { Purchase, Store } from '../data/types'
 
-interface ExtendedPurchase extends iPurchase {
-  storeInfo: iStore
+type ExtendedPurchase = Purchase & {
+  storeInfo: Store
 }
 const ArchivedPurchases = () => {
-  const { state, dispatch } = useContext(StoreContext)
+  const { state, dispatch } = useContext(StateContext)
   const [error, setError] = useState('')
   const [purchases, setPurchases] = useState<ExtendedPurchase[]>([])
-  const [monthlyTrans] = useState(() => [...state.monthlyTrans.sort((t1, t2) => t2.id - t1.id)])
+  const [monthlyOperations] = useState(() => [...state.monthlyOperations.sort((t1, t2) => t2.id - t1.id)])
   const lastMonth = useRef(0)
   useEffect(() => {
     setPurchases(() => {
@@ -37,7 +37,7 @@ const ArchivedPurchases = () => {
   }, [error])
   const handleRetreive = () => {
     try{
-      const id = monthlyTrans[lastMonth.current]?.id
+      const id = monthlyOperations[lastMonth.current]?.id
       if (!id) {
         throw new Error('noMoreArchive')
       }

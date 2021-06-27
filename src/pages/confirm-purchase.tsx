@@ -1,12 +1,12 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, Link, Badge } from 'framework7-react'
-import { StoreContext } from '../data/store'
-import { confirmPurchase, stockOut, showMessage, showError, getMessage, quantityText } from '../data/actionst'
+import { StateContext } from '../data/state-provider'
+import { confirmPurchase, stockOut, showMessage, showError, getMessage, quantityText } from '../data/actions'
 import labels from '../data/labels'
 
 
 const ConfirmPurchase = () => {
-  const { state, dispatch } = useContext(StoreContext)
+  const { state, dispatch } = useContext(StateContext)
   const [error, setError] = useState('')
   const [store] = useState(() => state.stores.find(s => s.id === state.basket?.storeId)!)
   const [basket] = useState(() => state.basket?.packs.map(p => {

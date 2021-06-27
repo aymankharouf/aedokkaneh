@@ -1,38 +1,38 @@
 import { useContext, useState, useEffect } from 'react'
 import { Block, Page, Navbar, List, ListItem, Toolbar, Badge } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
-import { quantityText } from '../data/actionst'
+import { StateContext } from '../data/state-provider'
+import { quantityText } from '../data/actions'
 import labels from '../data/labels'
-import { stockTransTypes } from '../data/config'
-import { iPack, iStockPack } from '../data/interfaces'
+import { stockOperationTypes } from '../data/config'
+import { Pack, StockPack } from '../data/types'
 
-interface Props {
+type Props = {
   id: string,
   type: string
 }
-interface ExtendedStockPack extends iStockPack {
-  packInfo: iPack
+type ExtendedStockPack = StockPack & {
+  packInfo: Pack
 }
-const StockTransDetails = (props: Props) => {
-  const { state } = useContext(StoreContext)
-  const [stockTrans] = useState(() => props.type === 'a' ? state.archivedStockTrans.find(t => t.id === props.id)! : state.stockTrans.find(t => t.id === props.id)!)
-  const [stockTransBasket, setStockTransBasket] = useState<ExtendedStockPack[]>([])
+const StockOperationDetails = (props: Props) => {
+  const { state } = useContext(StateContext)
+  const [stockOperation] = useState(() => props.type === 'a' ? state.archivedStockOperations.find(t => t.id === props.id)! : state.stockOperations.find(t => t.id === props.id)!)
+  const [stockOperationBasket, setStockOperationBasket] = useState<ExtendedStockPack[]>([])
   useEffect(() => {
-    setStockTransBasket(() => stockTrans.basket.map(p => {
+    setStockOperationBasket(() => stockOperation.basket.map(p => {
       const packInfo = state.packs.find(pa => pa.id === p.packId)!
       return {
         ...p,
         packInfo
       }
     }))
-  }, [stockTrans, state.packs])
+  }, [stockOperation, state.packs])
   return(
     <Page>
-      <Navbar title={`${stockTransTypes.find(ty => ty.id === stockTrans.type)?.name} ${stockTrans.storeId ? state.stores.find(s => s.id === stockTrans.storeId)?.name : ''}`} backLink={labels.back} />
+      <Navbar title={`${stockOperationTypes.find(ty => ty.id === stockOperation.type)?.name} ${stockOperation.storeId ? state.stores.find(s => s.id === stockOperation.storeId)?.name : ''}`} backLink={labels.back} />
       <Block>
         <List mediaList>
-          {stockTransBasket.map(p => 
+          {stockOperationBasket.map(p => 
             <ListItem 
               title={p.packInfo.productName}
               subtitle={p.packInfo.productAlias}
@@ -53,4 +53,4 @@ const StockTransDetails = (props: Props) => {
     </Page>
   )
 }
-export default StockTransDetails
+export default StockOperationDetails

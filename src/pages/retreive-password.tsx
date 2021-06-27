@@ -1,16 +1,16 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListInput, Toolbar, Fab, Icon } from 'framework7-react'
-import { StoreContext } from '../data/store'
-import { resolvePasswordRequest, showMessage, showError, getMessage } from '../data/actionst'
+import { StateContext } from '../data/state-provider'
+import { resolvePasswordRequest, showMessage, showError, getMessage } from '../data/actions'
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
 import { randomColors } from '../data/config'
 
-interface Props {
+type Props = {
   id: string
 }
 const RetreivePassword = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [passwordRequest] = useState(() => state.passwordRequests.find(r => r.id === props.id)!)
   const [userInfo] = useState(() => state.users.find(u => u.mobile === passwordRequest.mobile))

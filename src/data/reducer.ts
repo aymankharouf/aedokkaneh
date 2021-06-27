@@ -1,6 +1,6 @@
-import { iState, iAction } from './interfaces'
+import { State, Action } from './types'
 
-const Reducer = (state: iState, action: iAction) => {
+const Reducer = (state: State, action: Action) => {
     let pack, packIndex, packs, nextQuantity, i
     const increment = [0.125, 0.25, 0.5, 0.75, 1]
     switch (action.type){
@@ -156,8 +156,8 @@ const Reducer = (state: iState, action: iAction) => {
         }
       case 'CLEAR_RETURN_BASKET':
         return {...state, returnBasket: undefined}  
-      case 'SET_LOCATIONS':
-        return {...state, locations: action.payload}
+      case 'SET_REGIONS':
+        return {...state, regions: action.payload}
       case 'SET_COUNTRIES':
         return {...state, countries: action.payload}
       case 'SET_NOTIFICATIONS':
@@ -178,8 +178,8 @@ const Reducer = (state: iState, action: iAction) => {
         return {...state, purchases: action.payload}
       case 'SET_ORDERS':
         return {...state, orders: action.payload}
-      case 'SET_STOCK_TRANS':
-        return {...state, stockTrans: action.payload}
+      case 'SET_STOCK_OPERATIONS':
+        return {...state, stockOperations: action.payload}
       case 'SET_PASSWORD_REQUESTS':
         return {...state, passwordRequests: action.payload}
       case 'SET_PRODUCTS':
@@ -190,8 +190,8 @@ const Reducer = (state: iState, action: iAction) => {
         return {...state, customers: action.payload}
       case 'SET_SPENDINGS':
         return {...state, spendings: action.payload}
-      case 'SET_MONTHLY_TRANS':
-        return {...state, monthlyTrans: action.payload}
+      case 'SET_MONTHLY_OPERATIONS':
+        return {...state, monthlyOperations: action.payload}
       case 'SET_PACK_PRICES':
         return {...state, packPrices: action.payload}
       case 'SET_LOGS':
@@ -202,8 +202,8 @@ const Reducer = (state: iState, action: iAction) => {
         return {...state, adverts: action.payload}
       case 'ADD_ARCHIVED_PURCHASES':
         return {...state, archivedPurchases: [...state.archivedPurchases, ...action.payload]}
-      case 'ADD_ARCHIVED_STOCK_TRANS':
-        return {...state, archivedStockTrans: [...state.archivedStockTrans, ...action.payload]}
+      case 'ADD_ARCHIVED_STOCK_OPERATIONS':
+        return {...state, archivedStockOperations: [...state.archivedStockOperations, ...action.payload]}
       case 'SET_ARCHIVED_PRODUCTS':
         return {...state, archivedProducts: action.payload}
       case 'SET_ARCHIVED_PACKS':

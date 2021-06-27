@@ -3,18 +3,18 @@ import { Block, Page, Navbar, List, ListItem, Toolbar} from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { alarmTypes } from '../data/config'
-import { iAlarm, iCustomerInfo, iPack, iUserInfo } from '../data/interfaces'
+import { Alarm, CustomerInfo, Pack, UserInfo } from '../data/types'
 
-interface ExtendedAlarm extends iAlarm {
-  userInfo: iUserInfo,
-  packInfo: iPack,
-  customerInfo: iCustomerInfo
+type ExtendedAlarm = Alarm & {
+  userInfo: UserInfo,
+  packInfo: Pack,
+  customerInfo: CustomerInfo
 }
 const Alarms = () => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [alarms, setAlarms] = useState<ExtendedAlarm[]>([])
   useEffect(() => {
     setAlarms(() => {

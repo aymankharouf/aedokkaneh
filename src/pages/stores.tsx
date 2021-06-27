@@ -1,19 +1,19 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, Badge } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
-import { addStock, showMessage, showError, getMessage } from '../data/actionst'
+import { StateContext } from '../data/state-provider'
+import { addStock, showMessage, showError, getMessage } from '../data/actions'
 import labels from '../data/labels'
-import { iStore } from '../data/interfaces'
+import { Store } from '../data/types'
 
-interface ExtendedStore extends iStore {
+type ExtendedStore = Store & {
   sales: number
 }
 const Stores = () => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [stores, setStores] = useState<ExtendedStore[]>([])
-  const [stock, setStock] = useState<iStore>()
+  const [stock, setStock] = useState<Store>()
   useEffect(() => {
     setStock(() => state.stores.find(s => s.id === 's'))
   }, [state.stores])

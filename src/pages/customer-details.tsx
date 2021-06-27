@@ -1,14 +1,14 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListInput, Fab, Icon, Toolbar, ListItem, Toggle, FabBackdrop, FabButton, FabButtons } from 'framework7-react'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
 
-interface Props {
+type Props = {
   id: string
 }
 const CustomerDetails = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [customer, setCustomer] = useState(() => state.customers.find(c => c.id === props.id)!)
   const [userInfo, setUserInfo] = useState(() => state.users.find(u => u.id === props.id)!)
   const [storeName] = useState(() => state.stores.find(s => s.id === customer.storeId)?.name || '')
@@ -48,9 +48,9 @@ const CustomerDetails = (props: Props) => {
           readonly
         />
         <ListInput 
-          name="locationName" 
-          label={labels.location}
-          value={state.locations.find(l => l.id === userInfo.locationId)?.name}
+          name="regionName" 
+          label={labels.region}
+          value={state.regions.find(r => r.id === userInfo.regionId)?.name}
           type="text"
           readonly
         />

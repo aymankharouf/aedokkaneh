@@ -1,22 +1,22 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Button, Badge } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { showMessage, showError, getMessage, quantityText } from '../data/actionst'
-import { iPack, iPurchase, iStockPack } from '../data/interfaces'
+import { showMessage, showError, getMessage, quantityText } from '../data/actions'
+import { Pack, Purchase, StockPack } from '../data/types'
 
-interface Props {
+type Props = {
   id: string,
   type: string
 }
-interface ExtendedStockPack extends iStockPack {
-  packInfo: iPack
+type ExtendedStockPack = StockPack & {
+  packInfo: Pack
 }
 const PurchaseDetails = (props: Props) => {
-  const { state, dispatch } = useContext(StoreContext)
+  const { state, dispatch } = useContext(StateContext)
   const [error, setError] = useState('')
-  const [purchase, setPurchase] = useState<iPurchase>()
+  const [purchase, setPurchase] = useState<Purchase>()
   const [purchaseBasket, setPurchaseBasket] = useState<ExtendedStockPack[]>([])
   useEffect(() => {
     setPurchase(() => props.type === 'a' ? state.archivedPurchases.find(p => p.id === props.id)! : state.purchases.find(p => p.id === props.id)!)

@@ -1,18 +1,18 @@
 import { useContext, useState, useEffect } from 'react'
 import { Block, Page, Navbar, Toolbar, List, ListItem, Badge } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
-import { quantityText } from '../data/actionst'
+import { StateContext } from '../data/state-provider'
+import { quantityText } from '../data/actions'
 import labels from '../data/labels'
-import { iRequestedPack } from '../data/interfaces'
+import { RequestedPack } from '../data/types'
 
 const PrepareOrders = () => {
-  const { state } = useContext(StoreContext)
-	const [packs, setPacks] = useState<iRequestedPack[]>([])
+  const { state } = useContext(StateContext)
+	const [packs, setPacks] = useState<RequestedPack[]>([])
 	useEffect(() => {
 		setPacks(() => {
 			const finishedOrders = state.orders.filter(o => o.status === 'f')
-			const packsArray: iRequestedPack[] = []
+			const packsArray: RequestedPack[] = []
 			finishedOrders.forEach(o => {
 				o.basket.forEach(p => {
 					if (p.purchased > 0 && !p.isAllocated) {

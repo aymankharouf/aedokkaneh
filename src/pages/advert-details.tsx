@@ -1,14 +1,14 @@
 import { useContext, useState } from 'react'
 import { Page, Navbar, Card, CardContent, CardFooter, Toolbar, Fab, Icon } from 'framework7-react'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import BottomToolbar from './bottom-toolbar'
 
-interface Props {
+type Props = {
   id: string
 }
 const AdvertDetails = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [advert] = useState(() => state.adverts.find(a => a.id === props.id)!)
   return (
     <Page>

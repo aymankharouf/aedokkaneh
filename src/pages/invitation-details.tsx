@@ -1,16 +1,16 @@
 import { useContext, useEffect, useState } from 'react'
 import { f7, Page, Navbar, List, ListInput, Fab, Icon, Toolbar } from 'framework7-react'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import BottomToolbar from './bottom-toolbar'
-import { approveInvitation, showMessage, showError, getMessage } from '../data/actionst'
+import { approveInvitation, showMessage, showError, getMessage } from '../data/actions'
 import labels from '../data/labels'
 
-interface Props {
+type Props = {
   userId: string,
   mobile: string
 }
 const InvitationDetails = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [userInfo] = useState(() => state.users.find(u => u.id === props.userId)!)
   const [invitation] = useState(() => state.invitations.find(i => i.userId === props.userId && i.mobile === props.mobile)!)

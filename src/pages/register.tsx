@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListInput, Button } from 'framework7-react'
-import { registerUser, showMessage, showError, getMessage } from '../data/actionst'
+import { registerUser, showMessage, showError, getMessage } from '../data/actions'
 import labels from '../data/labels'
 
 const Register = () => {

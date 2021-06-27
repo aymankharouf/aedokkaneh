@@ -1,23 +1,23 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListItem, Icon, Fab, Toolbar, ListInput, BlockTitle } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { approveAlarm, showMessage, showError, getMessage } from '../data/actionst'
+import { approveAlarm, showMessage, showError, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { alarmTypes } from '../data/config'
-import { iPack, iPackPrice, iStore } from '../data/interfaces'
+import { Pack, PackPrice, Store } from '../data/types'
 
-interface Props {
+type Props = {
   id: string,
   userId: string
 }
-interface ExtendedPackPrice extends iPackPrice {
-  storeInfo: iStore
+type ExtendedPackPrice = PackPrice & {
+  storeInfo: Store
 }
 const AlarmDetails = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [newPackId, setNewPackId] = useState('')
   const [userInfo] = useState(() => state.users.find(u => u.id === props.userId))
@@ -28,7 +28,7 @@ const AlarmDetails = (props: Props) => {
   const [prices, setPrices] = useState<ExtendedPackPrice[]>([])
   const [packs] = useState(() => {
     const packs = state.packs.filter(p => p.id !== pack.id)
-    let result: iPack[] = []
+    let result: Pack[] = []
     if (alarm.type === 'go') {
       result = packs.filter(p => p.productId === pack.productId && p.isOffer)
     } else if (alarm.type === 'eo') {

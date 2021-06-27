@@ -1,17 +1,17 @@
 import { useContext, useState, useEffect } from 'react'
 import { Block, Page, Navbar, List, ListItem, Toolbar } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { iCustomerInfo } from '../data/interfaces'
+import { CustomerInfo } from '../data/types'
 
-interface Props {
+type Props = {
   id: string
 }
 const StoreOwners = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [store] = useState(() => state.stores.find(s => s.id === props.id)!)
-  const [storeOwners, setStoreOwners] = useState<iCustomerInfo[]>([])
+  const [storeOwners, setStoreOwners] = useState<CustomerInfo[]>([])
   useEffect(() => {
     setStoreOwners(() => state.customers.filter(c => c.storeId === props.id))
   }, [state.customers, props.id])

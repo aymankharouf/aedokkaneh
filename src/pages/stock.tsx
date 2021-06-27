@@ -1,15 +1,15 @@
 import { useContext, useState, useEffect } from 'react'
 import { Block, Page, Navbar, List, ListItem, Toolbar, Searchbar, NavRight, Link, Badge } from 'framework7-react'
-import { StoreContext } from '../data/store'
-import { quantityText } from '../data/actionst'
+import { StateContext } from '../data/state-provider'
+import { quantityText } from '../data/actions'
 import labels from '../data/labels'
-import { iPack, iPackPrice } from '../data/interfaces'
+import { Pack, PackPrice } from '../data/types'
 
-interface ExtendedPackPrice extends iPackPrice {
-  packInfo: iPack
+type ExtendedPackPrice = PackPrice & {
+  packInfo: Pack
 }
 const Stock = () => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [stockPacks, setStockPacks] = useState<ExtendedPackPrice[]>([])
   useEffect(() => {
     setStockPacks(() => {
@@ -51,7 +51,7 @@ const Stock = () => {
             <ListItem title={labels.noData} /> 
           : stockPacks.map(p => 
               <ListItem
-                link={`/stock-pack-trans/${p.packId}`}
+                link={`/stock-pack-operations/${p.packId}`}
                 title={p.packInfo.productName}
                 subtitle={p.packInfo.productAlias}
                 text={p.packInfo.name}
@@ -69,7 +69,7 @@ const Stock = () => {
       </Block>
       <Toolbar bottom>
         <Link href="/home/" iconMaterial="home" />
-        <Link href="/stock-trans/" iconMaterial="layers" />
+        <Link href="/stock-operations/" iconMaterial="layers" />
       </Toolbar>
     </Page>
   )

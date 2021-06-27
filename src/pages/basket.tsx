@@ -1,14 +1,14 @@
 import { useContext, useEffect, useState } from 'react'
 import { f7, Block, Fab, Page, Navbar, List, ListItem, Toolbar, Link, Icon, Stepper, Badge } from 'framework7-react'
-import { StoreContext } from '../data/store'
-import { quantityText } from '../data/actionst'
+import { StateContext } from '../data/state-provider'
+import { quantityText } from '../data/actions'
 import labels from '../data/labels'
-import { iBasketPack } from '../data/interfaces'
+import { BasketPack } from '../data/types'
 
 const Basket = () => {
-  const { state, dispatch } = useContext(StoreContext)
+  const { state, dispatch } = useContext(StateContext)
   const [store] = useState(() => state.stores.find(s => s.id === state.basket?.storeId))
-  const [basket, setBasket] = useState<iBasketPack[]>([])
+  const [basket, setBasket] = useState<BasketPack[]>([])
   const [totalPrice, setTotalPrice] = useState(0)
   useEffect(() => {
     if (!state.basket?.packs) f7.views.current.router.navigate('/home/', {reloadAll: true})
@@ -17,7 +17,7 @@ const Basket = () => {
     setBasket(() => state.basket?.packs || [])
     setTotalPrice(() => state.basket?.packs?.reduce((sum, p) => sum + Math.round(p.cost * (p.weight || p.quantity)), 0) || 0)
   }, [state.basket])
-  const handleAdd = (pack: iBasketPack) => {
+  const handleAdd = (pack: BasketPack) => {
     if (store?.id === 's') {
       const stock = state.packPrices.find(p => p.packId === pack.packId && p.storeId === 's')
       if (pack.quantity === pack.requested) return

@@ -1,19 +1,19 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Block, Page, Navbar, List, ListItem, Toolbar, NavRight, Searchbar, Link, Button, Fab, Icon } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { permitUser, showMessage, showError, getMessage } from '../data/actionst'
-import { iCustomerInfo } from '../data/interfaces'
+import { permitUser, showMessage, showError, getMessage } from '../data/actions'
+import { CustomerInfo } from '../data/types'
 
-interface Props {
+type Props = {
   id: string
 }
 const PermissionList = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [inprocess, setInprocess] = useState(false)
-  const [customers, setCustomers] = useState<iCustomerInfo[]>([])
+  const [customers, setCustomers] = useState<CustomerInfo[]>([])
   useEffect(() => {
     setCustomers(() => {
       const customers = state.customers.filter(c => (props.id === 's' && c.storeId) || (props.id === 'n' && c.storeName && !c.storeId))
@@ -39,7 +39,7 @@ const PermissionList = (props: Props) => {
       f7.dialog.close()
     }
   }, [inprocess])
-  const handleUnPermit = (customer: iCustomerInfo) => {
+  const handleUnPermit = (customer: CustomerInfo) => {
     f7.dialog.confirm(labels.confirmationText, labels.confirmationTitle, async () => {
       try{
         setInprocess(true)

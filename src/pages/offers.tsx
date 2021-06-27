@@ -1,18 +1,18 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Button, Badge } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import moment from 'moment'
 import labels from '../data/labels'
-import { changeStorePackStatus, showMessage, getMessage, showError } from '../data/actionst'
-import { iPack, iPackPrice } from '../data/interfaces'
+import { changeStorePackStatus, showMessage, getMessage, showError } from '../data/actions'
+import { Pack, PackPrice } from '../data/types'
 
-interface ExtendedPackPrice extends iPackPrice {
-  packInfo: iPack,
+type ExtendedPackPrice = PackPrice & {
+  packInfo: Pack,
   storeName: string
 }
 const Offers = () => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [offers, setOffers] = useState<ExtendedPackPrice[]>([])
   useEffect(() => {

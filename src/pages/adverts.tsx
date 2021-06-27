@@ -1,19 +1,19 @@
 import { useContext, useState, useEffect, useRef } from 'react'
 import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, Link, Actions, ActionsButton } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { updateAdvertStatus, showMessage, showError, getMessage, deleteAdvert } from '../data/actionst'
+import { updateAdvertStatus, showMessage, showError, getMessage, deleteAdvert } from '../data/actions'
 import { advertType } from '../data/config'
-import { iAdvert } from '../data/interfaces'
+import { Advert } from '../data/types'
 
 const Adverts = () => {
-  const { state } = useContext(StoreContext)
-  const [currentAdvert, setCurrentAdvert] = useState<iAdvert>()
+  const { state } = useContext(StateContext)
+  const [currentAdvert, setCurrentAdvert] = useState<Advert>()
   const [error, setError] = useState('')
-  const [adverts, setAdverts] = useState<iAdvert[]>([])
+  const [adverts, setAdverts] = useState<Advert[]>([])
   const actionsList = useRef<Actions>(null)
   useEffect(() => {
     setAdverts(() => [...state.adverts].sort((a1, a2) => a2.time > a1.time ? 1 : -1))
@@ -24,7 +24,7 @@ const Adverts = () => {
       setError('')
     }
   }, [error])
-  const handleAction = (advert: iAdvert) => {
+  const handleAction = (advert: Advert) => {
     setCurrentAdvert(advert)
     actionsList.current?.open()
   }

@@ -1,22 +1,22 @@
 import { useContext, useState, useEffect, useRef } from 'react'
 import { f7, Page, Navbar, Card, CardContent, CardFooter, List, ListItem, Badge, Toolbar, Actions, ActionsButton, Fab, Icon } from 'framework7-react'
 import RatingStars from './rating-stars'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import BottomToolbar from './bottom-toolbar'
-import { archiveProduct, deleteProduct, showMessage, getMessage, showError, productOfText } from '../data/actionst'
-import { iPack } from '../data/interfaces'
+import { archiveProduct, deleteProduct, showMessage, getMessage, showError, productOfText } from '../data/actions'
+import { Pack } from '../data/types'
 
-interface Props {
+type Props = {
   id: string,
   type: string
 }
 const ProductPacks = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [product] = useState(() => props.type === 'a' ? state.archivedProducts.find(p => p.id === props.id)! : state.products.find(p => p.id === props.id)!)
-  const [packs, setPacks] = useState<iPack[]>([])
-  const [activePacks, setActivePacks] = useState<iPack[]>([])
+  const [packs, setPacks] = useState<Pack[]>([])
+  const [activePacks, setActivePacks] = useState<Pack[]>([])
   const actionsList = useRef<Actions>(null)
   useEffect(() => {
     setPacks(() => {

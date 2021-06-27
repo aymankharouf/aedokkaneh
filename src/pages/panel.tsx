@@ -1,11 +1,11 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListItem } from 'framework7-react'
-import { StoreContext } from '../data/store'
-import { logout } from '../data/actionst'
+import { StateContext } from '../data/state-provider'
+import { logout } from '../data/actions'
 import labels from '../data/labels'
 
 const Panel = () => {
-  const { state, dispatch } = useContext(StoreContext)
+  const { state, dispatch } = useContext(StateContext)
   const [approvalsCount, setApprovalsAcount] = useState(0)
   const [offersCount, setOffersAcount] = useState(0)
   useEffect(() => {
@@ -42,7 +42,7 @@ const Panel = () => {
         {state.user ? <ListItem link="/purchase-plan/" title={labels.purchasePlan} view="#main-view" panelClose /> : ''}
         {state.user ? <ListItem link="/approvals/" title={labels.approvals} badge={approvalsCount} badgeColor="red" view="#main-view" panelClose /> : ''}
         {state.user ? <ListItem link="/offers/" title={labels.offers} badge={offersCount} badgeColor="red" view="#main-view" panelClose /> : ''}
-        {state.user ? <ListItem link="/monthly-trans-call/" title={labels.monthlyTrans} view="#main-view" panelClose /> : ''}
+        {state.user ? <ListItem link="/monthly-operation-call/" title={labels.monthlyOperations} view="#main-view" panelClose /> : ''}
         {state.user ? <ListItem link="/logs/" title={labels.logs} view="#main-view" panelClose /> : ''}
         {state.user ? <ListItem link="/permission-list/s" title={labels.storesOwners} view="#main-view" panelClose /> : ''}
       </List>

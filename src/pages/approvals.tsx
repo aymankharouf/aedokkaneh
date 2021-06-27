@@ -1,18 +1,18 @@
 import { useContext, useState, useEffect } from 'react'
 import { Block, Page, Navbar, Toolbar, Button} from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { randomColors } from '../data/config'
 
-interface Section {
+type Section = {
   id: string,
   name: string,
   path: string,
   count: number
 }
 const Approvals = () => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [newOrders, setNewOrders] = useState(0)
   const [orderRequests, setOrderRequests] = useState(0)
   const [newUsers, setNewUsers] = useState(0)

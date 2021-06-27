@@ -1,18 +1,18 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, Button } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { deleteNotification, showMessage, showError, getMessage } from '../data/actionst'
-import { iNotification, iUserInfo } from '../data/interfaces'
+import { deleteNotification, showMessage, showError, getMessage } from '../data/actions'
+import { Notification, UserInfo } from '../data/types'
 
-interface ExtendedNotification extends iNotification {
-  userInfo: iUserInfo
+type ExtendedNotification = Notification & {
+  userInfo: UserInfo
 }
 const Notifications = () => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [notifications, setNotifications] = useState<ExtendedNotification[]>([])
   useEffect(() => {

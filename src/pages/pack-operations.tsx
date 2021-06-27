@@ -3,37 +3,37 @@ import { Block, Page, Navbar, List, ListItem, Toolbar } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { quantityText } from '../data/actionst'
-import { iStockPack, iStore } from '../data/interfaces'
+import { quantityText } from '../data/actions'
+import { StockPack, Store } from '../data/types'
 
-interface Props {
+type Props = {
   id: string
 }
-interface ExtendedStockPack extends iStockPack {
-  storeInfo: iStore,
+type ExtendedStockPack = StockPack & {
+  storeInfo: Store,
   id: string,
   time: Date
 }
-const PackTrans = (props: Props) => {
-  const { state } = useContext(StoreContext)
+const PackOperations = (props: Props) => {
+  const { state } = useContext(StateContext)
   const [pack] = useState(() => state.packs.find(p => p.id === props.id)!)
-  const [packTrans, setPackTrans] = useState<ExtendedStockPack[]>([])
+  const [packOperations, setPackOperations] = useState<ExtendedStockPack[]>([])
   useEffect(() => {
-    setPackTrans(() => {
+    setPackOperations(() => {
       const purchases = state.purchases.filter(p => p.basket.find(p => p.packId === pack.id))
-      const packTrans = purchases.map(p => {
-        const transPack = p.basket.find(pa => pa.packId === pack.id)!
+      const packOperations = purchases.map(p => {
+        const operationPack = p.basket.find(pa => pa.packId === pack.id)!
         const storeInfo = state.stores.find(s => s.id === p.storeId)!
         return {
-          ...transPack,
+          ...operationPack,
           id: p.id!,
           time: p.time,
           storeInfo
         }
       })
-      return packTrans.sort((t1, t2) => t2.time > t1.time ? 1 : -1)
+      return packOperations.sort((t1, t2) => t2.time > t1.time ? 1 : -1)
     })
   }, [state.purchases, state.stores, pack])
   return(
@@ -41,9 +41,9 @@ const PackTrans = (props: Props) => {
       <Navbar title={`${pack.productName} ${pack.name}`} backLink={labels.back} />
       <Block>
         <List mediaList>
-          {packTrans.length === 0 ? 
+          {packOperations.length === 0 ? 
             <ListItem title={labels.noData} /> 
-          : packTrans.map(t => 
+          : packOperations.map(t => 
               <ListItem
                 title={t.storeInfo.name}
                 subtitle={`${labels.quantity}: ${quantityText(t.quantity, t.weight)}`}
@@ -62,4 +62,4 @@ const PackTrans = (props: Props) => {
   )
 }
 
-export default PackTrans
+export default PackOperations

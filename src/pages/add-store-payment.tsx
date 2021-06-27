@@ -1,15 +1,15 @@
 import { useState, useContext, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListInput, Fab, Icon, ListItem } from 'framework7-react'
-import { StoreContext } from '../data/store'
-import { addStorePayment, showMessage, showError, getMessage } from '../data/actionst'
+import { StateContext } from '../data/state-provider'
+import { addStorePayment, showMessage, showError, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { paymentTypes } from '../data/config'
 
-interface Props {
+type Props = {
   id: string
 }
 const AddStorePayment = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [store] = useState(() => state.stores.find(s => s.id === props.id)!)
   const [amount, setAmount] = useState('')

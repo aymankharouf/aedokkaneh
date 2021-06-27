@@ -1,14 +1,14 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Page, Navbar, List, ListItem, Button } from 'framework7-react'
-import { permitUser, showMessage, showError, getMessage } from '../data/actionst'
+import { permitUser, showMessage, showError, getMessage } from '../data/actions'
 import labels from '../data/labels'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 
-interface Props {
+type Props = {
   id: string
 }
 const PermitUser = (props: Props) => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [inprocess, setInprocess] = useState(false)
   const [userId, setUserId] = useState(props.id === '0' ? '' : props.id)

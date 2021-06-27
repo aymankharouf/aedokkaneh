@@ -44,7 +44,7 @@ export const storeTypes = [
   {id: '5', name: 'جملة'}
 ]
 
-export const stockTransTypes = [
+export const stockOperationTypes = [
   {id: 'p', name: 'شراء'},
   {id: 'o', name: 'بيع تجزئة'},
   {id: 'i', name: 'استيداع'},

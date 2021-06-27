@@ -27,9 +27,9 @@ import ConfirmPurchase from './pages/confirm-purchase'
 import Purchases from './pages/purchases'
 import PurchaseDetails from './pages/purchase-details'
 import Stock from './pages/stock'
-import StockPackTrans from './pages/stock-pack-trans'
-import StockTrans from './pages/stock-trans'
-import StockTransDetails from './pages/stock-trans-details'
+import StockPackOperations from './pages/stock-pack-operations'
+import StockOperations from './pages/stock-operations'
+import StockOperationDetails from './pages/stock-operation-details'
 import Customers from './pages/customers'
 import PasswordRequests from './pages/password-requests'
 import AddPack from './pages/add-pack'
@@ -48,18 +48,18 @@ import Offers from './pages/offers'
 import Spendings from './pages/spendings'
 import AddSpending from './pages/add-spending'
 import EditSpending from './pages/edit-spending'
-import MonthlyTransCall from './pages/monthly-trans-call'
-import MonthlyTrans from './pages/monthly-trans'
+import MonthlyOperationCall from './pages/monthly-operation-call'
+import MonthlyOperations from './pages/monthly-operations'
 import RetreivePassword from './pages/retreive-password'
 import StoreOwners from './pages/store-owners'
 import EditOrder from './pages/edit-order'
 import ChangePassword from './pages/change-password'
-import Locations from './pages/locations'
-import AddLocation from './pages/add-location'
-import EditLocation from './pages/edit-location'
+import Regions from './pages/regions'
+import AddRegion from './pages/add-region'
+import EditRegion from './pages/edit-region'
 import Ratings from './pages/ratings'
 import Approvals from './pages/approvals'
-import PackTrans from './pages/pack-trans'
+import PackOperations from './pages/pack-operations'
 import AddPackStore from './pages/add-pack-store'
 import OrderRequests from './pages/order-requests'
 import Logs from './pages/logs'
@@ -76,7 +76,7 @@ import InvitationDetails from './pages/invitation-details'
 import Notifications from './pages/notifications'
 import AddNotification from './pages/add-notification'
 import ArchivedOrders from './pages/archived-orders'
-import StoreTrans from './pages/store-trans'
+import StoreOperations from './pages/store-operations'
 import PurchasePlan from './pages/purchase-plan'
 import Adverts from './pages/adverts'
 import AddAdvert from './pages/add-advert'
@@ -87,11 +87,11 @@ import PermitUser from './pages/permit-user'
 import Register from './pages/register'
 import ArchivedPurchases from './pages/archived-purchases'
 import PermissionList from './pages/permission-list'
-import ArchivedStockTrans from './pages/archived-stock-trans'
+import ArchivedStockOperations from './pages/archived-stock-operations'
 import ArchivedProducts from './pages/archived-products'
 import ReturnBasket from './pages/return-basket'
 import StoreBalance from './pages/store-balance'
-import StoreBalanceTrans from './pages/store-balance-trans'
+import StoreBalanceOperations from './pages/store-balance-operations'
 
 const routes = [
   {
@@ -329,24 +329,24 @@ const routes = [
     component: Stock,
   },
   {
-    path: '/stock-pack-trans/:id',
-    component: StockPackTrans
+    path: '/stock-pack-operations/:id',
+    component: StockPackOperations
   },
   {
-    path: '/stock-trans/',
-    component: StockTrans
+    path: '/stock-operations/',
+    component: StockOperations
   },
   {
-    path: '/stock-trans-details/:id/type/:type',
-    component: StockTransDetails
+    path: '/stock-operation-details/:id/type/:type',
+    component: StockOperationDetails
   },
   {
-    path: '/monthly-trans-call/',
-    component: MonthlyTransCall,
+    path: '/monthly-operation-call/',
+    component: MonthlyOperationCall,
   },
   {
-    path: '/monthly-trans/:id',
-    component: MonthlyTrans,
+    path: '/monthly-operations/:id',
+    component: MonthlyOperations
   },
   {
     path: '/retreive-password/:id',
@@ -357,16 +357,16 @@ const routes = [
     component: StoreOwners,
   },
   {
-    path: '/locations/',
-    component: Locations
+    path: '/regions/',
+    component: Regions
   },
   {
-    path: '/add-location/',
-    component: AddLocation
+    path: '/add-region/',
+    component: AddRegion
   },
   {
-    path: '/edit-location/:id',
-    component: EditLocation
+    path: '/edit-region/:id',
+    component: EditRegion
   },
   {
     path: '/ratings/',
@@ -377,8 +377,8 @@ const routes = [
     component: Approvals
   },
   {
-    path: '/pack-trans/:id',
-    component: PackTrans
+    path: '/pack-operations/:id',
+    component: PackOperations
   },
   {
     path: '/order-requests/',
@@ -425,8 +425,8 @@ const routes = [
     component: ArchivedOrders
   },
   {
-    path: '/store-trans/:id',
-    component: StoreTrans
+    path: '/store-operations/:id',
+    component: StoreOperations
   },
   {
     path: '/purchase-plan/',
@@ -465,8 +465,8 @@ const routes = [
     component: PermissionList
   },
   {
-    path: '/archived-stock-trans/',
-    component: ArchivedStockTrans
+    path: '/archived-stock-operations/',
+    component: ArchivedStockOperations
   },
   {
     path: '/archived-products/',
@@ -481,8 +481,8 @@ const routes = [
     component: StoreBalance
   },
   {
-    path: '/store-balance-trans/:storeId/month/:month',
-    component: StoreBalanceTrans
+    path: '/store-balance-operations/:storeId/month/:month',
+    component: StoreBalanceOperations
   },
   {
     path: '(.*)',

@@ -3,15 +3,15 @@ import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon } from 'fra
 import BottomToolbar from './bottom-toolbar'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { iPurchase, iStore } from '../data/interfaces'
+import { Purchase, Store } from '../data/types'
 
-interface ExtendedPurchase extends iPurchase {
-  storeInfo: iStore
+type ExtendedPurchase = Purchase & {
+  storeInfo: Store
 }
 const Purchases = () => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [purchases, setPurchases] = useState<ExtendedPurchase[]>([])
   useEffect(() => {
     setPurchases(() => {

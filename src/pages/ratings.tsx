@@ -1,17 +1,17 @@
 import { useContext, useState, useEffect } from 'react'
 import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Button } from 'framework7-react'
 import BottomToolbar from './bottom-toolbar'
-import { StoreContext } from '../data/store'
+import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { approveRating, showMessage, showError, getMessage } from '../data/actionst'
-import { iProduct, iRating, iUserInfo } from '../data/interfaces'
+import { approveRating, showMessage, showError, getMessage } from '../data/actions'
+import { Product, Rating, UserInfo } from '../data/types'
 
-interface ExtendedRating extends iRating {
-  userInfo: iUserInfo,
-  productInfo: iProduct
+type ExtendedRating = Rating & {
+  userInfo: UserInfo,
+  productInfo: Product
 }
 const Ratings = () => {
-  const { state } = useContext(StoreContext)
+  const { state } = useContext(StateContext)
   const [error, setError] = useState('')
   const [ratings, setRatings] = useState<ExtendedRating[]>([])
   useEffect(() => {
