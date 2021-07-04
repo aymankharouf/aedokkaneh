@@ -1,56 +1,60 @@
-import { useContext, useState, useEffect } from 'react'
+import { useContext, useState } from 'react'
 import { StateContext } from '../data/state-provider'
-import { f7, Page, Navbar, List, ListInput, Fab, Icon, Toolbar } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
-import { addCountry, showMessage, showError, getMessage } from '../data/actions'
-
+import { addCountry, getMessage } from '../data/actions'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonTextarea, useIonToast } from '@ionic/react'
+import { useHistory, useLocation } from 'react-router'
+import Header from './header'
+import Footer from './footer'
+import { checkmarkOutline } from 'ionicons/icons'
 
 const AddCountry = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
   const [name, setName] = useState('')
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
+  const [message] = useIonToast()
+  const location = useLocation()
+  const history = useHistory()
+
   const handleSubmit = () => {
     try{
       if (state.countries.includes(name)) {
         throw new Error('duplicateName')
       }
       addCountry(name)
-      showMessage(labels.addSuccess)
-      f7.views.current.router.back()
+      message(labels.addSuccess, 3000)
+      history.goBack()
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+      message(getMessage(location.pathname, err), 3000)
 		}
   }
   return (
-    <Page>
-      <Navbar title={labels.addCountry} backLink={labels.back} />
-      <List form inlineLabels>
-        <ListInput 
-          name="name" 
-          label={labels.name} 
-          clearButton
-          type="text"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          onInputClear={() => setName('')}
-        />
-      </List>
-      {!name ? '' :
-        <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleSubmit()}>
-          <Icon material="done"></Icon>
-        </Fab>
+    <IonPage>
+      <Header title={labels.addCountry} />
+      <IonContent fullscreen>
+        <IonList>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.name}
+            </IonLabel>
+            <IonInput 
+              value={name} 
+              type="text" 
+              autofocus
+              clearInput
+              onIonChange={e => setName(e.detail.value!)} 
+            />
+          </IonItem>
+        </IonList>
+      </IonContent>
+      {name &&
+        <IonFab vertical="top" horizontal="end" slot="fixed">
+          <IonFabButton onClick={handleSubmit} color="success">
+            <IonIcon ios={checkmarkOutline} /> 
+          </IonFabButton>
+        </IonFab>    
       }
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+      <Footer />
+    </IonPage>
   )
 }
 export default AddCountry

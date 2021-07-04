@@ -1,60 +1,69 @@
-import { useState, useEffect } from 'react'
-import { f7, Page, Navbar, List, ListInput, Fab, Icon } from 'framework7-react'
+import { useState } from 'react'
 import labels from '../data/labels'
-import { addCategory, showMessage, showError, getMessage } from '../data/actions'
+import { addCategory, getMessage } from '../data/actions'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonTextarea, useIonToast } from '@ionic/react'
+import { useHistory, useLocation, useParams } from 'react-router'
+import Header from './header'
+import { checkmarkOutline } from 'ionicons/icons'
 
-type Props = {
+type Params = {
   id: string
 }
-const AddCategory = (props: Props) => {
-  const [error, setError] = useState('')
+const AddCategory = () => {
+  const params = useParams<Params>()
   const [name, setName] = useState('')
   const [ordering, setOrdering] = useState('')
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
+  const [message] = useIonToast()
+  const location = useLocation()
+  const history = useHistory()
   const handleSubmit = () => {
     try{
-      addCategory(props.id, name, Number(ordering))
-      showMessage(labels.addSuccess)
-      f7.views.current.router.back()
+      addCategory(params.id, name, Number(ordering))
+      message(labels.addSuccess, 3000)
+      history.goBack()
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   
   return (
-    <Page>
-      <Navbar title={labels.addCategory} backLink={labels.back} />
-      <List form inlineLabels>
-        <ListInput 
-          name="name" 
-          label={labels.name}
-          clearButton
-          type="text"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          onInputClear={() => setName('')}
-        />
-        <ListInput 
-          name="ordering" 
-          label={labels.ordering}
-          clearButton
-          type="number" 
-          value={ordering}
-          onChange={e => setOrdering(e.target.value)}
-          onInputClear={() => setOrdering('')}
-        />
-      </List>
-      {!name || !ordering ? '' :
-        <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleSubmit()}>
-          <Icon material="done"></Icon>
-        </Fab>
+    <IonPage>
+      <Header title={labels.addCategory} />
+      <IonContent fullscreen>
+        <IonList>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.name}
+            </IonLabel>
+            <IonInput 
+              value={name} 
+              type="text" 
+              autofocus
+              clearInput
+              onIonChange={e => setName(e.detail.value!)} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.ordering}
+            </IonLabel>
+            <IonInput 
+              value={ordering} 
+              type="number" 
+              clearInput
+              onIonChange={e => setOrdering(e.detail.value!)} 
+            />
+          </IonItem>
+        </IonList>
+      </IonContent>
+      {name && ordering &&
+        <IonFab vertical="top" horizontal="end" slot="fixed">
+          <IonFabButton onClick={handleSubmit} color="success">
+            <IonIcon ios={checkmarkOutline} /> 
+          </IonFabButton>
+        </IonFab>    
       }
-    </Page>
+    </IonPage>
   )
 }
 export default AddCategory

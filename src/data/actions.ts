@@ -82,7 +82,7 @@ export const editCountry = (name: string, oldName: string, products: Product[], 
 }
 
 export const addRegion = (region: Region) => {
-  firebase.firestore().collection('lookups').doc('l').set({
+  firebase.firestore().collection('lookups').doc('r').set({
     values: firebase.firestore.FieldValue.arrayUnion(region)
   }, {merge: true})
 }
@@ -545,7 +545,7 @@ const getMinPrice = (storePack: PackPrice, pack: Pack, packPrices: PackPrice[], 
   if (packStores.length > 0){
     const prices = packStores.map(s => s.price)
     minPrice = Math.min(...prices)
-    weightedPrice = Math.round(minPrice / pack.unitsCount)
+    weightedPrice = minPrice / pack.unitsCount
     packStores.sort((p1, p2) => (p2.offerEnd ? moment(p2.offerEnd) : moment().add(1000, 'days')) > (p1.offerEnd ? moment(p1.offerEnd) : moment().add(1000, 'days')) ? 1 : -1)
     offerEnd = packStores.find(s => s.price === minPrice)!.offerEnd
     if (packStores.filter(s => s.price === minPrice).length === 1) {

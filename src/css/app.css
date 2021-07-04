@@ -1,65 +1,26 @@
 /* Your app styles here */
 /* Your app styles here */
 
-.sections {
-    margin: 1rem;
+root {
+  --ion-safe-area-top: 20px;
+  --ion-safe-area-bottom: 22px;
+}
+
+ion-item {
+  font-size: 1rem;
+}
+
+ion-text {
+  display: block;
+  font-size: 0.8rem;
+}
+
+ion-toast {
+  color: var(--ion-color-secondary);
 }
   
-.center {
-  text-align: center;
-}
-
-.total-price {
-  margin: 20px;
-}
-
-.order-button {
-  margin: 20px;
-  width: 10em;
-}
-
-.search-icon {
-  margin-top: 0.8rem;
-}
-
-.star {
-  color: yellow;
-  margin: 3px;
-}
-
 .left {
   text-align: left;
-}
-
-.error {
-  font-size: 1.2rem;
-  color: gold;
-}
-
-.success {
-  font-size: 1.2rem;
-  color: cyan;
-}
-
-.green {
-  color: green;
-}
-
-.blue {
-  color: blue;
-}
-
-.red {
-  color: red;
-}
-
-.logo {
-  width: 120px;
-  margin-bottom: -10px;
-}
-
-.icons {
-  color: white;
 }
 
 .block-title {
@@ -67,129 +28,166 @@
 }
 
 .price {
-  font-size: 1.2rem;
-  color: blue;
-  margin-right: 0.2rem;
-}
-
-.avatar {
-  width: 100px;
-}
-
-.section-label {
-  font-size: 1.2rem;
-}
-
-.img-card {
-  max-width: 100%;
-  height: 18rem;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.img-list {
-  width: 4.5rem;
-  height: 6rem;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.top-fab {
-  top: 0px !important;
-}
-
-.total {
-  color: purple;
-}
-
-.fees {
+  text-align: end;
   color: red;
+  max-width: 15%;
+  font-size: 1rem;
 }
 
-.discount {
+.price-off {
+  text-decoration: line-through;
+  text-align: end;
+  color: red;
+  max-width: 15%;
+  font-size: 1rem;
+}
+
+.card-right {
   color: green;
-}
-
-.net {
-  color: blue;
+  font-size: 1rem;
 }
 
 .card-title {
   text-align: center;
   font-size: 1rem;
-  color: blue;
+  font-weight: bold;
+  color: dodgerblue;
 }
 
-.navbar-inner {
-  font-size: 1rem;
-  color: blue;
-}
-
-.item-title-row {
+.box {
+  border-radius: 12px;
+  color: white;
+  text-align: center;
+  margin-right: 5px;
   font-size: 0.8rem;
+  font-weight: bold;
 }
 
-.item-subtitle {
-  font-size: 0.8rem !important;
-  color:red !important;
+.list {
+  border-style: outset;
+  border-width: 2px;
+  margin: 10px;
+  border-radius: 10px;
 }
 
-.item-text {
-  font-size: 0.8rem !important;
-  color: blue !important;
-}
-
-.item-footer {
-  font-size: 0.8rem !important;
-  color: green !important;
-}
-
-.list-subtext1 {
-  font-size: 0.8rem;
-  color:purple;
-}
-
-.list-subtext2 {
-  font-size: 0.8rem;
-  color:deeppink;
-}
-
-.list-subtext3 {
-  font-size: 0.8rem;
-  color:teal;
-}
-
-.list-subtext4 {
-  font-size: 0.8rem;
-  color:orange;
-}
-
-.actions-button-text {
-  font-size: 1rem;
+.help {
+  margin: 20px;
+  font-size: 1.5rem;
+  color: var(--ion-color-primary);
   text-align: center;
 }
 
-.actions-button {
-  height: 3rem;
+.darkblue {
+  --background: darkblue;
+  --button-color: darkblue;
+}
+
+.deeppink {
+  --background: deeppink;
+  --button-color: deeppink;
+}
+
+.maroon {
+  --background: maroon;
+  --button-color: maroon;
+}
+
+.red {
+  --background: red;
+  --button-color: red;
+}
+
+.purple {
+  --background: purple;
+  --button-color: purple;
+}
+
+
+.darkgreen {
+  --background: darkgreen;
+  --button-color: darkgreen;
+}
+
+.darkslategray {
+  --background: darkslategray;
+  --button-color: darkslategray;
+}
+
+.crimson {
+  --background: crimson;
+  --button-color: crimson;
+}
+
+.chocolate {
+  --background: chocolate;
+  --button-color: chocolate;
+}
+
+.darkolivegreen {
+  --background: darkolivegreen;
+  --button-color: darkolivegreen;
+}
+
+.good {
+  --color: green;
+  --button-color: green;
+}
+
+.bad {
+  --color: red;
+  --button-color: red;
+}
+
+.medium {
+  --color: dodgerblue;
+  --button-color: dodgerblue;
+}
+
+.dark {
+  --ion-background-color: var(--ion-color-dark);
+  --ion-text-color: var(--ion-color-secondary);
+  --ion-border-color: var(--ion-color-secondary);
+}
+
+.advert {
+  --background: lime;
+  color: darkblue;
+  margin: 0.9rem;
+  --border-width: 2px;
+  --border-color: darkblue;
+}
+
+.badge {
+  font-size: 10px;
+  position: relative;
+  bottom: 10px;
+  background-color: red;
 }
 
 .note {
-  font-size: 0.9rem;
   text-align: center;
   color: red;
+  margin: 1rem;
+}
+
+.help1 {
+  text-align: center;
+  color: blue;
+  margin: 1rem;
+}
+
+.help2 {
+  text-align: center;
+  color: green;
+  margin: 1rem;
+}
+
+.help3 {
+  text-align: center;
+  color: purple;
+  margin: 1rem;
 }
 
 .selected {
-  background-color: lightskyblue;
-}
-
-.toolbar-inner .link {
-  font-size: 0.8rem;
-}
-
-.card-footer {
-  padding-top: 0;
-  height: 2rem;
+  --background: lightskyblue;
 }

@@ -358,7 +358,8 @@ export type State = {
   storePayments: StorePayment[],
   basket?: Basket,
   returnBasket?: ReturnBasket,
-  orderBasket?: OrderBasketPack[]
+  orderBasket?: OrderBasketPack[],
+  searchText: string
 }
 
 export type Action = {

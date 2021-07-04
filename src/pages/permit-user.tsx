@@ -53,6 +53,7 @@ const PermitUser = (props: Props) => {
   const handlePermit = async () => {
     try{
       setInprocess(true)
+      debugger
       await permitUser(userId, storeId, state.users, state.stores)
       setInprocess(false)
       showMessage(labels.permitSuccess)

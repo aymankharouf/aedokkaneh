@@ -1,20 +1,26 @@
 import { useContext, useState, useEffect } from 'react'
-import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, Button } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { deleteNotification, showMessage, showError, getMessage } from '../data/actions'
+import { deleteNotification, getMessage } from '../data/actions'
 import { Notification, UserInfo } from '../data/types'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
+import Header from './header'
+import { useLocation } from 'react-router'
+import { colors } from '../data/config'
+import { addOutline, trashOutline } from 'ionicons/icons'
+import Footer from './footer'
 
 type ExtendedNotification = Notification & {
   userInfo: UserInfo
 }
 const Notifications = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
   const [notifications, setNotifications] = useState<ExtendedNotification[]>([])
+  const location = useLocation()
+  const [message] = useIonToast()
+  const [alert] = useIonAlert()
   useEffect(() => {
     setNotifications(() => {
       const notifications = state.notifications.map(n => {
@@ -27,54 +33,63 @@ const Notifications = () => {
       return notifications.sort((n1, n2) => n2.time > n1.time ? 1 : -1)
     })
   }, [state.users, state.notifications])
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
   const handleDelete = (notificationId: string) => {
-    f7.dialog.confirm(labels.confirmationText, labels.confirmationTitle, () => {
-      try{
-        const notification = state.notifications.find(n => n.id === notificationId)!
-        deleteNotification(notification, state.notifications)
-        showMessage(labels.deleteSuccess)
-      } catch(err) {
-        setError(getMessage(f7.views.current.router.currentRoute.path, err))
-      }
-    })  
+    alert({
+      header: labels.confirmationTitle,
+      message: labels.confirmationText,
+      buttons: [
+        {text: labels.cancel},
+        {text: labels.yes, handler: () => {
+          try{
+            const notification = state.notifications.find(n => n.id === notificationId)!
+            deleteNotification(notification, state.notifications)
+            message(labels.deleteSuccess, 3000)
+          } catch(err) {
+            message(getMessage(location.pathname, err), 3000)
+          }    
+        }},
+      ],
+    })
   }
 
-  if (!state.user) return <Page><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></Page>
+  if (!state.user) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
   return (
-    <Page>
-      <Navbar title={labels.notifications} backLink={labels.back} />
-      <Block>
-        <List mediaList>
+    <IonPage>
+      <Header title={labels.notifications} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
           {notifications.length === 0 ? 
-            <ListItem title={labels.noData} />
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem>
           : notifications.map(n =>
-              <ListItem
-                title={`${n.userInfo.name}:${n.userInfo.mobile}`}
-                subtitle={n.title}
-                text={n.message}
-                footer={moment(n.time).fromNow()}
-                key={n.id}
-              >
-                <div className="list-subtext1">{n.status === 'n' ? labels.notRead : labels.read}</div>
-                <Button text={labels.delete} slot="after" onClick={() => handleDelete(n.id)} />
-              </ListItem>
+              <IonItem key={n.id}>
+                <IonLabel>
+                  <IonText style={{color: colors[0].name}}>{`${n.userInfo.name}:${n.userInfo.mobile}`}</IonText>
+                  <IonText style={{color: colors[1].name}}>{n.title}</IonText>
+                  <IonText style={{color: colors[2].name}}><p>{n.message}</p></IonText>
+                  <IonText style={{color: colors[3].name}}>{n.status === 'n' ? labels.notRead : labels.read}</IonText>
+                  <IonText style={{color: colors[4].name}}>{moment(n.time).fromNow()}</IonText>
+                </IonLabel>
+                <IonIcon 
+                  ios={trashOutline} 
+                  slot="end" 
+                  color="danger"
+                  style={{fontSize: '20px', marginRight: '10px'}} 
+                  onClick={()=> handleDelete(n.id)}
+                />
+              </IonItem>    
             )
           }
-        </List>
-      </Block>
-      <Fab position="left-top" slot="fixed" color="green" className="top-fab" href="/add-notification/">
-        <Icon material="add"></Icon>
-      </Fab>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+        </IonList>
+      </IonContent>
+      <IonFab vertical="top" horizontal="end" slot="fixed">
+        <IonFabButton routerLink="/add-notification" color="success">
+          <IonIcon ios={addOutline} /> 
+        </IonFabButton>
+      </IonFab>
+      <Footer />
+    </IonPage>
   )
 }
 

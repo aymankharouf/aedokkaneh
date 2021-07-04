@@ -1,24 +1,36 @@
 import { useContext, useState, useEffect } from 'react'
-import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Searchbar, NavRight, Link, Fab, Icon, FabButton, FabButtons, FabBackdrop } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { productOfText, getCategoryName } from '../data/actions'
 import { Category, Product } from '../data/types'
+import { useParams } from 'react-router'
+import { IonContent, IonFab, IonFabButton, IonFabList, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import Fuse from "fuse.js"
+import { colors } from '../data/config'
+import { addOutline, chevronDownOutline, cloudDownloadOutline, trashBinOutline } from 'ionicons/icons'
 
-type Props = {
+type Params = {
   id: string
 }
 type ExtendedProduct = Product & {
   categoryInfo: Category
 }
-const Products = (props: Props) => {
-  const { state } = useContext(StateContext)
-  const [category] = useState(() => state.categories.find(c => c.id === props.id))
+const Products = () => {
+  const { state, dispatch } = useContext(StateContext)
+  const params = useParams<Params>()
+  const [category] = useState(() => state.categories.find(c => c.id === params.id))
   const [products, setProducts] = useState<ExtendedProduct[]>([])
+  const [data, setData] = useState<ExtendedProduct[]>([])
+  useEffect(() => {
+    return function cleanUp() {
+      dispatch({type: 'CLEAR_SEARCH'})
+    }
+  }, [dispatch])
   useEffect(() => {
     setProducts(() => {
-      const products = state.products.filter(p => props.id === '-1' ? !state.packs.find(pa => pa.productId === p.id) || state.packs.filter(pa => pa.productId === p.id).length === state.packs.filter(pa => pa.productId === p.id && pa.price === 0).length : props.id === '0' || p.categoryId === props.id)
+      const products = state.products.filter(p => params.id === '-1' ? !state.packs.find(pa => pa.productId === p.id) || state.packs.filter(pa => pa.productId === p.id).length === state.packs.filter(pa => pa.productId === p.id && pa.price === 0).length : params.id === '0' || p.categoryId === params.id)
       const result = products.map(p => {
         const categoryInfo = state.categories.find(c => c.id === p.categoryId)!
         return {
@@ -28,68 +40,67 @@ const Products = (props: Props) => {
       })
       return result.sort((p1, p2) => p1.categoryId === p2.categoryId ? (p1.name > p2.name ? 1 : -1) : (p1.categoryInfo.name > p2.categoryInfo.name ? 1 : -1))
     })
-  }, [state.products, state.categories, state.packs, props.id])
-  
-  if (!state.user) return <Page><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></Page>
+  }, [state.products, state.categories, state.packs, params.id])
+  useEffect(() => {
+    if (!state.searchText) {
+      setData(products)
+      return
+    }
+    const options = {
+      includeScore: true,
+      findAllMatches: true,
+      threshold: 0.1,
+      keys: ['name', 'alias', 'description', 'categoryName', 'trademarkName', 'countryName']
+    }
+    const fuse = new Fuse(products, options)
+    const result = fuse.search(state.searchText)
+    setData(result.map(p => p.item))
+  }, [state.searchText, products])
+  if (!state.user) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
   return(
-    <Page>
-      <Navbar title={props.id === '-1' ? labels.notUsedProducts : (props.id === '0' ? labels.products : category?.name || '')} backLink={labels.back}>
-        <NavRight>
-          <Link searchbarEnable=".searchbar" iconMaterial="search"></Link>
-        </NavRight>
-        <Searchbar
-          className="searchbar"
-          searchContainer=".search-list"
-          searchIn=".item-inner"
-          clearButton
-          expandable
-          placeholder={labels.search}
-        />
-      </Navbar>
-        <Block>
-          <List className="searchbar-not-found">
-            <ListItem title={labels.noData} />
-          </List>
-          <List mediaList className="search-list searchbar-found">
-            {products.length === 0 ? 
-              <ListItem title={labels.noData} /> 
-            : products.map(p => 
-                <ListItem
-                  link={`/product-packs/${p.id}/type/n`}
-                  title={p.name}
-                  subtitle={p.alias}
-                  text={p.description}
-                  footer={productOfText(p.trademark, p.country)}
-                  key={p.id}
-                >
-                  <img slot="media" src={p.imageUrl} className="img-list" alt={labels.noImage} />
-                  <div className="list-subtext1">{getCategoryName(p.categoryInfo, state.categories)}</div>
-                </ListItem>
-              )
-            }
-          </List>
-      </Block>
-      <FabBackdrop slot="fixed" />
-      <Fab position="left-top" slot="fixed" color="orange" className="top-fab">
-        <Icon material="keyboard_arrow_down"></Icon>
-        <Icon material="close"></Icon>
-        <FabButtons position="bottom">
-          <FabButton color="green" onClick={() => f7.views.current.router.navigate(`/add-product/${props.id}`)}>
-            <Icon material="add"></Icon>
-          </FabButton>
-          <FabButton color="blue" onClick={() => f7.views.current.router.navigate('/archived-products/')}>
-            <Icon material="backup"></Icon>
-          </FabButton>
-          <FabButton color="red" onClick={() => f7.views.current.router.navigate('/products/-1')}>
-            <Icon material="remove_shopping_cart"></Icon>
-          </FabButton>
-
-        </FabButtons>
-      </Fab>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+    <IonPage>
+      <Header title={params.id === '-1' ? labels.notUsedProducts : (params.id === '0' ? labels.products : category?.name || '')} withSearch/>
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
+          {data.length === 0 ? 
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem> 
+          : data.map(p => 
+              <IonItem key={p.id} routerLink={`/product-packs/${p.id}/n`}>
+                <IonThumbnail slot="start">
+                  <img src={p.imageUrl} alt={labels.noImage} />
+                </IonThumbnail>
+                <IonLabel>
+                  <IonText style={{color: colors[0].name}}>{p.name}</IonText>
+                  <IonText style={{color: colors[1].name}}>{p.alias}</IonText>
+                  <IonText style={{color: colors[2].name}}>{p.description}</IonText>
+                  <IonText style={{color: colors[3].name}}>{getCategoryName(p.categoryInfo, state.categories)}</IonText>
+                  <IonText style={{color: colors[4].name}}>{productOfText(p.trademark, p.country)}</IonText>
+                </IonLabel>
+              </IonItem>    
+            )
+          }
+        </IonList>
+      </IonContent>
+      <IonFab horizontal="end" vertical="top" slot="fixed">
+        <IonFabButton>
+          <IonIcon ios={chevronDownOutline}></IonIcon>
+        </IonFabButton>
+        <IonFabList>
+          <IonFabButton color="success" routerLink={`/add-product/${params.id}`}>
+            <IonIcon ios={addOutline}></IonIcon>
+          </IonFabButton>
+          <IonFabButton color="secondary" routerLink="/archived-products">
+            <IonIcon ios={cloudDownloadOutline}></IonIcon>
+          </IonFabButton>
+          <IonFabButton color="danger" routerLink="/products/-1">
+            <IonIcon ios={trashBinOutline}></IonIcon>
+          </IonFabButton>
+        </IonFabList>
+      </IonFab>
+      <Footer />
+    </IonPage>
   )
 }
 

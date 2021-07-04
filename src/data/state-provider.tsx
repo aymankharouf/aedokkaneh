@@ -39,7 +39,8 @@ const StateProvider = ({children}: Props) => {
     alarms: [],
     ratings: [],
     invitations: [],
-    storePayments: []
+    storePayments: [],
+    searchText: ''
   }
   const [state, dispatch] = useReducer(Reducer, initState)
   useEffect(() => {
@@ -237,7 +238,20 @@ const StateProvider = ({children}: Props) => {
             }
             if (doc.data().alarms) {
               doc.data().alarms.forEach((a: any) => {
-                alarms.push({...a, userId: doc.id})
+                alarms.push({
+                  userId: doc.id,
+                  id: a.id,
+                  packId: a.packId,
+                  storeId: a.storeId,
+                  newPackId: a.newPackId,
+                  type: a.type,
+                  status: a.status,
+                  offerDays: a.offerDays,
+                  price: a.price,
+                  alternative: a.alternative,
+                  quantity: a.quantity,
+                  time: a.time.toDate()
+                })
               })
             }
             if (doc.data().ratings) {

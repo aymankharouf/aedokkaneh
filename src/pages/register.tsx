@@ -1,62 +1,84 @@
 import { useState, useEffect } from 'react'
-import { f7, Page, Navbar, List, ListInput, Button } from 'framework7-react'
-import { registerUser, showMessage, showError, getMessage } from '../data/actions'
+import { registerUser, getMessage } from '../data/actions'
 import labels from '../data/labels'
+import { IonButton, IonContent, IonInput, IonItem, IonLabel, IonList, IonPage, useIonLoading, useIonToast } from '@ionic/react'
+import Header from './header'
+import { useHistory, useLocation } from 'react-router'
+import { patterns } from '../data/config'
 
 const Register = () => {
   const [password, setPassword] = useState('')
   const [email, setEmail] = useState('')
-  const [error, setError] = useState('')
-  const [inprocess, setInprocess] = useState(false)
+  const [passwordInvalid, setPasswordInvalid] = useState(true)
+  const [emailInvalid, setEmailInvalid] = useState(true)
+  const history = useHistory()
+  const location = useLocation()
+  const [message] = useIonToast()
+  const [loading, dismiss] = useIonLoading()
   useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
+    setPasswordInvalid(!password || !patterns.password.test(password))
+  }, [password])
   useEffect(() => {
-    if (inprocess) {
-      f7.dialog.preloader(labels.inprocess)
-    } else {
-      f7.dialog.close()
-    }
-  }, [inprocess])
-
+    setEmailInvalid(!email || !patterns.email.test(email))
+  }, [email])
   const handleRegister = async () => {
     try{
-      setInprocess(true)
+      loading()
       await registerUser(email, password)
-      setInprocess(false)
-      showMessage(labels.registerSuccess)
-      f7.views.current.router.back()
-      f7.views.current.router.app.panel.close('right') 
+      dismiss()
+      message(labels.registerSuccess, 3000)
+      history.replace('/') 
     } catch (err){
-      setInprocess(false)
-      setError(getMessage(f7.views.current.router.currentRoute.path, err))
+      dismiss()
+      message(getMessage(location.pathname, err), 3000)
     }
   }
 
   return (
-    <Page>
-      <Navbar title={labels.registerTitle} backLink={labels.back} />
-      <List form>
-        <ListInput
-          label={labels.email}
-          type="text"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-        />
-        <ListInput
-          label={labels.password}
-          type="text"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-        />
-      </List>
-      {!email || !password ? '' :
-        <Button text={labels.register} href="#" large onClick={() => handleRegister()} />
+    <IonPage>
+      <Header title={labels.registerTitle} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
+        <IonItem>
+            <IonLabel position="floating" color={emailInvalid ? 'danger' : 'primary'}>
+              {labels.email}
+            </IonLabel>
+            <IonInput 
+              value={email} 
+              type="text" 
+              autofocus
+              clearInput
+              onIonChange={e => setEmail(e.detail.value!)} 
+              color={emailInvalid ? 'danger' : ''}
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color={passwordInvalid ? 'danger' : 'primary'}>
+              {labels.password}
+            </IonLabel>
+            <IonInput 
+              value={password} 
+              type="text" 
+              clearInput
+              onIonChange={e => setPassword(e.detail.value!)} 
+              color={passwordInvalid ? 'danger' : ''}
+            />
+          </IonItem>
+        </IonList>
+      </IonContent>
+      {!emailInvalid && !passwordInvalid &&
+        <div className="ion-padding" style={{textAlign: 'center'}}>
+          <IonButton 
+            fill="solid" 
+            shape="round"
+            style={{width: '10rem'}}
+            onClick={handleRegister}
+          >
+            {labels.register}
+          </IonButton>
+        </div>
       }
-    </Page>
+    </IonPage>
   )
 }
 export default Register

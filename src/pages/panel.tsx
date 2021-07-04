@@ -1,13 +1,16 @@
-import { useContext, useState, useEffect } from 'react'
-import { f7, Page, Navbar, List, ListItem } from 'framework7-react'
+import { useContext, useState, useEffect, useRef } from 'react'
 import { StateContext } from '../data/state-provider'
 import { logout } from '../data/actions'
 import labels from '../data/labels'
+import { IonBadge, IonContent, IonItem, IonLabel, IonList, IonMenu, IonMenuToggle } from '@ionic/react'
+import { useHistory } from 'react-router'
 
 const Panel = () => {
   const { state, dispatch } = useContext(StateContext)
   const [approvalsCount, setApprovalsAcount] = useState(0)
   const [offersCount, setOffersAcount] = useState(0)
+  const menuEl = useRef<HTMLIonMenuElement | null>(null)
+  const history = useHistory()
   useEffect(() => {
     const newOrders = state.orders.filter(o => o.status === 'n').length
     const orderRequests = state.orders.filter(r => r.requestType).length
@@ -26,27 +29,55 @@ const Panel = () => {
 
   const handleLogout = () => {
     logout()
-    f7.views.main.router.navigate('/home/', {reloadAll: true})
-    f7.panel.close('right') 
+    history.push('/')
+    if (menuEl.current) menuEl.current.close()
     dispatch({type: 'CLEAR_BASKET'})
   }
 
   return(
-    <Page>
-      <Navbar title={labels.mainPanelTitle} />
-      <List>
-        {state.user ? <ListItem link="#" title={labels.logout} onClick={() => handleLogout()} />
-        : <ListItem link="/panel-login/" title={labels.login} />}
-        {state.user ? <ListItem link="/settings/" title={labels.settings} view="#main-view" panelClose /> : ''}
-        {state.user ? <ListItem link="/requested-packs/" title={labels.requestedPacks} view="#main-view" panelClose /> : ''}
-        {state.user ? <ListItem link="/purchase-plan/" title={labels.purchasePlan} view="#main-view" panelClose /> : ''}
-        {state.user ? <ListItem link="/approvals/" title={labels.approvals} badge={approvalsCount} badgeColor="red" view="#main-view" panelClose /> : ''}
-        {state.user ? <ListItem link="/offers/" title={labels.offers} badge={offersCount} badgeColor="red" view="#main-view" panelClose /> : ''}
-        {state.user ? <ListItem link="/monthly-operation-call/" title={labels.monthlyOperations} view="#main-view" panelClose /> : ''}
-        {state.user ? <ListItem link="/logs/" title={labels.logs} view="#main-view" panelClose /> : ''}
-        {state.user ? <ListItem link="/permission-list/s" title={labels.storesOwners} view="#main-view" panelClose /> : ''}
-      </List>
-    </Page>
+    <IonMenu contentId="main" type="overlay" ref={menuEl} className="dark">
+      <IonContent>
+        <IonList>
+          <IonMenuToggle autoHide={false}>
+          {state.user ? <>
+            <IonItem href="#" onClick={handleLogout}>
+              <IonLabel style={{marginBottom: '5px'}}>{labels.logout}</IonLabel>
+            </IonItem>
+            <IonItem routerLink="/settings" style={{marginBottom: '0px', marginTop: '0px'}}>
+              <IonLabel>{labels.settings}</IonLabel>
+            </IonItem>
+            <IonItem routerLink="/requested-packs">
+              <IonLabel>{labels.requestedPacks}</IonLabel>
+            </IonItem>
+            <IonItem routerLink="/purchase-plan" style={{marginBottom: '0px', marginTop: '0px'}}>
+              <IonLabel>{labels.purchasePlan}</IonLabel>
+            </IonItem>
+            <IonItem routerLink="/approvals" style={{marginBottom: '0px', marginTop: '0px'}}>
+              <IonLabel>{labels.approvals}</IonLabel>
+              {approvalsCount > 0 && <IonBadge color="danger">{approvalsCount}</IonBadge>}
+            </IonItem>
+            <IonItem routerLink="/offers" style={{marginBottom: '0px', marginTop: '0px'}}>
+              <IonLabel>{labels.offers}</IonLabel>
+              {offersCount > 0 && <IonBadge color="danger">{offersCount}</IonBadge>}
+            </IonItem>
+            <IonItem routerLink="/monthly-operation-call" style={{marginBottom: '0px', marginTop: '0px'}}>
+              <IonLabel>{labels.monthlyOperations}</IonLabel>
+            </IonItem>
+            <IonItem routerLink="/logs" style={{marginBottom: '0px', marginTop: '0px'}}>
+              <IonLabel>{labels.logs}</IonLabel>
+            </IonItem>
+            <IonItem routerLink="/permission-list/s" style={{marginBottom: '0px', marginTop: '0px'}}>
+              <IonLabel>{labels.storesOwners}</IonLabel>
+            </IonItem>
+          </> : 
+            <IonItem routerLink='/login'>
+              <IonLabel>{labels.login}</IonLabel>
+            </IonItem>
+          }
+          </IonMenuToggle>
+        </IonList>
+      </IonContent>
+    </IonMenu>
   )
 }
 export default Panel

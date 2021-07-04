@@ -1,43 +1,30 @@
 import { useState, useEffect } from 'react'
-import { addStore, showMessage, showError, getMessage } from '../data/actions'
-import { f7, Page, Navbar, List, ListItem, ListInput, Fab, Icon, Toolbar, Toggle } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
+import { addStore, getMessage } from '../data/actions'
 import labels from '../data/labels'
-import { storeTypes } from '../data/config'
+import { storeTypes, patterns } from '../data/config'
+import { IonToggle, IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, IonTextarea, useIonToast } from '@ionic/react'
+import { useHistory, useLocation } from 'react-router'
+import Header from './header'
+import Footer from './footer'
+import { checkmarkOutline } from 'ionicons/icons'
 
 const AddStore = () => {
-  const [error, setError] = useState('')
   const [type, setType] = useState('')
   const [name, setName] = useState('')
   const [mobile, setMobile] = useState('')
-  const [mobileErrorMessage, setMobileErrorMessage] = useState('')
+  const [mobileInvalid, setMobileInvalid] = useState(true)
   const [address, setAddress] = useState('')
   const [discount, setDiscount] = useState('')
   const [mapPosition, setMapPosition] = useState('')
   const [allowReturn, setAllowReturn] = useState(false)
   const [isActive, setIsActive] = useState(false)
   const [openTime, setOpenTime] = useState('')
-
+  const [message] = useIonToast()
+  const location = useLocation()
+  const history = useHistory()
   useEffect(() => {
-    const patterns = {
-      mobile: /^07[7-9][0-9]{7}$/
-    }
-    const validateMobile = (value: string) => {
-      if (patterns.mobile.test(value)){
-        setMobileErrorMessage('')
-      } else {
-        setMobileErrorMessage(labels.invalidMobile)
-      }
-    }
-    if (mobile) validateMobile(mobile)
-    else setMobileErrorMessage('')
+    setMobileInvalid(!mobile || !patterns.mobile.test(mobile))
   }, [mobile])
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
   const handleSubmit = () => {
     try{
       if (Number(discount) <= 0) {
@@ -57,118 +44,117 @@ const AddStore = () => {
         time: new Date()
       }
       addStore(store)
-      showMessage(labels.addSuccess)
-      f7.views.current.router.back()
+      message(labels.addSuccess, 3000)
+      history.goBack()
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   return (
-    <Page>
-      <Navbar title={labels.newStore} backLink={labels.back} />
-      <List form inlineLabels>
-        <ListInput 
-          name="name" 
-          label={labels.name}
-          value={name}
-          clearButton 
-          type="text" 
-          onChange={e => setName(e.target.value)}
-          onInputClear={() => setName('')}
-        />
-        <ListInput
-          name="mobile"
-          label={labels.mobile}
-          value={mobile}
-          clearButton
-          type="number"
-          errorMessage={mobileErrorMessage}
-          errorMessageForce
-          onChange={e => setMobile(e.target.value)}
-          onInputClear={() => setMobile('')}
-        />
-        <ListItem
-          title={labels.type}
-          smartSelect
-          smartSelectParams={{
-            openIn: "popup", 
-            closeOnSelect: true, 
-            searchbar: true, 
-            searchbarPlaceholder: labels.search,
-            popupCloseLinkText: labels.close
-          }}
-        >
-          <select name="type" value={type} onChange={e => setType(e.target.value)}>
-            <option value=""></option>
-            {storeTypes.map(t => 
-              t.id === '1' ? '' : <option key={t.id} value={t.id}>{t.name}</option>
-            )}
-          </select>
-        </ListItem>
-        <ListInput
-          name="discount"
-          label={labels.discount}
-          value={discount}
-          clearButton
-          type="number"
-          onChange={e => setDiscount(e.target.value)}
-          onInputClear={() => setDiscount('')}
-        />
-        <ListItem>
-          <span>{labels.allowReturn}</span>
-          <Toggle 
-            name="allowReturn" 
-            color="green" 
-            checked={allowReturn} 
-            onToggleChange={() => setAllowReturn(!allowReturn)}
-          />
-        </ListItem>
-        <ListItem>
-          <span>{labels.isActive}</span>
-          <Toggle 
-            name="isActive" 
-            color="green" 
-            checked={isActive} 
-            onToggleChange={() => setIsActive(!isActive)}
-          />
-        </ListItem>
-        <ListInput
-          name="openTime"
-          label={labels.openTime}
-          value={openTime}
-          clearButton
-          type="text"
-          onChange={e => setOpenTime(e.target.value)}
-          onInputClear={() => setOpenTime('')}
-        />
-        <ListInput
-          name="mapPosition"
-          label={labels.mapPosition}
-          value={mapPosition}
-          clearButton
-          type="text"
-          onChange={e => setMapPosition(e.target.value)}
-          onInputClear={() => setMapPosition('')}
-        />
-        <ListInput 
-          name="address" 
-          label={labels.address}
-          value={address}
-          clearButton 
-          type="textarea" 
-          onChange={e => setAddress(e.target.value)}
-          onInputClear={() => setAddress('')}
-        />
-      </List>
-      {!name || !discount || !type || mobileErrorMessage ? '' :
-        <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleSubmit()}>
-          <Icon material="done"></Icon>
-        </Fab>
-      }
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+    <IonPage>
+      <Header title={labels.newStore} />
+      <IonContent fullscreen>
+        <IonList>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.name}
+            </IonLabel>
+            <IonInput 
+              value={name} 
+              type="text" 
+              autofocus
+              clearInput
+              onIonChange={e => setName(e.detail.value!)} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color={mobileInvalid ? 'danger' : 'primary'}>
+              {labels.mobile}
+            </IonLabel>
+            <IonInput 
+              value={mobile} 
+              type="number" 
+              clearInput
+              onIonChange={e => setMobile(e.detail.value!)} 
+              color={mobileInvalid ? 'danger' : ''}
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.type}
+            </IonLabel>
+            <IonSelect 
+              ok-text={labels.ok} 
+              cancel-text={labels.cancel} 
+              value={type}
+              onIonChange={e => setType(e.detail.value)}
+            >
+              {storeTypes.map(t => t.id === '1' ? '' : <IonSelectOption key={t.id} value={t.id}>{t.name}</IonSelectOption>)}
+            </IonSelect>
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.discount}
+            </IonLabel>
+            <IonInput 
+              value={discount} 
+              type="text" 
+              clearInput
+              onIonChange={e => setDiscount(e.detail.value!)} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel color="primary">{labels.allowReturn}</IonLabel>
+            <IonToggle checked={allowReturn} onIonChange={() => setAllowReturn(s => !s)}/>
+          </IonItem>
+          <IonItem>
+            <IonLabel color="primary">{labels.isActive}</IonLabel>
+            <IonToggle checked={isActive} onIonChange={() => setIsActive(s => !s)}/>
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.openTime}
+            </IonLabel>
+            <IonInput 
+              value={openTime} 
+              type="text" 
+              clearInput
+              onIonChange={e => setOpenTime(e.detail.value!)} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.mapPosition}
+            </IonLabel>
+            <IonInput 
+              value={mapPosition} 
+              type="text" 
+              clearInput
+              onIonChange={e => setMapPosition(e.detail.value!)} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.address}
+            </IonLabel>
+            <IonInput 
+              value={address} 
+              type="text" 
+              clearInput
+              onIonChange={e => setAddress(e.detail.value!)} 
+            />
+          </IonItem>
+        </IonList>
+      </IonContent>
+      {name && discount && type && !mobileInvalid &&
+        <IonFab vertical="top" horizontal="end" slot="fixed">
+          <IonFabButton onClick={handleSubmit} color="success">
+            <IonIcon ios={checkmarkOutline} /> 
+          </IonFabButton>
+        </IonFab>
+    }
+      <Footer />
+    </IonPage>
   )
 }
 export default AddStore

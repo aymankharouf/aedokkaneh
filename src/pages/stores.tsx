@@ -1,19 +1,24 @@
 import { useContext, useState, useEffect } from 'react'
-import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, Badge } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import { StateContext } from '../data/state-provider'
-import { addStock, showMessage, showError, getMessage } from '../data/actions'
+import { addStock, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { Store } from '../data/types'
+import { IonBadge, IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
+import Header from './header'
+import { useHistory, useLocation } from 'react-router'
+import { addOutline } from 'ionicons/icons'
+import Footer from './footer'
 
 type ExtendedStore = Store & {
   sales: number
 }
 const Stores = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
   const [stores, setStores] = useState<ExtendedStore[]>([])
   const [stock, setStock] = useState<Store>()
+  const history = useHistory()
+  const location = useLocation()
+  const [message] = useIonToast()
   useEffect(() => {
     setStock(() => state.stores.find(s => s.id === 's'))
   }, [state.stores])
@@ -33,53 +38,53 @@ const Stores = () => {
       return result.sort((s1, s2) => s1.sales - s2.sales)
     })
   }, [state.stores, state.purchases])
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
   const handleAddStock = () => {
     try{
       addStock()
-      showMessage(labels.addSuccess)
-      f7.views.current.router.back()  
+      message(labels.addSuccess, 3000)
+      history.goBack()  
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   return (
-    <Page>
-      <Navbar title={labels.stores} backLink={labels.back} />
-      <Block>
-        <List>
+    <IonPage>
+      <Header title={labels.stores} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
           {stores.length === 0 ? 
-            <ListItem title={labels.noData} /> 
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem> 
           : stores.map(s =>
-              <ListItem 
-                link={`/store-details/${s.id}`} 
-                title={s.name}
-                after={s.discount * 100}
-                key={s.id} 
-              >
-                {s.isActive ? '' : <Badge slot="title" color='red'>{labels.inActive}</Badge>}
-              </ListItem>
+              <IonItem routerLink={`/store-details/${s.id}`} key={s.id}>
+                <IonLabel>{s.name}</IonLabel>
+                <IonLabel slot="end">{s.discount * 100}</IonLabel>
+                {!s.isActive && <IonBadge color="danger">{labels.inActive}</IonBadge>}
+              </IonItem>
             )
           }
-        </List>
-      </Block>
-      <Fab position="left-top" slot="fixed" color="green" className="top-fab" href="/add-store/">
-        <Icon material="add"></Icon>
-      </Fab>
-      {stock ? '' : 
-        <Fab position="center-bottom" slot="fixed" color="red" text={labels.stockName} onClick={() => handleAddStock()}>
-          <Icon material="add"></Icon>
-        </Fab>
+        </IonList>
+      </IonContent>
+      <IonFab vertical="top" horizontal="end" slot="fixed">
+        <IonFabButton routerLink="/add-store" color="success">
+          <IonIcon ios={addOutline} /> 
+        </IonFabButton>
+      </IonFab>
+      {!stock &&
+        <div className="ion-padding" style={{textAlign: 'center'}}>
+          <IonButton
+            fill="solid" 
+            shape="round"
+            style={{width: '10rem'}}
+            onClick={handleAddStock}
+          >
+            {labels.stockName}
+          </IonButton>
+        </div>
       }
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+      <Footer />
+    </IonPage>
   )
 }
 

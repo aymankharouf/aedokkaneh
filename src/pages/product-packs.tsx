@@ -1,103 +1,137 @@
-import { useContext, useState, useEffect, useRef } from 'react'
-import { f7, Page, Navbar, Card, CardContent, CardFooter, List, ListItem, Badge, Toolbar, Actions, ActionsButton, Fab, Icon } from 'framework7-react'
+import { useContext, useState, useEffect } from 'react'
 import RatingStars from './rating-stars'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import BottomToolbar from './bottom-toolbar'
-import { archiveProduct, deleteProduct, showMessage, getMessage, showError, productOfText } from '../data/actions'
+import { archiveProduct, deleteProduct, getMessage, productOfText } from '../data/actions'
 import { Pack } from '../data/types'
+import { useHistory, useLocation, useParams } from 'react-router'
+import { IonActionSheet, IonBadge, IonCard, IonCol, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonRow, useIonAlert, useIonToast } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { colors } from '../data/config'
+import { settingsOutline } from 'ionicons/icons'
 
-type Props = {
+type Params = {
   id: string,
   type: string
 }
-const ProductPacks = (props: Props) => {
+const ProductPacks = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
-  const [product] = useState(() => props.type === 'a' ? state.archivedProducts.find(p => p.id === props.id)! : state.products.find(p => p.id === props.id)!)
+  const params = useParams<Params>()
+  const [product] = useState(() => params.type === 'a' ? state.archivedProducts.find(p => p.id === params.id)! : state.products.find(p => p.id === params.id)!)
   const [packs, setPacks] = useState<Pack[]>([])
   const [activePacks, setActivePacks] = useState<Pack[]>([])
-  const actionsList = useRef<Actions>(null)
+  const [actionOpened, setActionOpened] = useState(false)
+  const [message] = useIonToast()
+  const location = useLocation()
+  const history = useHistory()
+  const [alert] = useIonAlert()
   useEffect(() => {
     setPacks(() => {
-      const packs = props.type === 'a' ? state.archivedPacks.filter(p => p.productId === props.id) : state.packs.filter(p => p.productId === props.id)
+      const packs = params.type === 'a' ? state.archivedPacks.filter(p => p.productId === params.id) : state.packs.filter(p => p.productId === params.id)
       return packs.sort((p1, p2) => p2.price - p1.price)
     })
-  }, [state.packs, state.archivedPacks, props.id, props.type])
+  }, [state.packs, state.archivedPacks, params.id, params.type])
   useEffect(() => {
     setActivePacks(() => packs.filter(p => p.price > 0))
   }, [packs])
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
   const handleArchive = () => {
     try{
       archiveProduct(product, state.packs)
-      showMessage(labels.editSuccess)
-      f7.views.current.router.back()
+      message(labels.editSuccess, 3000)
+      history.goBack()
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   const handleDelete = () => {
-    f7.dialog.confirm(labels.confirmationText, labels.confirmationTitle, () => {
-      try{
-        deleteProduct(product)
-        showMessage(labels.deleteSuccess)
-        f7.views.current.router.back()
-      } catch(err) {
-        setError(getMessage(f7.views.current.router.currentRoute.path, err))
-      }
+    alert({
+      header: labels.confirmationTitle,
+      message: labels.confirmationText,
+      buttons: [
+        {text: labels.cancel},
+        {text: labels.ok, handler: () => {
+          try{
+            deleteProduct(product)
+            message(labels.deleteSuccess, 3000)
+            history.goBack()
+          } catch(err) {
+            message(getMessage(location.pathname, err), 3000)
+          }    
+        }},
+      ],
     })
   }
-
+  let i = 0
   return (
-    <Page>
-      <Navbar title={`${product.name}${product.alias ? '-' + product.alias : ''}`} backLink={labels.back} />
-      <Card>
-        <CardContent>
-          <img src={product.imageUrl} className="img-card" alt={labels.noImage} />
-        </CardContent>
-        <CardFooter>
-          <p>{productOfText(product.trademark, product.country)}</p>
-          <p><RatingStars rating={product.rating} count={product.ratingCount} /></p> 
-        </CardFooter>
-      </Card>
-      <List mediaList>
-        {packs.map(p => 
-          <ListItem 
-            link={`/pack-details/${p.id}`}
-            title={p.name}
-            after={p.isOffer || p.offerEnd || p.price === 0 ? '' : (p.price / 100).toFixed(2)} 
-            key={p.id} 
-          >
-            {p.isOffer || p.offerEnd ? <Badge slot="after" color="green">{p.price > 0 ? (p.price / 100).toFixed(2) : labels.offer}</Badge> : ''}
-            {p.closeExpired ? <Badge slot="title" color="red">{labels.closeExpired}</Badge> : ''}
-          </ListItem>
-        )}
-      </List>
-      <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => actionsList.current?.open()}>
-        <Icon material="build"></Icon>
-      </Fab>
-      <Actions ref={actionsList}>
-        <ActionsButton onClick={() => f7.views.current.router.navigate(`/product-details/${props.id}`)}>{labels.details}</ActionsButton>
-        <ActionsButton onClick={() => f7.views.current.router.navigate(`/add-pack/${props.id}`)}>{labels.addPack}</ActionsButton>
-        <ActionsButton onClick={() => f7.views.current.router.navigate(`/add-offer/${props.id}`)}>{labels.addOffer}</ActionsButton>
-        <ActionsButton onClick={() => f7.views.current.router.navigate(`/add-bulk/${props.id}`)}>{labels.addBulk}</ActionsButton>
-        {activePacks.length === 0 ? 
-          <ActionsButton onClick={() => handleArchive()}>{labels.archive}</ActionsButton>
-        : ''}
-        {packs.length === 0 ? 
-          <ActionsButton onClick={() => handleDelete()}>{labels.delete}</ActionsButton>
-        : ''}
-      </Actions>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+    <IonPage>
+      <Header title={`${product.name}${product.alias ? '-' + product.alias : ''}`} />
+      <IonContent fullscreen>
+        <IonCard>
+          <IonRow>
+            <IonCol>
+              <IonImg src={product.imageUrl} alt={labels.noImage} />
+            </IonCol>
+          </IonRow>
+          <IonRow>
+            <IonCol>{productOfText(product.trademark, product.country)}</IonCol>
+            <IonCol className="ion-text-end"><RatingStars rating={product.rating} count={product.ratingCount} /></IonCol>
+          </IonRow>
+        </IonCard>
+        <IonList className="list">
+          {packs.map(p => 
+            <IonItem key={p.id} routerLink={`/pack-details/${p.id}`}>
+              <IonLabel>{p.name}</IonLabel>
+              {p.closeExpired && <IonBadge slot="end" color="danger">{labels.closeExpired}</IonBadge>}
+              {!p.isOffer && !p.offerEnd && p.price > 0 && <IonLabel slot="end" className="price">{(p.price / 100).toFixed(2)}</IonLabel>}
+              {(p.isOffer || p.offerEnd) && <IonBadge slot="end" color="success">{p.price > 0 ? (p.price / 100).toFixed(2) : labels.offer}</IonBadge>}
+            </IonItem>
+          )}
+        </IonList>
+      </IonContent>
+      <IonFab vertical="top" horizontal="end" slot="fixed">
+        <IonFabButton onClick={() => setActionOpened(true)}>
+          <IonIcon ios={settingsOutline} />
+        </IonFabButton>
+      </IonFab>
+      <IonActionSheet
+        isOpen={actionOpened}
+        onDidDismiss={() => setActionOpened(false)}
+        buttons={[
+          {
+            text: labels.details,
+            cssClass: colors[i++ % 10].name,
+            handler: () => history.push(`/product-details/${params.id}`)
+          },
+          {
+            text: labels.addPack,
+            cssClass: colors[i++ % 10].name,
+            handler: () => history.push(`/add-pack/${params.id}`)
+          },
+          {
+            text: labels.addOffer,
+            cssClass: colors[i++ % 10].name,
+            handler: () => history.push(`/add-offer/${params.id}`)
+          },
+          {
+            text: labels.addBulk,
+            cssClass: colors[i++ % 10].name,
+            handler: () => history.push(`/add-bulk/${params.id}`)
+          },
+          {
+            text: labels.archive,
+            cssClass: activePacks.length === 0 ? colors[i++ % 10].name : 'ion-hide',
+            handler: () => handleArchive()
+          },
+          {
+            text: labels.delete,
+            cssClass: packs.length === 0 ? colors[i++ % 10].name : 'ion-hide',
+            handler: () => handleDelete()
+          },
+        ]}
+      />
+      <Footer />
+    </IonPage>
   )
 }
 

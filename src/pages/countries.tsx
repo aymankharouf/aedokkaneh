@@ -1,8 +1,11 @@
 import { useContext, useState, useEffect } from 'react'
-import { Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon} from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
+import Header from './header'
+import { colors } from '../data/config'
+import { addOutline } from 'ionicons/icons'
+import Footer from './footer'
 
 
 const Countries = () => {
@@ -13,29 +16,31 @@ const Countries = () => {
   }, [state.countries])
   let i = 0
   return (
-    <Page>
-      <Navbar title={labels.countries} backLink={labels.back} />
-      <Block>
-        <List>
+    <IonPage>
+      <Header title={labels.countries} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
           {countries.length === 0 ? 
-            <ListItem title={labels.noData} />
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem> 
           : countries.map(c =>
-              <ListItem
-                link={`/edit-country/${c}`}
-                title={c} 
-                key={i++}
-              />
+              <IonItem key={i++} routerLink={`/edit-country/${c}`}>
+                <IonLabel>
+                  <IonText style={{color: colors[0].name}}>{c}</IonText>
+                </IonLabel>
+              </IonItem>    
             )
           }
-        </List>
-      </Block>
-      <Fab position="left-top" slot="fixed" color="green" className="top-fab" href="/add-country/">
-        <Icon material="add"></Icon>
-      </Fab>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+        </IonList>
+      </IonContent>
+      <IonFab vertical="top" horizontal="end" slot="fixed">
+        <IonFabButton routerLink="/add-country" color="success">
+          <IonIcon ios={addOutline} /> 
+        </IonFabButton>
+      </IonFab>
+      <Footer />
+    </IonPage>
   )
 }
 

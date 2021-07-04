@@ -1,28 +1,37 @@
-import { useContext, useState, useEffect } from 'react'
-import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, FabButton, FabButtons, Badge, FabBackdrop } from 'framework7-react'
+import { useContext, useState, useEffect, useRef } from 'react'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import BottomToolbar from './bottom-toolbar'
-import { deleteCategory, showMessage, showError, getMessage } from '../data/actions'
+import { deleteCategory, getMessage } from '../data/actions'
 import { Category } from '../data/types'
+import { useHistory, useLocation, useParams } from 'react-router'
+import { IonActionSheet, IonBadge, IonContent, IonFab, IonFabButton, IonFabList, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { menuOutline } from 'ionicons/icons'
+import { colors } from '../data/config'
 
-type Props = {
+type Params = {
   id: string
 }
 type ExtendedCategory = Category & {
   childrenCount: number,
   productsCount: number
 }
-const Categories = (props: Props) => {
+const Categories = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
+  const params = useParams<Params>()
   const [categories, setCategories] = useState<ExtendedCategory[]>([])
-  const [currentCategory] = useState(() => state.categories.find(c => c.id === props.id)!)
+  const [currentCategory] = useState(() => state.categories.find(c => c.id === params.id)!)
   const [categoryChildrenCount] = useState(() => state.categories.filter(c => c.parentId === currentCategory?.id).length)
   const [categoryProductsCount] = useState(() => state.products.filter(p => p.categoryId === currentCategory?.id).length)
+  const [message] = useIonToast()
+  const location = useLocation()
+  const history = useHistory()
+  const fabList = useRef<HTMLIonFabElement | null>(null)
+  const [actionOpened, setActionOpened] = useState(false);
   useEffect(() => {
     setCategories(() => {
-      const categories = state.categories.filter(c => c.parentId === props.id)
+      const categories = state.categories.filter(c => c.parentId === params.id)
       const result = categories.map(c => {
         const childrenCount = state.categories.filter(cc => cc.parentId === c.id).length
         const productsCount = state.products.filter(p => p.categoryId === c.id).length
@@ -34,74 +43,74 @@ const Categories = (props: Props) => {
       })
       return result.sort((c1, c2) => c1.ordering - c2.ordering)
     })
-  }, [state.categories, state.products, props.id])
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
+  }, [state.categories, state.products, params.id])
   const handleDelete = () => {
     try{
       deleteCategory(currentCategory, state.categories)
-      showMessage(labels.deleteSuccess)
-      f7.views.current.router.back()
+      message(labels.deleteSuccess, 3000)
+      history.goBack()
     } catch(err) {
-      setError(getMessage(f7.views.current.router.currentRoute.path, err))
+      message(getMessage(location.pathname, err), 3000)
     }
   }
-
+  let i = 0
   return (
-    <Page>
-      <Navbar title={currentCategory?.name || labels.categories} backLink={labels.back} />
-      <Block>
-        <List mediaList>
+    <IonPage>
+      <Header title={currentCategory?.name || labels.categories} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
           {categories.length === 0 ? 
-            <ListItem title={labels.noData} /> 
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem>
           : categories.map(c =>
-              <ListItem 
-                link={`/categories/${c.id}`} 
-                title={c.name}
-                subtitle={`${labels.childrenCount}: ${c.childrenCount} ${c.childrenCount > 0 && c.isLeaf ? 'X' : ''}`}
-                text={`${labels.attachedProducts}: ${c.productsCount} ${c.productsCount > 0 && !c.isLeaf ? 'X': ''}`}
-                after={c.ordering}
-                key={c.id} 
-              >
-                {c.isActive ? '' : <Badge slot="title" color='red'>{labels.inActive}</Badge>}
-              </ListItem>
+            <IonItem key={c.id} routerLink={`/categories/${c.id}`}>
+                <IonLabel>
+                  <IonText style={{color: colors[0].name}}>{c.name}</IonText>
+                  <IonText style={{color: colors[1].name}}>{`${labels.childrenCount}: ${c.childrenCount} ${c.childrenCount > 0 && c.isLeaf ? 'X' : ''}`}</IonText>
+                  <IonText style={{color: colors[2].name}}>{`${labels.attachedProducts}: ${c.productsCount} ${c.productsCount > 0 && !c.isLeaf ? 'X': ''}`}</IonText>
+                  <IonText style={{color: colors[3].name}}>{`${labels.ordering}:${c.ordering}`}</IonText>
+                </IonLabel>
+                {!c.isActive && <IonBadge color="danger">{labels.inActive}</IonBadge>}
+              </IonItem>  
             )
           }
-        </List>
-      </Block>
-      <FabBackdrop slot="fixed" />
-      <Fab position="left-top" slot="fixed" color="orange" className="top-fab">
-        <Icon material="keyboard_arrow_down"></Icon>
-        <Icon material="close"></Icon>
-        <FabButtons position="bottom">
-          <FabButton color="green" onClick={() => f7.views.current.router.navigate(`/add-category/${props.id}`)}>
-            <Icon material="add"></Icon>
-          </FabButton>
-          {props.id === '0' ? '' :
-            <FabButton color="blue" onClick={() => f7.views.current.router.navigate(`/edit-category/${props.id}`)}>
-              <Icon material="edit"></Icon>
-            </FabButton>
-          }
-          {props.id !== '0' && categoryChildrenCount + categoryProductsCount === 0 ?
-            <FabButton color="red" onClick={() => handleDelete()}>
-              <Icon material="delete"></Icon>
-            </FabButton>
-          : ''}
-          <FabButton color="orange" onClick={() => f7.views.current.router.navigate(`/products/${props.id}`)}>
-            <Icon material="shopping_cart"></Icon>
-          </FabButton>
+        </IonList>
+      </IonContent>
+      <IonFab horizontal="end" vertical="top" slot="fixed">
+        <IonFabButton onClick={() => setActionOpened(true)}>
+          <IonIcon ios={menuOutline}></IonIcon>
+        </IonFabButton>
+      </IonFab>
+      <IonActionSheet
+        isOpen={actionOpened}
+        onDidDismiss={() => setActionOpened(false)}
+        buttons={[
+          {
+            text: labels.addChild,
+            cssClass: colors[i++ % 10].name,
+            handler: () => history.push(`/add-category/${params.id}`)
+          },
+          {
+            text: labels.products,
+            cssClass: colors[i++ % 10].name,
+            handler: () => history.push(`/products/${params.id}`)
+          },
+          {
+            text: labels.edit,
+            cssClass: params.id !== '0' ? colors[i++ % 10].name : 'ion-hide',
+            handler: () => history.push(`/edit-category/${params.id}`)
+          },
+          {
+            text: labels.delete,
+            cssClass: params.id !== '0' && categoryChildrenCount + categoryProductsCount === 0 ? colors[i++ % 10].name : 'ion-hide',
+            handler: () => handleDelete()
+          },
+        ]}
+      />
 
-        </FabButtons>
-      </Fab>
-
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+      <Footer />
+    </IonPage>
   )
 }
 

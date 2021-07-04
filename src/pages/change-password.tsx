@@ -1,65 +1,86 @@
 import { useState, useEffect } from 'react'
-import { f7, Page, Navbar, List, ListInput, Button } from 'framework7-react'
-import { changePassword, showMessage, showError, getMessage } from '../data/actions'
+import { changePassword, getMessage } from '../data/actions'
 import labels from '../data/labels'
+import { IonButton, IonContent, IonInput, IonItem, IonLabel, IonList, IonPage, useIonLoading, useIonToast } from '@ionic/react'
+import Header from './header'
+import { useHistory, useLocation } from 'react-router'
+import { patterns } from '../data/config'
 
 const ChangePassword = () => {
   const [oldPassword, setOldPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
-  const [error, setError] = useState('')
-  const [inprocess, setInprocess] = useState(false)
+  const [oldPasswordInvalid, setOldPasswordInvalid] = useState(true)
+  const [newPasswordInvalid, setNewPasswordInvalid] = useState(true)
+  const history = useHistory()
+  const location = useLocation()
+  const [message] = useIonToast()
+  const [loading, dismiss] = useIonLoading()
   useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
+    setOldPasswordInvalid(!oldPassword || !patterns.password.test(oldPassword))
+  }, [oldPassword])
   useEffect(() => {
-    if (inprocess) {
-      f7.dialog.preloader(labels.inprocess)
-    } else {
-      f7.dialog.close()
-    }
-  }, [inprocess])
+    setNewPasswordInvalid(!newPassword || !patterns.password.test(newPassword))
+  }, [newPassword])
 
   const handleSubmit = async () => {
     try{
-      setInprocess(true)
+      loading()
       await changePassword(oldPassword, newPassword)
-      setInprocess(false)
-      showMessage(labels.changePasswordSuccess)
-      f7.views.current.router.back()
+      dismiss()
+      message(labels.changePasswordSuccess, 3000)
+      history.goBack()
     } catch(err) {
-      setInprocess(false)
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+      dismiss()
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
 
   return (
-    <Page>
-      <Navbar title={labels.changePassword} backLink={labels.back} />
-      <List form>
-        <ListInput
-          label={labels.oldPassword}
-          type="text"
-          name="oldPassword"
-          clearButton
-          onChange={e => setOldPassword(e.target.value)}
-          onInputClear={() => setOldPassword('')}
-        />
-        <ListInput
-          label={labels.newPassword}
-          type="text"
-          name="newPassword"
-          clearButton
-          onChange={e => setNewPassword(e.target.value)}
-          onInputClear={() => setNewPassword('')}
-        />
-      </List>
-      {!oldPassword || !newPassword || oldPassword === newPassword ? '' :
-        <Button text={labels.submit} large onClick={() => handleSubmit()} />
+    <IonPage>
+      <Header title={labels.changePassword} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
+          <IonItem>
+            <IonLabel position="floating" color={oldPasswordInvalid ? 'danger' : 'primary'}>
+              {labels.oldPassword}
+            </IonLabel>
+            <IonInput 
+              value={oldPassword} 
+              type="text" 
+              autofocus
+              clearInput
+              onIonChange={e => setOldPassword(e.detail.value!)} 
+              color={oldPasswordInvalid ? 'danger' : ''}
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color={newPasswordInvalid ? 'danger' : 'primary'}>
+              {labels.newPassword}
+            </IonLabel>
+            <IonInput 
+              value={newPassword} 
+              type="text" 
+              clearInput
+              onIonChange={e => setNewPassword(e.detail.value!)} 
+              color={newPasswordInvalid ? 'danger' : ''}
+            />
+          </IonItem>
+        </IonList>
+      </IonContent>
+      {!oldPasswordInvalid && !newPasswordInvalid && oldPassword !== newPassword &&
+        <div className="ion-padding" style={{textAlign: 'center'}}>
+          <IonButton 
+            fill="solid" 
+            shape="round"
+            style={{width: '10rem'}}
+            onClick={handleSubmit}
+          >
+            {labels.submit}
+          </IonButton>
+        </div>
+    
       }
-    </Page>
+    </IonPage>
   )
 }
 export default ChangePassword

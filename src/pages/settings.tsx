@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { Block, Page, Navbar, Toolbar, Button} from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
-import { randomColors } from '../data/config'
-
+import { colors } from '../data/config'
+import {IonButton, IonContent, IonPage} from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
 
 const Settings = () => {
   const [sections] = useState(() => [
@@ -14,25 +14,24 @@ const Settings = () => {
   ])
   let i = 0
   return(
-    <Page>
-      <Navbar title={labels.settings} backLink={labels.back} />
-      <Block>
+    <IonPage>
+      <Header title={labels.settings} />
+      <IonContent fullscreen>
         {sections.map(s => 
-          <Button 
-            text={s.name} 
-            large 
-            fill 
-            className="sections" 
-            color={randomColors[i++ % 10].name} 
-            href={s.path} 
-            key={s.id} 
-          />
+          <IonButton
+            routerLink={s.path} 
+            expand="block"
+            shape="round"
+            className={colors[i++ % 10].name}
+            style={{margin: '0.9rem'}} 
+            key={s.id}
+          >
+            {s.name}
+          </IonButton>
         )}
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+      </IonContent>
+      <Footer />
+    </IonPage>
   )
 }
 

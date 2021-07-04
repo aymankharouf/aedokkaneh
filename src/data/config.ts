@@ -9,16 +9,16 @@ export const setup = {
 }
 
 export const randomColors = [
-  {id: 0, name: 'red'},
-  {id: 1, name: 'green'},
-  {id: 2, name: 'blue'},
-  {id: 3, name: 'pink'},
-  {id: 4, name: 'yellow'},
-  {id: 5, name: 'orange'},
-  {id: 6, name: 'purple'},
-  {id: 7, name: 'deeppurple'},
-  {id: 8, name: 'lightblue'},
-  {id: 9, name: 'teal'},
+  {id: 0, name: 'darkblue'},
+  {id: 1, name: 'deeppink'},
+  {id: 2, name: 'darkgreen'},
+  {id: 3, name: 'red'},
+  {id: 4, name: 'purple'},
+  {id: 5, name: 'maroon'},
+  {id: 6, name: 'darkslategray'},
+  {id: 7, name: 'crimson'},
+  {id: 8, name: 'chocolate'},
+  {id: 9, name: 'darkolivegreen'},
 ]
 
 export const orderStatus = [
@@ -111,3 +111,23 @@ export const paymentTypes = [
   {id: 'rl', name: 'خسارة ارجاع'},
   {id: 'rp', name: 'ربح ارجاع'}
 ]
+
+export const colors = [
+  {id: 0, name: 'darkblue'},
+  {id: 1, name: 'deeppink'},
+  {id: 2, name: 'darkgreen'},
+  {id: 3, name: 'red'},
+  {id: 4, name: 'purple'},
+  {id: 5, name: 'maroon'},
+  {id: 6, name: 'darkslategray'},
+  {id: 7, name: 'crimson'},
+  {id: 8, name: 'chocolate'},
+  {id: 9, name: 'darkolivegreen'},
+]
+
+export const patterns = {
+  password: /^.{4,50}$/,
+  name: /^.{3,50}$/,
+  mobile: /^07[7-9][0-9]{7}$/,
+  email: /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/
+}

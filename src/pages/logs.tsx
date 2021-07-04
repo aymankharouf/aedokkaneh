@@ -1,19 +1,24 @@
 import { useContext, useState, useEffect } from 'react'
-import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Button } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import moment from 'moment'
 import 'moment/locale/ar'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { deleteLog, showMessage, showError, getMessage } from '../data/actions'
+import { deleteLog, getMessage } from '../data/actions'
 import { Log, UserInfo } from '../data/types'
+import { IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
+import { useLocation } from 'react-router'
+import Header from './header'
+import { trashOutline } from 'ionicons/icons'
+import { colors } from '../data/config'
 
 type ExtendedLog = Log & {
   userInfo: UserInfo
 }
 const Logs = () => {
-  const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
+  const {state} = useContext(StateContext)
+  const [message] = useIonToast()
+  const location = useLocation()
+  const [alert] = useIonAlert()
   const [logs, setLogs] = useState<ExtendedLog[]>([])
   useEffect(() => {
     setLogs(() => {
@@ -24,52 +29,57 @@ const Logs = () => {
           userInfo
         }
       })
-      return logs.sort((l1, l2) => l2.time > l1.time ? 1 : -1)
+      return logs
     })
   }, [state.logs, state.users])
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
   const handleDelete = (log: Log) => {
-    f7.dialog.confirm(labels.confirmationText, labels.confirmationTitle, () => {
-      try{
-        deleteLog(log)
-        showMessage(labels.deleteSuccess)
-      } catch(err) {
-        setError(getMessage(f7.views.current.router.currentRoute.path, err))
-      }
-    })  
+    alert({
+      header: labels.confirmationTitle,
+      message: labels.confirmationText,
+      buttons: [
+        {text: labels.cancel},
+        {text: labels.ok, handler: () => {
+          try{
+            deleteLog(log)
+            message(labels.deleteSuccess, 3000)
+          } catch(err) {
+            message(getMessage(location.pathname, err), 3000)
+          }    
+        }},
+      ],
+    })
   }
-
   return(
-    <Page>
-      <Navbar title={labels.logs} backLink={labels.back} />
-      <Block>
-        <List mediaList>
-          {logs.length === 0 ? 
-            <ListItem title={labels.noData} /> 
+    <IonPage>
+      <Header title={labels.logs} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
+          {logs.length === 0 ?
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem>
           : logs.map(l => 
-              <ListItem
-                title={`${labels.user}: ${l.userInfo?.name || l.userId}`}
-                subtitle={l.userInfo?.mobile ? `${labels.mobile}: ${l.userInfo.mobile}` : ''}
-                text={l.page}
-                footer={moment(l.time).fromNow()}
-                key={l.id}
-              >
-                <div className="list-subtext1">{l.error}</div>
-                <Button text={labels.delete} slot="after" onClick={() => handleDelete(l)} />
-              </ListItem>
+              <IonItem key={l.id}>
+                <IonLabel>
+                  <IonText style={{color: colors[0].name}}>{`${labels.user}: ${l.userInfo?.name || l.userId}`}</IonText>
+                  <IonText style={{color: colors[1].name}}>{l.userInfo?.mobile ? `${labels.mobile}: ${l.userInfo.mobile}` : ''}</IonText>
+                  <IonText style={{color: colors[2].name}}>{l.page}</IonText>
+                  <IonText style={{color: colors[3].name}}>{l.error}</IonText>
+                  <IonText style={{color: colors[4].name}}>{moment(l.time).fromNow()}</IonText>
+                </IonLabel>
+                <IonIcon 
+                  ios={trashOutline} 
+                  slot="end" 
+                  color="danger"
+                  style={{fontSize: '20px', marginRight: '10px'}} 
+                  onClick={()=> handleDelete(l)}
+                />
+              </IonItem>    
             )
           }
-        </List>
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+        </IonList>
+      </IonContent>
+    </IonPage>
   )
 }
 

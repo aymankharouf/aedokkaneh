@@ -1,45 +1,23 @@
-import { useState } from 'react'
-import { Icon } from 'framework7-react'
+import { IonIcon } from '@ionic/react'
+import { star, starHalfOutline, starOutline } from 'ionicons/icons'
 
 type Props = {
   rating: number,
-  count: number
+  count: number,
 }
 const RatingStars = (props: Props) => {
-  const [stars] = useState(() => {
-    const rating_round = Math.round(props.rating / .5 ) * .5
-    const rating_int = Math.floor(rating_round)
-    const rating_fraction = rating_round - rating_int
-    let color
-    switch(rating_int){
-      case 1:
-      case 2:
-        color = 'red'
-        break
-      case 4:
-      case 5:
-        color = 'green'
-        break
-      default:
-        color = 'yellow'
-    }
-    let stars = []
-    let i = 0
-    while (++i <= rating_int) {
-      stars.push(<Icon key={i} material="star" color={color}></Icon>)
-    }
-    if (rating_fraction > 0) {
-      stars.unshift(<Icon key={i} material="star_half" color={color}></Icon>)
-      i++
-    }
-    while (i++ <= 5) {
-      stars.unshift(<Icon key={i} material="star_border" color={color}></Icon>)
-    }
-    return stars
-  })
-  return(
+  const fill = Math.floor(props.rating)
+  const fillArray = Array.from(Array(fill).keys())
+  const half = props.rating - fill >= 0.5 ? 1 : 0
+  const outline = 5 - fill - half
+  const outlineArray = Array.from(Array(outline).keys())
+  const color = props.rating === 0 ? 'warning' : props.rating < 2.5 ? 'danger' : props.rating < 4 ? 'primary' : 'success'
+  return (
     <>
-      {Number(props.count) > 0 ? '(' + props.count + ')' : ''}{stars}
+      {props.count > 0 ? '(' + props.count + ')' : ''}
+      {outlineArray.map(i => <IonIcon key={i} style={{fontSize: '1rem'}} ios={starOutline} color={color}></IonIcon>)}
+      {half === 0 ? '' : <IonIcon style={{fontSize: '1rem'}} ios={starHalfOutline} color={color}></IonIcon>}
+      {fillArray.map(i => <IonIcon key={i} style={{fontSize: '1rem'}} ios={star} color={color}></IonIcon>)}
     </>
   )
 }
