@@ -1,10 +1,10 @@
-import { useContext, useState, useEffect, useRef } from 'react'
+import { useContext, useState, useEffect } from 'react'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { deleteCategory, getMessage } from '../data/actions'
 import { Category } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
-import { IonActionSheet, IonBadge, IonContent, IonFab, IonFabButton, IonFabList, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
+import { IonActionSheet, IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { menuOutline } from 'ionicons/icons'
@@ -27,7 +27,6 @@ const Categories = () => {
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-  const fabList = useRef<HTMLIonFabElement | null>(null)
   const [actionOpened, setActionOpened] = useState(false);
   useEffect(() => {
     setCategories(() => {

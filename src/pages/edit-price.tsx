@@ -1,28 +1,28 @@
 import { useState, useContext, useEffect } from 'react'
-import { f7, Page, Navbar, List, ListInput, Fab, Icon } from 'framework7-react'
 import { StateContext } from '../data/state-provider'
-import { editPrice, showMessage, showError, getMessage } from '../data/actions'
+import { editPrice, getMessage } from '../data/actions'
 import labels from '../data/labels'
+import { useHistory, useLocation, useParams } from 'react-router'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
+import Header from './header'
+import { checkmarkOutline } from 'ionicons/icons'
 
-type Props = {
+type Params = {
   packId: string,
   storeId: string
 }
-const EditPrice = (props: Props) => {
+const EditPrice = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
-  const [pack] = useState(() => state.packs.find(p => p.id === props.packId)!)
-  const [store] = useState(() => state.stores.find(s => s.id === props.storeId)!)
-  const [storePack] = useState(() => state.packPrices.find(p => p.packId === props.packId && p.storeId === props.storeId)!)
-  const [cost, setCost] = useState(props.storeId === 's' ? (storePack.cost / 100).toFixed(2) : '')
+  const params = useParams<Params>()
+  const [pack] = useState(() => state.packs.find(p => p.id === params.packId)!)
+  const [store] = useState(() => state.stores.find(s => s.id === params.storeId)!)
+  const [storePack] = useState(() => state.packPrices.find(p => p.packId === params.packId && p.storeId === params.storeId)!)
+  const [cost, setCost] = useState(params.storeId === 's' ? (storePack.cost / 100).toFixed(2) : '')
   const [price, setPrice] = useState('')
   const [offerDays, setOfferDays] = useState('')
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
+  const [message] = useIonToast()
+  const location = useLocation()
+  const history = useHistory()
   useEffect(() => {
     if (cost && store.id !== 's') {
       setPrice((+cost * (1 + (store.isActive && store.type !== '5' ? 0 : store.discount))).toFixed(2))
@@ -30,7 +30,7 @@ const EditPrice = (props: Props) => {
       setPrice('')
     }
   }, [cost, store])
-  const handleEdit = () => {
+  const handleSubmit = () => {
     try{
       if (Number(cost) <= 0 || Number(cost) !== Number(Number(cost).toFixed(2))) {
         throw new Error('invalidPrice')
@@ -57,80 +57,98 @@ const EditPrice = (props: Props) => {
         time: new Date()
       }
       editPrice(newStorePack, storePack.price, state.packPrices, state.packs)
-      showMessage(labels.editSuccess)
-      f7.views.current.router.back()
+      message(labels.editSuccess, 3000)
+      history.goBack()
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   return (
-    <Page>
-      <Navbar title={`${labels.editPrice} ${store.name}`} backLink={labels.back} />
-      <List form inlineLabels>
-        <ListInput 
-          name="productName" 
-          label={labels.product}
-          value={pack.productName}
-          type="text" 
-          readonly
-        />
-        <ListInput 
-          name="packName" 
-          label={labels.pack}
-          value={pack.name}
-          type="text" 
-          readonly
-        />
-        <ListInput 
-          name="oldCost" 
-          label={labels.oldCost}
-          value={(storePack.cost / 100).toFixed(2)}
-          type="text" 
-          readonly
-        />
-        <ListInput 
-          name="oldPrice" 
-          label={labels.oldPrice}
-          value={(storePack.price / 100).toFixed(2)}
-          type="text" 
-          readonly
-        />
-        {props.storeId === 's' ? '' : 
-          <ListInput 
-            name="cost" 
-            label={labels.cost}
-            clearButton 
-            type="number" 
-            value={cost}
-            onChange={e => setCost(e.target.value)}
-            onInputClear={() => setCost('')}
-          />
-        }
-        <ListInput 
-          name="price" 
-          label={labels.price}
-          clearButton 
-          type="number" 
-          value={price}
-          onChange={e => setPrice(e.target.value)}
-          onInputClear={() => setPrice('')}
-        />
-        <ListInput 
-          name="offerDays" 
-          label={labels.offerDays}
-          value={offerDays}
-          clearButton 
-          type="number" 
-          onChange={e => setOfferDays(e.target.value)}
-          onInputClear={() => setOfferDays('')}
-        />
-      </List>
-      {!cost || (storePack.isActive && !price) ? '' :
-        <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleEdit()}>
-          <Icon material="done"></Icon>
-        </Fab>
-      }
-    </Page>
+    <IonPage>
+      <Header title={`${labels.editPrice} ${store.name}`} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.product}
+            </IonLabel>
+            <IonInput 
+              value={pack.productName} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.pack}
+            </IonLabel>
+            <IonInput 
+              value={pack.name} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.oldCost}
+            </IonLabel>
+            <IonInput 
+              value={(storePack.cost / 100).toFixed(2)} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.oldPrice}
+            </IonLabel>
+            <IonInput 
+              value={(storePack.price / 100).toFixed(2)} 
+              readonly
+            />
+          </IonItem>
+          {params.storeId === 's' && 
+            <IonItem>
+              <IonLabel position="floating" color="primary">
+                {labels.cost}
+              </IonLabel>
+              <IonInput 
+                value={cost} 
+                type="number" 
+                clearInput
+                onIonChange={e => setCost(e.detail.value!)} 
+              />
+            </IonItem>
+          }
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.price}
+            </IonLabel>
+            <IonInput 
+              value={price} 
+              type="number" 
+              clearInput
+              onIonChange={e => setPrice(e.detail.value!)} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.offerDays}
+            </IonLabel>
+            <IonInput 
+              value={offerDays} 
+              type="number" 
+              clearInput
+              onIonChange={e => setOfferDays(e.detail.value!)} 
+            />
+          </IonItem>
+        </IonList>
+      </IonContent>
+      {cost && (!storePack.isActive || price) &&
+        <IonFab vertical="top" horizontal="end" slot="fixed">
+          <IonFabButton onClick={handleSubmit} color="success">
+            <IonIcon ios={checkmarkOutline} />
+          </IonFabButton>
+        </IonFab>
+    }
+    </IonPage>
   )
 }
 export default EditPrice

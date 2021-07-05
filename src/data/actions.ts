@@ -758,14 +758,14 @@ export const editPrice = (storePack: PackPrice, oldPrice: number, packPrices: Pa
   }
 }
 
-export const sendNotification = (userId: string, title: string, message: string, batch?: firebase.firestore.WriteBatch) => {
+export const sendNotification = (userId: string, title: string, text: string, batch?: firebase.firestore.WriteBatch) => {
   const newBatch =  batch || firebase.firestore().batch()
   const userRef = firebase.firestore().collection('users').doc(userId)
   newBatch.update(userRef, {
     notifications: firebase.firestore.FieldValue.arrayUnion({
       id: Math.random().toString(),
       title,
-      message,
+      text,
       status: 'n',
       time: new Date()
     })

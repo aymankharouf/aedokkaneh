@@ -39,7 +39,7 @@ const Register = () => {
       <Header title={labels.registerTitle} />
       <IonContent fullscreen className="ion-padding">
         <IonList>
-        <IonItem>
+          <IonItem>
             <IonLabel position="floating" color={emailInvalid ? 'danger' : 'primary'}>
               {labels.email}
             </IonLabel>

@@ -1,16 +1,19 @@
-import { useState, useContext, useEffect, ChangeEvent } from 'react'
-import { editPack, showMessage, showError, getMessage } from '../data/actions'
-import { f7, Page, Navbar, List, ListItem, ListInput, Fab, Icon, Toggle } from 'framework7-react'
+import { useState, useContext, useEffect, ChangeEvent, useRef } from 'react'
+import { editPack, getMessage } from '../data/actions'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
+import { useHistory, useLocation, useParams } from 'react-router'
+import { IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage, IonToggle, useIonToast } from '@ionic/react'
+import Header from './header'
+import { checkmarkOutline } from 'ionicons/icons'
 
-type Props = {
+type Params = {
   id: string
 }
-const EditPack = (props: Props) => {
+const EditPack = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
-  const [pack] = useState(() => state.packs.find(p => p.id === props.id)!)
+  const params = useParams<Params>()
+  const [pack] = useState(() => state.packs.find(p => p.id === params.id)!)
   const [name, setName] = useState(pack.name)
   const [unitsCount, setUnitsCount] = useState(pack.unitsCount.toString())
   const [isDivided, setIsDivided] = useState(pack.isDivided)
@@ -20,6 +23,10 @@ const EditPack = (props: Props) => {
   const [specialImage, setSpecialImage] = useState(pack.specialImage)
   const [image, setImage] = useState<File>()
   const [imageUrl, setImageUrl] = useState(pack.imageUrl)
+  const [message] = useIonToast()
+  const location = useLocation()
+  const history = useHistory()
+  const inputEl = useRef<HTMLInputElement | null>(null);
   useEffect(() => {
     if (name !== pack.name
     || +unitsCount !== pack.unitsCount
@@ -35,19 +42,15 @@ const EditPack = (props: Props) => {
       setByWeight(true)
     }
   }, [isDivided])
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
+  const onUploadClick = () => {
+    if (inputEl.current) inputEl.current.click();
+  }
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files) return
     const filename = files[0].name
     if (filename.lastIndexOf('.') <= 0) {
-      setError(labels.invalidFile)
-      return
+      throw new Error('invalidFile')
     }
     const fileReader = new FileReader()
     fileReader.addEventListener('load', () => {
@@ -58,7 +61,7 @@ const EditPack = (props: Props) => {
   }
   const handleSubmit = () => {
     try{
-      if (state.packs.find(p => p.id !== pack.id && p.productId === props.id && p.name === name && p.closeExpired === closeExpired)) {
+      if (state.packs.find(p => p.id !== pack.id && p.productId === params.id && p.name === name && p.closeExpired === closeExpired)) {
         throw new Error('duplicateName')
       }
       const newPack = {
@@ -70,87 +73,82 @@ const EditPack = (props: Props) => {
         closeExpired
       }
       editPack(newPack, pack, state.packs, image)
-      showMessage(labels.editSuccess)
-      f7.views.current.router.back()
+      message(labels.editSuccess, 3000)
+      history.goBack()
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   return (
-    <Page>
-      <Navbar title={`${labels.editPack} ${pack.productName}`} backLink={labels.back} />
-      <List form inlineLabels>
-        <ListInput 
-          name="name" 
-          label={labels.name}
-          clearButton
-          type="text" 
-          value={name} 
-          onChange={e => setName(e.target.value)}
-          onInputClear={() => setName('')}
-        />
-        <ListInput 
-          name="unitsCount" 
-          label={labels.unitsCount}
-          clearButton
-          type="number" 
-          value={unitsCount} 
-          onChange={e => setUnitsCount(e.target.value)}
-          onInputClear={() => setUnitsCount('')}
-        />
-        <ListItem>
-          <span>{labels.isDivided}</span>
-          <Toggle 
-            name="isDivived" 
-            color="green" 
-            checked={isDivided} 
-            onToggleChange={() => setIsDivided(!isDivided)}
-          />
-        </ListItem>
-        <ListItem>
-          <span>{labels.byWeight}</span>
-          <Toggle 
-            name="byWeight" 
-            color="green" 
-            checked={byWeight} 
-            onToggleChange={() => setByWeight(!byWeight)}
-          />
-        </ListItem>
-        <ListItem>
-          <span>{labels.closeExpired}</span>
-          <Toggle 
-            name="closeExpired" 
-            color="green" 
-            checked={closeExpired} 
-            onToggleChange={() => setCloseExpired(!closeExpired)}
-          />
-        </ListItem>
-        <ListItem>
-          <span>{labels.specialImage}</span>
-          <Toggle 
-            name="specialImage" 
-            color="green" 
-            checked={specialImage} 
-            onToggleChange={() => setSpecialImage(!specialImage)}
-          />
-        </ListItem>
-        {specialImage ? 
-          <ListInput 
-            name="image" 
-            label={labels.image} 
-            type="file" 
-            accept="image/*" 
-            onChange={e => handleFileChange(e)}
-          />
-        : ''}
-        <img src={imageUrl} className="img-card" alt={labels.noImage} />
-      </List>
-      {!name || !unitsCount || !hasChanged ? '' :
-        <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleSubmit()}>
-          <Icon material="done"></Icon>
-        </Fab>
+    <IonPage>
+      <Header title={`${labels.editPack} ${pack.productName}`} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
+        <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.name}
+            </IonLabel>
+            <IonInput 
+              value={name} 
+              type="text" 
+              clearInput
+              onIonChange={e => setName(e.detail.value!)} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.unitsCount}
+            </IonLabel>
+            <IonInput 
+              value={unitsCount} 
+              type="number" 
+              clearInput
+              onIonChange={e => setUnitsCount(e.detail.value!)} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel color="primary">{labels.isDivided}</IonLabel>
+            <IonToggle checked={isDivided} onIonChange={() => setIsDivided(s => !s)}/>
+          </IonItem>
+          <IonItem>
+            <IonLabel color="primary">{labels.byWeight}</IonLabel>
+            <IonToggle checked={byWeight} disabled={isDivided} onIonChange={() => setByWeight(s => !s)}/>
+          </IonItem>
+          <IonItem>
+            <IonLabel color="primary">{labels.closeExpired}</IonLabel>
+            <IonToggle checked={closeExpired} onIonChange={() => setCloseExpired(s => !s)}/>
+          </IonItem>
+          <IonItem>
+            <IonLabel color="primary">{labels.specialImage}</IonLabel>
+            <IonToggle checked={specialImage} onIonChange={() => setSpecialImage(s => !s)}/>
+          </IonItem>
+          {specialImage && <>
+            <input 
+              ref={inputEl}
+              type="file" 
+              accept="image/*" 
+              style={{display: "none"}}
+              onChange={e => handleFileChange(e)}
+            />
+            <IonButton 
+              expand="block" 
+              fill="clear" 
+              onClick={onUploadClick}
+            >
+              {labels.setImage}
+            </IonButton>
+            <IonImg src={imageUrl} alt={labels.noImage} />
+          </>}
+        </IonList>
+      </IonContent>
+      {name && unitsCount && hasChanged &&
+        <IonFab vertical="top" horizontal="end" slot="fixed">
+          <IonFabButton onClick={handleSubmit} color="success">
+            <IonIcon ios={checkmarkOutline} />
+          </IonFabButton>
+        </IonFab>
       }
-    </Page>
+    </IonPage>
   )
 }
 export default EditPack

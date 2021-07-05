@@ -1,16 +1,19 @@
-import { useState, useContext, useEffect, ChangeEvent } from 'react'
-import { editPack, showMessage, showError, getMessage } from '../data/actions'
-import { f7, Page, Navbar, List, ListItem, ListInput, Fab, Icon, BlockTitle, Toggle } from 'framework7-react'
+import { useState, useContext, useEffect, ChangeEvent, useRef } from 'react'
+import { editPack, getMessage } from '../data/actions'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
+import { useHistory, useLocation, useParams } from 'react-router'
+import { IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonListHeader, IonPage, IonSelect, IonSelectOption, IonToggle, useIonToast } from '@ionic/react'
+import Header from './header'
+import { checkmarkOutline } from 'ionicons/icons'
 
-type Props = {
+type Params = {
   id: string
 }
-const EditOffer = (props: Props) => {
+const EditOffer = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
-  const [pack] = useState(() => state.packs.find(p => p.id === props.id)!)
+  const params = useParams<Params>()
+  const [pack] = useState(() => state.packs.find(p => p.id === params.id)!)
   const [name, setName] = useState(pack.name)
   const [subPackId, setSubPackId] = useState(pack.subPackId)
   const [subQuantity, setSubQuantity] = useState(pack.subQuantity.toString())
@@ -22,6 +25,10 @@ const EditOffer = (props: Props) => {
   const [specialImage, setSpecialImage] = useState(pack.specialImage)
   const [image, setImage] = useState<File>()
   const [imageUrl, setImageUrl] = useState(pack.imageUrl)
+  const [message] = useIonToast()
+  const location = useLocation()
+  const history = useHistory()
+  const inputEl = useRef<HTMLInputElement | null>(null)
   const [packs] = useState(() => {
     const packs = state.packs.filter(p => p.productId === pack.productId && !p.isOffer && !p.byWeight && p.forSale)
     return packs.map(p => {
@@ -53,19 +60,15 @@ const EditOffer = (props: Props) => {
     || imageUrl !== pack.imageUrl) setHasChanged(true)
     else setHasChanged(false)
   }, [pack, name, subPackId, subQuantity, subPercent, bonusPackId, bonusQuantity, bonusPercent, specialImage, imageUrl])
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
+  const onUploadClick = () => {
+    if (inputEl.current) inputEl.current.click();
+  }
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files) return
     const filename = files[0].name
     if (filename.lastIndexOf('.') <= 0) {
-      setError(labels.invalidFile)
-      return
+      throw new Error('invalidFile')
     }
     const fileReader = new FileReader()
     fileReader.addEventListener('load', () => {
@@ -79,7 +82,7 @@ const EditOffer = (props: Props) => {
     try{
       const subPackInfo = state.packs.find(p => p.id === subPackId)!
       const bonusPackInfo = state.packs.find(p => p.id === bonusPackId)
-      if (state.packs.find(p => p.id !== pack.id && p.productId === props.id && p.name === name && p.closeExpired === subPackInfo.closeExpired)) {
+      if (state.packs.find(p => p.id !== pack.id && p.productId === params.id && p.name === name && p.closeExpired === subPackInfo.closeExpired)) {
         throw new Error('duplicateName')
       }
       if (Number(subPercent) + Number(bonusPercent) !== 100) {
@@ -112,128 +115,134 @@ const EditOffer = (props: Props) => {
         bonusPercent: +bonusPercent / 100
       }
       editPack(newPack, pack, state.packs, image)
-      showMessage(labels.editSuccess)
-      f7.views.current.router.back()
+      message(labels.editSuccess, 3000)
+      history.goBack()
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   return (
-    <Page>
-      <Navbar title={`${labels.editOffer} ${pack.productName}`} backLink={labels.back} />
-      <List form inlineLabels>
-        <ListInput 
-          name="name" 
-          label={labels.name}
-          clearButton
-          type="text" 
-          value={name} 
-          onChange={e => setName(e.target.value)}
-          onInputClear={() => setName('')}
-        />
-        <ListItem
-          title={labels.pack}
-          smartSelect
-          smartSelectParams={{
-            openIn: "popup", 
-            closeOnSelect: true, 
-            searchbar: true, 
-            searchbarPlaceholder: labels.search,
-            popupCloseLinkText: labels.close
-          }}
-        >
-          <select name="subPackId" value={subPackId} onChange={e => setSubPackId(e.target.value)}>
-            <option value=""></option>
-            {packs.map(p => 
-              <option key={p.id} value={p.id}>{p.name}</option>
-            )}
-          </select>
-        </ListItem>
-        <ListInput 
-          name="subQuantity" 
-          label={labels.quantity}
-          value={subQuantity}
-          clearButton
-          type="number" 
-          onChange={e => setSubQuantity(e.target.value)}
-          onInputClear={() => setSubQuantity('')}
-        />
-        <ListInput 
-          name="subPercent" 
-          label={labels.percent}
-          value={subPercent}
-          clearButton
-          type="number" 
-          onChange={e => setSubPercent(e.target.value)}
-          onInputClear={() => setSubPercent('')}
-        />
-        <ListItem>
-          <span>{labels.specialImage}</span>
-          <Toggle 
-            name="specialImage" 
-            color="green" 
-            checked={specialImage} 
-            onToggleChange={() => setSpecialImage(!specialImage)}
-          />
-        </ListItem>
-        {specialImage ? 
-          <ListInput 
-            name="image" 
-            label={labels.image} 
-            type="file" 
-            accept="image/*" 
-            onChange={e => handleFileChange(e)}
-          />
-        : ''}
-        <img src={imageUrl} className="img-card" alt={labels.noImage} />
-      </List>
-      <BlockTitle>
-        {labels.bonusProduct}
-      </BlockTitle>
-      <List form inlineLabels>
-        <ListItem
-          title={labels.pack}
-          smartSelect
-          smartSelectParams={{
-            openIn: 'popup', 
-            closeOnSelect: true, 
-            searchbar: true, 
-            searchbarPlaceholder: labels.search,
-            popupCloseLinkText: labels.close
-          }}
-        >
-          <select name="bonusPackId" value={bonusPackId} onChange={e => setBonusPackId(e.target.value)}>
-            <option value=""></option>
-            {bonusPacks.map(p => 
-              <option key={p.id} value={p.id}>{p.name}</option>
-            )}
-          </select>
-        </ListItem>
-        <ListInput 
-          name="bonusQuantity" 
-          label={labels.quantity}
-          value={bonusQuantity}
-          clearButton
-          type="number" 
-          onChange={e => setBonusQuantity(e.target.value)}
-          onInputClear={() => setBonusQuantity('')}
-        />
-        <ListInput 
-          name="bonusPercent" 
-          label={labels.percent}
-          value={bonusPercent}
-          clearButton
-          type="number" 
-          onChange={e => setBonusPercent(e.target.value)}
-          onInputClear={() => setBonusPercent('')}
-        />
-      </List>
-      {!name || !subPackId || !subQuantity || !subPercent || !hasChanged ? '' :
-        <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleSubmit()}>
-          <Icon material="done"></Icon>
-        </Fab>
+    <IonPage>
+      <Header title={`${labels.editOffer} ${pack.productName}`} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.name}
+            </IonLabel>
+            <IonInput 
+              value={name} 
+              type="text" 
+              clearInput
+              onIonChange={e => setName(e.detail.value!)} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.pack}
+            </IonLabel>
+            <IonSelect 
+              ok-text={labels.ok} 
+              cancel-text={labels.cancel} 
+              value={subPackId}
+              onIonChange={e => setSubPackId(e.detail.value)}
+            >
+              {packs.map(p => <IonSelectOption key={p.id} value={p.id}>{p.name}</IonSelectOption>)}
+            </IonSelect>
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.quantity}
+            </IonLabel>
+            <IonInput 
+              value={subQuantity} 
+              type="number" 
+              clearInput
+              onIonChange={e => setSubQuantity(e.detail.value!)} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.percent}
+            </IonLabel>
+            <IonInput 
+              value={subPercent} 
+              type="number" 
+              clearInput
+              onIonChange={e => setSubPercent(e.detail.value!)} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel color="primary">{labels.specialImage}</IonLabel>
+            <IonToggle checked={specialImage} onIonChange={() => setSpecialImage(s => !s)}/>
+          </IonItem>
+          {specialImage && <>
+            <input 
+              ref={inputEl}
+              type="file" 
+              accept="image/*" 
+              style={{display: "none"}}
+              onChange={e => handleFileChange(e)}
+            />
+            <IonButton 
+              expand="block" 
+              fill="clear" 
+              onClick={onUploadClick}
+            >
+              {labels.setImage}
+            </IonButton>
+            <IonImg src={imageUrl} alt={labels.noImage} />
+          </>}
+        </IonList>
+        <IonListHeader>
+          <IonLabel>{labels.bonusProduct}</IonLabel>
+        </IonListHeader>
+        <IonList>
+        <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.pack}
+            </IonLabel>
+            <IonSelect 
+              ok-text={labels.ok} 
+              cancel-text={labels.cancel} 
+              value={bonusPackId}
+              onIonChange={e => setBonusPackId(e.detail.value)}
+            >
+              {bonusPacks.map(p => <IonSelectOption key={p.id} value={p.id}>{p.name}</IonSelectOption>)}
+            </IonSelect>
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.quantity}
+            </IonLabel>
+            <IonInput 
+              value={bonusQuantity} 
+              type="number" 
+              clearInput
+              onIonChange={e => setBonusQuantity(e.detail.value!)} 
+           />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.percent}
+            </IonLabel>
+            <IonInput 
+              value={bonusPercent} 
+              type="number" 
+              clearInput
+              onIonChange={e => setBonusPercent(e.detail.value!)} 
+            />
+          </IonItem>
+        </IonList>
+      </IonContent>
+      {name && subPackId && subQuantity && subPercent && hasChanged &&
+        <IonFab vertical="top" horizontal="end" slot="fixed">
+          <IonFabButton onClick={handleSubmit} color="success">
+            <IonIcon ios={checkmarkOutline} />
+          </IonFabButton>
+        </IonFab>
       }
-    </Page>
+    </IonPage>
   )
 }
 export default EditOffer

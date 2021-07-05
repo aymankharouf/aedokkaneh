@@ -1,16 +1,19 @@
-import { useState, useContext, useEffect, ChangeEvent } from 'react'
-import { f7, Page, Navbar, List, ListItem, ListInput, Fab, Icon, Toggle } from 'framework7-react'
+import { useState, useContext, useEffect, ChangeEvent, useRef } from 'react'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { editPack, showMessage, showError, getMessage } from '../data/actions'
+import { editPack, getMessage } from '../data/actions'
+import { useHistory, useLocation, useParams } from 'react-router'
+import { IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, IonToggle, useIonToast } from '@ionic/react'
+import Header from './header'
+import { checkmarkOutline } from 'ionicons/icons'
 
-type Props = {
+type Params = {
   id: string
 }
-const EditBulk = (props: Props) => {
+const EditBulk = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
-  const [pack] = useState(() => state.packs.find(p => p.id === props.id)!)
+  const params = useParams<Params>()
+  const [pack] = useState(() => state.packs.find(p => p.id === params.id)!)
   const [name, setName] = useState(pack.name)
   const [subPackId, setSubPackId] = useState(pack.subPackId)
   const [subQuantity, setSubQuantity] = useState(pack.subQuantity.toString())
@@ -19,6 +22,10 @@ const EditBulk = (props: Props) => {
   const [forSale, setForSale] = useState(pack.forSale)
   const [image, setImage] = useState<File>()
   const [imageUrl, setImageUrl] = useState(pack.imageUrl)
+  const [message] = useIonToast()
+  const location = useLocation()
+  const history = useHistory()
+  const inputEl = useRef<HTMLInputElement | null>(null);
   const [packs] = useState(() => {
     const packs = state.packs.filter(p => p.productId === pack.productId && !p.isOffer && !p.byWeight && p.forSale)
     return packs.map(p => {
@@ -37,23 +44,18 @@ const EditBulk = (props: Props) => {
     || imageUrl !== pack.imageUrl) setHasChanged(true)
     else setHasChanged(false)
   }, [pack, name, subPackId, subQuantity, specialImage, forSale, imageUrl])
-
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
   useEffect(() => {
     if (!forSale) setSpecialImage(false)
   }, [forSale])
+  const onUploadClick = () => {
+    if (inputEl.current) inputEl.current.click();
+  }
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files) return
     const filename = files[0].name
     if (filename.lastIndexOf('.') <= 0) {
-      setError(labels.invalidFile)
-      return
+      throw new Error('invalidFile')
     }
     const fileReader = new FileReader()
     fileReader.addEventListener('load', () => {
@@ -85,89 +87,89 @@ const EditBulk = (props: Props) => {
         forSale
       }
       editPack(newPack, pack, state.packs, image)
-      showMessage(labels.addSuccess)
-      f7.views.current.router.back()
+      message(labels.addSuccess, 3000)
+      history.goBack()
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   return (
-    <Page>
-      <Navbar title={`${labels.editBulk} ${pack.productName}`} backLink={labels.back} />
-      <List form inlineLabels>
-        <ListInput 
-          name="name" 
-          label={labels.name}
-          clearButton
-          type="text" 
-          value={name} 
-          onChange={e => setName(e.target.value)}
-          onInputClear={() => setName('')}
-        />
-        <ListItem
-          title={labels.pack}
-          smartSelect
-          smartSelectParams={{
-            openIn: "popup", 
-            closeOnSelect: true, 
-            searchbar: true, 
-            searchbarPlaceholder: labels.search,
-            popupCloseLinkText: labels.close
-          }}
-        >
-          <select name="subPackId" value={subPackId} onChange={e => setSubPackId(e.target.value)}>
-            <option value=""></option>
-            {packs.map(p => 
-              <option key={p.id} value={p.id}>{p.name}</option>
-            )}
-          </select>
-        </ListItem>
-        <ListInput 
-          name="subQuantity" 
-          label={labels.quantity}
-          value={subQuantity}
-          clearButton
-          type="number" 
-          onChange={e => setSubQuantity(e.target.value)}
-          onInputClear={() => setSubQuantity('')}
-        />
-        <ListItem>
-          <span>{labels.forSale}</span>
-          <Toggle 
-            name="forSale" 
-            color="green" 
-            checked={forSale} 
-            onToggleChange={() => setForSale(!forSale)}
-          />
-        </ListItem>
-        {forSale ? 
-          <ListItem>
-            <span>{labels.specialImage}</span>
-            <Toggle 
-              name="specialImage" 
-              color="green" 
-              checked={specialImage} 
-              onToggleChange={() => setSpecialImage(!specialImage)}
+    <IonPage>
+      <Header title={`${labels.editBulk} ${pack.productName}`} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.name}
+            </IonLabel>
+            <IonInput 
+              value={name} 
+              type="text" 
+              clearInput
+              onIonChange={e => setName(e.detail.value!)} 
             />
-          </ListItem>
-        : ''}
-        {specialImage ? 
-          <ListInput 
-            name="image" 
-            label={labels.image} 
-            type="file" 
-            accept="image/*" 
-            onChange={e => handleFileChange(e)}
-          />
-        : ''}
-        <img src={imageUrl} className="img-card" alt={labels.noImage} />
-      </List>
-      {!name || !subPackId || !subQuantity || !hasChanged ? '' :
-        <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleSubmit()}>
-          <Icon material="done"></Icon>
-        </Fab>
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.pack}
+            </IonLabel>
+            <IonSelect 
+              ok-text={labels.ok} 
+              cancel-text={labels.cancel} 
+              value={subPackId}
+              onIonChange={e => setSubPackId(e.detail.value)}
+            >
+              {packs.map(p => <IonSelectOption key={p.id} value={p.id}>{p.name}</IonSelectOption>)}
+            </IonSelect>
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.quantity}
+            </IonLabel>
+            <IonInput 
+              value={subQuantity} 
+              type="number" 
+              clearInput
+              onIonChange={e => setSubQuantity(e.detail.value!)} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel color="primary">{labels.forSale}</IonLabel>
+            <IonToggle checked={forSale} onIonChange={() => setForSale(s => !s)}/>
+          </IonItem>
+          {forSale &&
+            <IonItem>
+              <IonLabel color="primary">{labels.specialImage}</IonLabel>
+              <IonToggle checked={specialImage} onIonChange={() => setSpecialImage(s => !s)}/>
+            </IonItem>
+          }
+          {specialImage && <>
+            <input 
+              ref={inputEl}
+              type="file" 
+              accept="image/*" 
+              style={{display: "none"}}
+              onChange={e => handleFileChange(e)}
+            />
+            <IonButton 
+              expand="block" 
+              fill="clear" 
+              onClick={onUploadClick}
+            >
+              {labels.setImage}
+            </IonButton>
+            <IonImg src={imageUrl} alt={labels.noImage} />
+          </>}
+        </IonList>
+      </IonContent>
+      {name && subPackId && subQuantity && hasChanged &&
+        <IonFab vertical="top" horizontal="end" slot="fixed">
+          <IonFabButton onClick={handleSubmit} color="success">
+            <IonIcon ios={checkmarkOutline} />
+          </IonFabButton>
+        </IonFab>
       }
-    </Page>
+    </IonPage>
   )
 }
 export default EditBulk

@@ -1,9 +1,11 @@
 import { useContext, useState, useEffect } from 'react'
-import { Block, Page, Navbar, List, ListItem, Toolbar } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { Friend, UserInfo } from '../data/types'
+import { IonContent, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { colors } from '../data/config'
 
 type ExtendedFriend = Friend & {
   userInfo: UserInfo
@@ -25,27 +27,27 @@ const Invitations = () => {
   }, [state.users, state.invitations])
   let j = 0
   return(
-    <Page>
-      <Navbar title={labels.invitations} backLink={labels.back} />
-      <Block>
-        <List mediaList>
+    <IonPage>
+      <Header title={labels.invitations} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
           {invitations.length === 0 ? 
-            <ListItem title={labels.noData} /> 
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem>
           : invitations.map(i => 
-              <ListItem
-                link={`/invitation-details/${i.userInfo.id}/mobile/${i.mobile}`}
-                title={`${i.userInfo.name}: ${i.userInfo.mobile}`}
-                subtitle={`${i.name}: ${i.mobile}`}
-                key={j++}
-              />                
+              <IonItem key={j++} routerLink={`/invitation-details/${i.userInfo.id}/mobile/${i.mobile}`}>
+                <IonLabel>
+                  <IonText style={{color: colors[0].name}}>{`${i.userInfo.name}: ${i.userInfo.mobile}`}</IonText>
+                  <IonText style={{color: colors[1].name}}>{`${i.name}: ${i.mobile}`}</IonText>
+                </IonLabel>
+              </IonItem>    
             )
           }
-        </List>
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+        </IonList>
+      </IonContent>
+      <Footer />
+    </IonPage>
   )
 }
 

@@ -1,83 +1,83 @@
-import { useContext, useState, useEffect } from 'react'
-import { sendNotification, showMessage, showError, getMessage } from '../data/actions'
-import { f7, Page, Navbar, List, ListInput, Fab, Icon, Toolbar, ListItem } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
+import { useContext, useState } from 'react'
+import { sendNotification, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { StateContext } from '../data/state-provider'
+import { useHistory, useLocation } from 'react-router'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, IonToggle, useIonToast } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { checkmarkOutline } from 'ionicons/icons'
 
 
 const AddNotification = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
   const [userId, setUserId] = useState('')
   const [title, setTitle] = useState('')
-  const [message, setMessage] = useState('')
+  const [text, setText] = useState('')
   const [customers] = useState(() => [...state.customers].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
+  const [message] = useIonToast()
+  const location = useLocation()
+  const history = useHistory()
   const handleSubmit = () => {
     try{
-      sendNotification(userId, title, message)
-      showMessage(labels.addSuccess)
-      f7.views.current.router.back()
+      sendNotification(userId, title, text)
+      message(labels.addSuccess, 3000)
+      history.goBack()
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   return (
-    <Page>
-      <Navbar title={labels.addNotification} backLink={labels.back} />
-      <List form inlineLabels>
-        <ListItem
-          title={labels.toCustomer}
-          smartSelect
-          smartSelectParams={{
-            openIn: "popup", 
-            closeOnSelect: true, 
-            searchbar: true, 
-            searchbarPlaceholder: labels.search,
-            popupCloseLinkText: labels.close
-          }}
-        >
-          <select name="userId" value={userId} onChange={e => setUserId(e.target.value)}>
-            <option value=""></option>
-            {customers.map(c => 
-              <option key={c.id} value={c.id}>{c.name}</option>
-            )}
-          </select>
-        </ListItem>
-        <ListInput 
-          name="title" 
-          label={labels.title} 
-          clearButton
-          type="text"
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          onInputClear={() => setTitle('')}
-        />
-        <ListInput 
-          name="message" 
-          label={labels.message} 
-          clearButton
-          type="text"
-          value={message}
-          onChange={e => setMessage(e.target.value)}
-          onInputClear={() => setMessage('')}
-        />
-      </List>
-      {!userId || !title || !message ? '' :
-        <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleSubmit()}>
-          <Icon material="done"></Icon>
-        </Fab>
+    <IonPage>
+      <Header title={labels.addNotification} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.toCustomer}
+            </IonLabel>
+            <IonSelect 
+              ok-text={labels.ok} 
+              cancel-text={labels.cancel} 
+              value={userId}
+              onIonChange={e => setUserId(e.detail.value)}
+            >
+              {customers.map(c => <IonSelectOption key={c.id} value={c.id}>{c.name}</IonSelectOption>)}
+            </IonSelect>
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.title}
+            </IonLabel>
+            <IonInput 
+              value={title} 
+              type="text" 
+              clearInput
+              onIonChange={e => setTitle(e.detail.value!)} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.text}
+            </IonLabel>
+            <IonInput 
+              value={text} 
+              type="text" 
+              clearInput
+              onIonChange={e => setText(e.detail.value!)} 
+            />
+          </IonItem>
+        </IonList>
+      </IonContent>
+      {userId && title && text &&
+        <IonFab vertical="top" horizontal="end" slot="fixed">
+          <IonFabButton onClick={handleSubmit} color="success">
+            <IonIcon ios={checkmarkOutline} />
+          </IonFabButton>
+        </IonFab>
       }
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+      <Footer />
+    </IonPage>
   )
 }
 export default AddNotification

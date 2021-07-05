@@ -1,24 +1,32 @@
-import { useState, useContext, useEffect, ChangeEvent } from 'react'
-import { addPack, showMessage, showError, getMessage } from '../data/actions'
-import { f7, Page, Navbar, List, ListItem, ListInput, Fab, Icon, Toggle } from 'framework7-react'
+import { useState, useContext, useEffect, ChangeEvent, useRef } from 'react'
+import { addPack, getMessage } from '../data/actions'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
+import { useHistory, useLocation, useParams } from 'react-router'
+import { IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, IonToggle, useIonToast } from '@ionic/react'
+import Header from './header'
+import { checkmarkOutline } from 'ionicons/icons'
 
-type Props = {
+type Params = {
   id: string
 }
-const AddBulk = (props: Props) => {
+const AddBulk = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
+  const params = useParams<Params>()
   const [name, setName] = useState('')
   const [subPackId, setSubPackId] = useState('')
   const [subQuantity, setSubQuantity] = useState('')
   const [specialImage, setSpecialImage] = useState(false)
   const [forSale, setForSale] = useState(true)
   const [image, setImage] = useState<File>()
-  const [product] = useState(() => state.products.find(p => p.id === props.id)!)
+  const [product] = useState(() => state.products.find(p => p.id === params.id)!)
+  const [imageUrl, setImageUrl] = useState(product.imageUrl)
+  const [message] = useIonToast()
+  const location = useLocation()
+  const history = useHistory()
+  const inputEl = useRef<HTMLInputElement | null>(null)
   const [packs] = useState(() => {
-    const packs = state.packs.filter(p => p.productId === props.id && !p.isOffer && !p.byWeight && p.forSale)
+    const packs = state.packs.filter(p => p.productId === params.id && !p.isOffer && !p.byWeight && p.forSale)
     return packs.map(p => {
       return {
         id: p.id,
@@ -26,13 +34,6 @@ const AddBulk = (props: Props) => {
       }
     })
   })
-  const [imageUrl, setImageUrl] = useState(product.imageUrl)
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
   useEffect(() => {
     if (!forSale) setSpecialImage(false)
   }, [forSale])
@@ -43,14 +44,15 @@ const AddBulk = (props: Props) => {
       if (!name) setName(suggestedName)
     }
   }
-
+  const onUploadClick = () => {
+    if (inputEl.current) inputEl.current.click();
+  }
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files) return
     const filename = files[0].name
     if (filename.lastIndexOf('.') <= 0) {
-      setError(labels.invalidFile)
-      return
+      throw new Error('invalidFile')
     }
     const fileReader = new FileReader()
     fileReader.addEventListener('load', () => {
@@ -62,7 +64,7 @@ const AddBulk = (props: Props) => {
   const handleSubmit = () => {
     try{
       const subPackInfo = state.packs.find(p => p.id === subPackId)!
-      if (state.packs.find(p => p.productId === props.id && p.name === name && p.closeExpired === subPackInfo.closeExpired)) {
+      if (state.packs.find(p => p.productId === params.id && p.name === name && p.closeExpired === subPackInfo.closeExpired)) {
         throw new Error('duplicateName')
       }
       if (Number(subQuantity) <= 1) {
@@ -100,90 +102,90 @@ const AddBulk = (props: Props) => {
         bonusPercent: 0
       }
       addPack(pack, image, subPackInfo)
-      showMessage(labels.addSuccess)
-      f7.views.current.router.back()
+      message(labels.addSuccess, 3000)
+      history.goBack()
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   return (
-    <Page>
-      <Navbar title={`${labels.addBulk} ${product.name}`} backLink={labels.back} />
-      <List form inlineLabels>
-        <ListInput 
-          name="name" 
-          label={labels.name}
-          clearButton
-          type="text" 
-          value={name} 
-          onChange={e => setName(e.target.value)}
-          onInputClear={() => setName('')}
-        />
-        <ListItem
-          title={labels.pack}
-          smartSelect
-          smartSelectParams={{
-            openIn: "popup", 
-            closeOnSelect: true, 
-            searchbar: true, 
-            searchbarPlaceholder: labels.search,
-            popupCloseLinkText: labels.close
-          }}
-        >
-          <select name="subPackId" value={subPackId} onChange={e => setSubPackId(e.target.value)} onBlur={() => generateName()}>
-            <option value=""></option>
-            {packs.map(p => 
-              <option key={p.id} value={p.id}>{p.name}</option>
-            )}
-          </select>
-        </ListItem>
-        <ListInput 
-          name="subQuantity" 
-          label={labels.quantity}
-          value={subQuantity}
-          clearButton
-          type="number" 
-          onChange={e => setSubQuantity(e.target.value)}
-          onInputClear={() => setSubQuantity('')}
-          onBlur={() => generateName()}
-        />
-        <ListItem>
-          <span>{labels.forSale}</span>
-          <Toggle 
-            name="forSale" 
-            color="green" 
-            checked={forSale} 
-            onToggleChange={() => setForSale(!forSale)}
-          />
-        </ListItem>
-        {forSale ? 
-          <ListItem>
-            <span>{labels.specialImage}</span>
-            <Toggle 
-              name="specialImage" 
-              color="green" 
-              checked={specialImage} 
-              onToggleChange={() => setSpecialImage(!specialImage)}
+    <IonPage>
+      <Header title={`${labels.addBulk} ${product.name}`} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.name}
+            </IonLabel>
+            <IonInput 
+              value={name} 
+              type="text" 
+              clearInput
+              onIonChange={e => setName(e.detail.value!)} 
             />
-          </ListItem>
-        : ''}
-        {specialImage ? 
-          <ListInput 
-            name="image" 
-            label={labels.image} 
-            type="file" 
-            accept="image/*" 
-            onChange={e => handleFileChange(e)}
-          />
-        : ''}
-        <img src={imageUrl} className="img-card" alt={labels.noImage} />
-      </List>
-      {!name || !subPackId || !subQuantity  ? '' :
-        <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleSubmit()}>
-          <Icon material="done"></Icon>
-        </Fab>
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.pack}
+            </IonLabel>
+            <IonSelect 
+              ok-text={labels.ok} 
+              cancel-text={labels.cancel} 
+              value={subPackId}
+              onIonChange={e => setSubPackId(e.detail.value)}
+            >
+              {packs.map(p => <IonSelectOption key={p.id} value={p.id}>{p.name}</IonSelectOption>)}
+            </IonSelect>
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.quantity}
+            </IonLabel>
+            <IonInput 
+              value={subQuantity} 
+              type="number" 
+              clearInput
+              onIonChange={e => setSubQuantity(e.detail.value!)} 
+              onBlur={() => generateName()} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel color="primary">{labels.forSale}</IonLabel>
+            <IonToggle checked={forSale} onIonChange={() => setForSale(s => !s)}/>
+          </IonItem>
+          {forSale &&
+            <IonItem>
+              <IonLabel color="primary">{labels.specialImage}</IonLabel>
+              <IonToggle checked={specialImage} onIonChange={() => setSpecialImage(s => !s)}/>
+            </IonItem>
+          }
+          {specialImage && <>
+            <input 
+              ref={inputEl}
+              type="file" 
+              accept="image/*" 
+              style={{display: "none"}}
+              onChange={e => handleFileChange(e)}
+            />
+            <IonButton 
+              expand="block" 
+              fill="clear" 
+              onClick={onUploadClick}
+            >
+              {labels.setImage}
+            </IonButton>
+            <IonImg src={imageUrl} alt={labels.noImage} />
+          </>}
+        </IonList>
+      </IonContent>
+      {name && subPackId && subQuantity  &&
+        <IonFab vertical="top" horizontal="end" slot="fixed">
+          <IonFabButton onClick={handleSubmit} color="success">
+            <IonIcon ios={checkmarkOutline} />
+          </IonFabButton>
+        </IonFab>
       }
-    </Page>
+    </IonPage>
   )
 }
 export default AddBulk

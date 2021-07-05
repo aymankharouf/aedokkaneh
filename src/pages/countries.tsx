@@ -1,7 +1,7 @@
 import { useContext, useState, useEffect } from 'react'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
 import Header from './header'
 import { colors } from '../data/config'
 import { addOutline } from 'ionicons/icons'

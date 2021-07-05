@@ -1,37 +1,37 @@
 import { useContext, useEffect, useState } from 'react'
-import { f7, Page, Navbar, List, ListInput, Fab, Icon, Toolbar } from 'framework7-react'
 import { StateContext } from '../data/state-provider'
-import BottomToolbar from './bottom-toolbar'
-import { approveInvitation, showMessage, showError, getMessage } from '../data/actions'
+import { approveInvitation, getMessage } from '../data/actions'
 import labels from '../data/labels'
+import { IonList, IonItem, IonContent, IonFab, IonFabButton, IonLabel, IonIcon, IonInput, IonPage, useIonToast } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { useHistory, useLocation, useParams } from 'react-router'
+import { checkmarkOutline } from 'ionicons/icons'
 
-type Props = {
+type Params = {
   userId: string,
   mobile: string
 }
-const InvitationDetails = (props: Props) => {
+const InvitationDetails = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
-  const [userInfo] = useState(() => state.users.find(u => u.id === props.userId)!)
-  const [invitation] = useState(() => state.invitations.find(i => i.userId === props.userId && i.mobile === props.mobile)!)
+  const params = useParams<Params>()
+  const [userInfo] = useState(() => state.users.find(u => u.id === params.userId)!)
+  const [invitation] = useState(() => state.invitations.find(i => i.userId === params.userId && i.mobile === params.mobile)!)
   const [mobileCheck, setMobileCheck] = useState('')
+  const [message] = useIonToast()
+  const location = useLocation()
+  const history = useHistory()
   useEffect(() => {
     setMobileCheck(() => {
-      if (state.users.find(u => u.mobile === props.mobile)) {
+      if (state.users.find(u => u.mobile === params.mobile)) {
         return 'r'
       }
-      if (state.invitations.find(i => i.userId !== props.userId && i.mobile === props.mobile)) {
+      if (state.invitations.find(i => i.userId !== params.userId && i.mobile === params.mobile)) {
         return 'o'
       }
       return 's'
     })
-  }, [state.users, state.customers, state.invitations, props.mobile, props.userId])
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
+  }, [state.users, state.customers, state.invitations, params.mobile, params.userId])
   const handleApprove = () => {
     try{
       const newInvitation = {
@@ -39,53 +39,63 @@ const InvitationDetails = (props: Props) => {
         status: mobileCheck
       }
       approveInvitation(newInvitation, state.invitations)
-      showMessage(labels.approveSuccess)
-      f7.views.current.router.back()
+      message(labels.approveSuccess, 3000)
+      history.goBack()
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
 
   return (
-    <Page>
-      <Navbar title={labels.invitationDetails} backLink={labels.back} />
-      <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleApprove()}>
-        <Icon material="done"></Icon>
-      </Fab>
-      <List form>
-        <ListInput 
-          name="userName" 
-          label={labels.user}
-          value={`${userInfo.name}: ${userInfo.mobile}`}
-          type="text"
-          readonly
-        />
-        <ListInput 
-          name="friendName" 
-          label={labels.friendName}
-          value={invitation.name}
-          type="text"
-          readonly
-        />
-        <ListInput 
-          name="friendMobile" 
-          label={labels.mobile}
-          value={props.mobile}
-          type="text"
-          readonly
-        />
-        <ListInput 
-          name="mobileCheck" 
-          label={labels.mobileCheck}
-          value={mobileCheck === 's' ? labels.notUsedMobile : (mobileCheck === 'r' ? labels.alreadyUser : labels.invitedByOther)}
-          type="text"
-          readonly
-        />
-      </List>
-      <Toolbar bottom>
-        <BottomToolbar />
-      </Toolbar>
-    </Page>
+    <IonPage>
+      <Header title={labels.invitationDetails} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.user}
+            </IonLabel>
+            <IonInput 
+              value={`${userInfo.name}: ${userInfo.mobile}`} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.friendName}
+            </IonLabel>
+            <IonInput 
+              value={invitation.name} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.mobile}
+            </IonLabel>
+            <IonInput 
+              value={params.mobile} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.mobileCheck}
+            </IonLabel>
+            <IonInput 
+              value={mobileCheck === 's' ? labels.notUsedMobile : (mobileCheck === 'r' ? labels.alreadyUser : labels.invitedByOther)} 
+              readonly
+            />
+          </IonItem>
+        </IonList>
+      </IonContent>
+      <IonFab vertical="top" horizontal="end" slot="fixed">
+        <IonFabButton onClick={handleApprove} color="success">
+          <IonIcon ios={checkmarkOutline} />
+        </IonFabButton>
+      </IonFab>
+      <Footer />
+    </IonPage>
   )
 }
 export default InvitationDetails

@@ -1,9 +1,10 @@
 import { useContext, useState, useEffect } from 'react'
-import { Block, Page, Navbar, Toolbar, Button} from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { randomColors } from '../data/config'
+import { colors } from '../data/config'
+import { IonButton, IonContent, IonPage } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
 
 type Section = {
   id: string,
@@ -50,25 +51,24 @@ const Approvals = () => {
   }, [newOrders, newUsers, alarms, passwordRequests, ratings, orderRequests, invitations, newOwners])
   let i = 0
   return(
-    <Page>
-      <Navbar title={labels.approvals} backLink={labels.back} />
-      <Block>
+    <IonPage>
+      <Header title={labels.approvals} />
+      <IonContent fullscreen className="ion-padding">
         {sections.map(s => 
-          <Button 
-            text={`${s.name} ${s.count > 0 ? '(' + s.count + ')' : ''}`}
-            large 
-            fill 
-            className="sections" 
-            color={randomColors[i++ % 10].name} 
-            href={s.path} 
+          <IonButton
+            routerLink={s.path} 
+            expand="block"
+            shape="round"
+            className={colors[i++ % 10].name}
+            style={{margin: '0.9rem'}} 
             key={s.id}
-          />
+          >
+            {`${s.name} ${s.count > 0 ? '(' + s.count + ')' : ''}`}
+          </IonButton>
         )}
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+      </IonContent>
+      <Footer />
+    </IonPage>
   )
 }
 

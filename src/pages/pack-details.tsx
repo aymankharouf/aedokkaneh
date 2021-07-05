@@ -1,13 +1,17 @@
-import { useContext, useState, useEffect, useRef } from 'react'
-import { f7, Page, Navbar, Card, CardContent, CardFooter, Link, List, ListItem, Icon, Fab, Toolbar, Badge, FabButton, FabButtons, FabBackdrop, Actions, ActionsButton } from 'framework7-react'
+import { useContext, useState, useEffect } from 'react'
 import { StateContext } from '../data/state-provider'
-import { getPackStores, deleteStorePack, refreshPackPrice, deletePack, changeStorePackStatus, showMessage, showError, getMessage, quantityText } from '../data/actions'
-import BottomToolbar from './bottom-toolbar'
+import { getPackStores, deleteStorePack, refreshPackPrice, deletePack, changeStorePackStatus, getMessage, quantityText } from '../data/actions'
 import moment from 'moment'
 import labels from '../data/labels'
 import { Pack, PackPrice, Store } from '../data/types'
+import { useHistory, useLocation, useParams } from 'react-router'
+import { IonActionSheet, IonBadge, IonCard, IonCol, IonContent, IonFab, IonFabButton, IonFabList, IonGrid, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonRow, IonText, useIonAlert, useIonToast } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { colors } from '../data/config'
+import { addOutline, chevronDownOutline, ellipsisVerticalOutline, pencilOutline, repeatOutline, swapVerticalOutline, trashOutline } from 'ionicons/icons'
 
-type Props = {
+type Params = {
   id: string
 }
 type ExtendedPackPrice = PackPrice & {
@@ -18,14 +22,18 @@ type ExtendedPackPrice = PackPrice & {
   packInfo: Pack,
   storeInfo: Store
 }
-const PackDetails = (props: Props) => {
+const PackDetails = () => {
   const { state, dispatch } = useContext(StateContext)
-  const [error, setError] = useState('')
+  const params = useParams<Params>()
   const [currentStorePack, setCurrentStorePack] = useState<ExtendedPackPrice>()
-  const actionsList = useRef<Actions>(null)
-  const [pack, setPack] = useState(() => state.packs.find(p => p.id === props.id)!)
+  const [actionOpened, setActionOpened] = useState(false)
+  const [pack, setPack] = useState(() => state.packs.find(p => p.id === params.id)!)
   const [packStores, setPackStores] = useState<ExtendedPackPrice[]>([])
   const [detailsCount, setDetailsCount] = useState(0)
+  const [message] = useIonToast()
+  const location = useLocation()
+  const history = useHistory()
+  const [alert] = useIonAlert()
   useEffect(() => {
     setDetailsCount(() => {
       const detailsCount = state.packPrices.filter(p => p.packId === pack.id).length
@@ -69,43 +77,63 @@ const PackDetails = (props: Props) => {
     })
   }, [pack, state.stores, state.packPrices, state.purchases, state.packs])
   useEffect(() => {
-    setPack(() => state.packs.find(p => p.id === props.id)!)
-  }, [state.packs, state.packPrices, state.orders, props.id])
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
+    setPack(() => state.packs.find(p => p.id === params.id)!)
+  }, [state.packs, state.packPrices, state.orders, params.id])
   const handleRefreshPrice = () => {
     try{
       refreshPackPrice(pack, state.packPrices)
-      showMessage(labels.refreshSuccess)
+      message(labels.refreshSuccess, 3000)
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   const handleDelete = () => {
-    f7.dialog.confirm(labels.confirmationText, labels.confirmationTitle, () => {
-      try{
-        deletePack(pack.id!)
-        showMessage(labels.deleteSuccess)
-        f7.views.current.router.back()
-      } catch(err) {
-        setError(getMessage(f7.views.current.router.currentRoute.path, err))
-      }
+    alert({
+      header: labels.confirmationTitle,
+      message: labels.confirmationText,
+      buttons: [
+        {text: labels.cancel},
+        {text: labels.yes, handler: () => {
+          try{
+            deletePack(pack.id!)
+            message(labels.deleteSuccess, 3000)
+            history.goBack()
+          } catch(err) {
+            message(getMessage(location.pathname, err), 3000)
+          }    
+        }},
+      ],
     })
   }
   const handleDeletePrice = () => {
-    f7.dialog.confirm(labels.confirmationText, labels.confirmationTitle, () => {
-      try{
-        if (!currentStorePack) return
-        deleteStorePack(currentStorePack, state.packPrices, state.packs)
-        showMessage(labels.deleteSuccess)
-      } catch(err) {
-        setError(getMessage(f7.views.current.router.currentRoute.path, err))
-      }
+    alert({
+      header: labels.confirmationTitle,
+      message: labels.confirmationText,
+      buttons: [
+        {text: labels.cancel},
+        {text: labels.yes, handler: () => {
+          try{
+            if (!currentStorePack) return
+            deleteStorePack(currentStorePack, state.packPrices, state.packs)
+            message(labels.deleteSuccess, 3000)
+          } catch(err) {
+            message(getMessage(location.pathname, err), 3000)
+          }    
+        }},
+      ],
     })
+  }
+  const handleWeight = (weight: number) => {
+    const params = {
+      pack,
+      packStore: currentStorePack,
+      quantity : pack.isDivided ? weight : 1,
+      price: currentStorePack?.price,
+      weight,
+    }
+    dispatch({type: 'ADD_TO_BASKET', payload: params})
+    message(labels.addToBasketSuccess, 3000)
+    history.goBack()
   }
   const handlePurchase = () => {
 		try{
@@ -120,17 +148,13 @@ const PackDetails = (props: Props) => {
       }
       let params
       if (pack.byWeight) {
-        f7.dialog.prompt(labels.enterWeight, labels.actualWeight, weight => {
-          params = {
-            pack,
-            packStore: currentStorePack,
-            quantity : pack.isDivided ? +weight : 1,
-            price: currentStorePack?.price,
-            weight: +weight,
-          }
-          dispatch({type: 'ADD_TO_BASKET', payload: params})
-          showMessage(labels.addToBasketSuccess)
-          f7.views.current.router.back()
+        alert({
+          header: labels.enterWeight,
+          inputs: [{name: 'weight', type: 'number'}],
+          buttons: [
+            {text: labels.cancel},
+            {text: labels.ok, handler: (e) => handleWeight(e.weight)}
+          ],
         })
       } else {
         params = {
@@ -145,20 +169,20 @@ const PackDetails = (props: Props) => {
           exceedPriceType: ''
         }
         dispatch({type: 'ADD_TO_BASKET', payload: params})
-        showMessage(labels.addToBasketSuccess)
-        f7.views.current.router.back()
+        message(labels.addToBasketSuccess, 3000)
+        history.goBack()
       }
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   const handleChangeStatus = () => {
     try{
       if (!currentStorePack) return
       changeStorePackStatus(currentStorePack, state.packPrices, state.packs)
-      showMessage(labels.editSuccess)
+      message(labels.editSuccess, 3000)
     } catch(err) {
-      setError(getMessage(f7.views.current.router.currentRoute.path, err))
+      message(getMessage(location.pathname, err), 3000)
     }
   }
 
@@ -168,83 +192,110 @@ const PackDetails = (props: Props) => {
       packId: pack.id!
     }
     setCurrentStorePack(storePack)
-    actionsList.current?.open()
+    setActionOpened(true)
   }
   let i = 0
   return (
-    <Page>
-      <Navbar title={`${pack.productName}${pack.productAlias ? '-' + pack.productAlias : ''}`} backLink={labels.back} />
-      <Card>
-        <CardContent>
-          <div className="card-title">{`${pack.name}${pack.closeExpired ? '(' + labels.closeExpired + ')' : ''}`}</div>
-          <img src={pack.imageUrl} className="img-card" alt={labels.noImage} />
-        </CardContent>
-        <CardFooter>
-          <p>{(pack.price / 100).toFixed(2)}</p>
-          <p>{pack.unitsCount}</p>
-        </CardFooter>
-      </Card>
-      <List mediaList>
-        {packStores.map(s => 
-          <ListItem 
-            title={s.storeInfo.name}
-            subtitle={s.packId === pack.id ? '' : `${s.packInfo.productName}${s.packInfo.productAlias ? '-' + s.packInfo.productAlias : ''}`}
-            text={s.packId === pack.id ? '' : s.packInfo.name}
-            footer={s.quantity > 0 ? `${labels.balance}: ${quantityText(s.quantity, s.weight)}` : ''}
-            key={i++}
-            className={currentStorePack?.storeId === s.storeId && currentStorePack?.packId === s.packId ? 'selected' : ''}
-          >
-            <div className="list-subtext1">{`${labels.price}: ${(s.price / 100).toFixed(2)}${s.price === s.unitPrice ? '' : '(' + (s.unitPrice / 100).toFixed(2) + ')'}`}</div>
-            <div className="list-subtext2">{`${labels.cost}: ${(s.cost / 100).toFixed(2)}${s.cost === s.unitCost ? '' : '(' + (s.unitCost / 100).toFixed(2) + ')'}`}</div>
-            <div className="list-subtext3">{s.subQuantity ? `${labels.quantity}: ${s.subQuantity}` : ''}</div>
-            {s.offerEnd ? <div className="list-subtext4">{labels.offerUpTo}: {moment(s.offerEnd).format('Y/M/D')}</div> : ''}
-            {s.isActive ? '' : <Badge slot="title" color='red'>{labels.inActive}</Badge>}
-            {s.packId === pack.id && !s.isAuto ? <Link slot="after" iconMaterial="more_vert" onClick={()=> handleActions(s)}/> : ''}
-          </ListItem>
-        )}
-      </List>
-      <FabBackdrop slot="fixed" />
-      <Fab position="left-top" slot="fixed" color="orange" className="top-fab">
-        <Icon material="keyboard_arrow_down"></Icon>
-        <Icon material="close"></Icon>
-        <FabButtons position="bottom">
-          <FabButton color="green" onClick={() => f7.views.current.router.navigate(`/add-pack-store/${props.id}`)}>
-            <Icon material="add"></Icon>
-          </FabButton>
-          <FabButton color="blue" onClick={() => f7.views.current.router.navigate(`/${pack.isOffer ? 'edit-offer' : (pack.subPackId ? 'edit-bulk' : 'edit-pack')}/${props.id}`)}>
-            <Icon material="edit"></Icon>
-          </FabButton>
-          <FabButton color="yellow" onClick={() => handleRefreshPrice()}>
-            <Icon material="cached"></Icon>
-          </FabButton>
-          <FabButton color="pink" onClick={() => f7.views.current.router.navigate(`/pack-operations/${props.id}`)}>
-            <Icon material="import_export"></Icon>
-          </FabButton>
-          {detailsCount === 0 ? 
-            <FabButton color="red" onClick={() => handleDelete()}>
-              <Icon material="delete"></Icon>
-            </FabButton>
-          : ''}
-        </FabButtons>
-      </Fab>
-      <Actions ref={actionsList}>
-        {currentStorePack?.storeId === 's' ? '' :
-          <ActionsButton onClick={() => handleChangeStatus()}>{currentStorePack?.isActive ? labels.deactivate : labels.activate}</ActionsButton>
-        }
-        {currentStorePack?.storeId === 's' && currentStorePack?.quantity === 0 ? '' : 
-          <ActionsButton onClick={() => f7.views.current.router.navigate(`/edit-price/${currentStorePack?.packId}/store/${currentStorePack?.storeId}`)}>{labels.editPrice}</ActionsButton>
-        }
-        {currentStorePack?.storeId === 's' ? '' :
-          <ActionsButton onClick={() => handleDeletePrice()}>{labels.delete}</ActionsButton>
-        }
-        {currentStorePack?.storeId === 's' ? '' :
-          <ActionsButton onClick={() => handlePurchase()}>{labels.purchase}</ActionsButton>
-        }
-      </Actions>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+    <IonPage>
+      <Header title={`${pack.productName}${pack.productAlias ? '-' + pack.productAlias : ''}`} />
+      <IonContent fullscreen>
+        <IonCard>
+          <IonGrid>
+            <IonRow>
+              <IonCol className="card-title">
+                {`${pack.name} ${pack.closeExpired ? '(' + labels.closeExpired + ')' : ''}`}
+              </IonCol>
+            </IonRow>
+            <IonRow>
+              <IonCol>
+                <IonImg src={pack.imageUrl} alt={labels.noImage} />
+              </IonCol>
+            </IonRow>
+            <IonRow>
+              <IonCol>{(pack.price / 100).toFixed(2)}</IonCol>
+              <IonCol className="ion-text-end">{pack.unitsCount}</IonCol>
+            </IonRow>
+          </IonGrid>
+        </IonCard>
+        <IonList>
+          {packStores.map(s => 
+            <IonItem key={i++} className={currentStorePack?.storeId === s.storeId && currentStorePack?.packId === s.packId ? 'selected' : ''}>
+              <IonLabel>
+                <IonText style={{color: colors[0].name}}>{s.storeInfo.name}</IonText>
+                <IonText style={{color: colors[1].name}}>{s.packId === pack.id ? '' : `${s.packInfo.productName}${s.packInfo.productAlias ? '-' + s.packInfo.productAlias : ''}`}</IonText>
+                <IonText style={{color: colors[2].name}}>{s.packId === pack.id ? '' : s.packInfo.name}</IonText>
+                <IonText style={{color: colors[3].name}}>{`${labels.price}: ${(s.price / 100).toFixed(2)}${s.price === s.unitPrice ? '' : '(' + (s.unitPrice / 100).toFixed(2) + ')'}`}</IonText>
+                <IonText style={{color: colors[4].name}}>{`${labels.cost}: ${(s.cost / 100).toFixed(2)}${s.cost === s.unitCost ? '' : '(' + (s.unitCost / 100).toFixed(2) + ')'}`}</IonText>
+                <IonText style={{color: colors[5].name}}>{s.subQuantity ? `${labels.quantity}: ${s.subQuantity}` : ''}</IonText>
+                {s.offerEnd && <IonText style={{color: colors[6].name}}>{labels.offerUpTo}: {moment(s.offerEnd).format('Y/M/D')}</IonText>}
+                {!s.isActive && <IonBadge color="danger">{labels.inActive}</IonBadge>}
+                {s.quantity > 0 && <IonText style={{color: colors[7].name}}>{`${labels.balance}: ${quantityText(s.quantity, s.weight)}`}</IonText>}
+              </IonLabel>
+              {s.packId === pack.id && !s.isAuto &&
+                <IonIcon 
+                  ios={ellipsisVerticalOutline}
+                  slot="end" 
+                  color="danger"
+                  style={{fontSize: '20px', marginRight: '10px'}} 
+                  onClick={()=> handleActions(s)}
+                  />
+              }
+            </IonItem>    
+          )}
+        </IonList>
+      </IonContent>
+      <IonFab horizontal="end" vertical="top" slot="fixed">
+        <IonFabButton>
+          <IonIcon ios={chevronDownOutline}></IonIcon>
+        </IonFabButton>
+        <IonFabList>
+          <IonFabButton color="success" routerLink={`/add-pack-store/${params.id}`}>
+            <IonIcon ios={addOutline}></IonIcon>
+          </IonFabButton>
+          <IonFabButton color="secondary" routerLink={`/${pack.isOffer ? 'edit-offer' : (pack.subPackId ? 'edit-bulk' : 'edit-pack')}/${params.id}`}>
+            <IonIcon ios={pencilOutline}></IonIcon>
+          </IonFabButton>
+          <IonFabButton color="warning" onClick={() => handleRefreshPrice()}>
+            <IonIcon ios={repeatOutline}></IonIcon>
+          </IonFabButton>
+          <IonFabButton color="tertiary" routerLink={`/pack-operations/${params.id}`}>
+            <IonIcon ios={swapVerticalOutline}></IonIcon>
+          </IonFabButton>
+          {detailsCount === 0 &&
+            <IonFabButton color="danger" onClick={() => handleDelete()}>
+              <IonIcon ios={trashOutline}></IonIcon>
+            </IonFabButton>
+          }
+        </IonFabList>
+      </IonFab>
+      <IonActionSheet
+        isOpen={actionOpened}
+        onDidDismiss={() => setActionOpened(false)}
+        buttons={[
+          {
+            text: currentStorePack?.isActive ? labels.deactivate : labels.activate,
+            cssClass: currentStorePack?.storeId !== 's' ? colors[i++ % 10].name : 'ion-hide',
+            handler: () => handleChangeStatus()
+          },
+          {
+            text: labels.editPrice,
+            cssClass: currentStorePack?.storeId !== 's' || currentStorePack?.quantity > 0 ? colors[i++ % 10].name : 'ion-hide',
+            handler: () => history.push(`/edit-price/${currentStorePack?.packId}/store/${currentStorePack?.storeId}`)
+          },
+          {
+            text: labels.delete,
+            cssClass: currentStorePack?.storeId !== 's' ? colors[i++ % 10].name : 'ion-hide',
+            handler: () => handleDeletePrice()
+          },
+          {
+            text: labels.purchase,
+            cssClass: currentStorePack?.storeId !== 's' ? colors[i++ % 10].name : 'ion-hide',
+            handler: () => handlePurchase()
+          },
+        ]}
+      />
+      <Footer />
+    </IonPage>
   )
 }
 

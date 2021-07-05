@@ -1,34 +1,46 @@
 import { useContext, useState } from 'react'
-import { Page, Navbar, Card, CardContent, CardFooter, Toolbar, Fab, Icon } from 'framework7-react'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import BottomToolbar from './bottom-toolbar'
+import { IonCard, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonIcon, IonImg, IonPage, IonRow } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { useParams } from 'react-router'
+import { personCircleOutline } from 'ionicons/icons'
 
-type Props = {
+type Params = {
   id: string
 }
-const AdvertDetails = (props: Props) => {
+const AdvertDetails = () => {
   const { state } = useContext(StateContext)
-  const [advert] = useState(() => state.adverts.find(a => a.id === props.id)!)
+  const params = useParams<Params>()
+  const [advert] = useState(() => state.adverts.find(a => a.id === params.id)!)
   return (
-    <Page>
-      <Navbar title={labels.advertDetails} backLink={labels.back} />
-      <Fab position="left-top" slot="fixed" color="red" className="top-fab" href={`/edit-advert/${props.id}`}>
-        <Icon material="edit"></Icon>
-      </Fab>
-      <Card>
-        <CardContent>
-          <div className="card-title">{advert.title}</div>
-          <img src={advert.imageUrl} className="img-card" alt={advert.title} />
-        </CardContent>
-        <CardFooter>
-          <p>{advert.text}</p>
-        </CardFooter>
-      </Card>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+    <IonPage>
+      <Header title={labels.advertDetails} />
+      <IonContent fullscreen className="ion-padding">
+        <IonCard>
+          <IonGrid>
+            <IonRow>
+              <IonCol className="card-title">{advert?.title}</IonCol>
+            </IonRow>
+            <IonRow>
+              <IonCol>
+                {advert?.imageUrl && <IonImg src={advert?.imageUrl} alt={advert?.title} />}
+              </IonCol>
+            </IonRow>
+            <IonRow>
+              <IonCol className="ion-text-center">{advert?.text}</IonCol>
+            </IonRow>
+          </IonGrid>
+        </IonCard>
+      </IonContent>
+      <IonFab vertical="top" horizontal="end" slot="fixed">
+        <IonFabButton routerLink={`/edit-advert/${params.id}`} color="primary">
+          <IonIcon ios={personCircleOutline} />
+        </IonFabButton>
+      </IonFab>
+      <Footer />
+    </IonPage>
   )
 }
 

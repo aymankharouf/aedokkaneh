@@ -1,119 +1,109 @@
-import { useState, useContext, useEffect } from 'react'
-import { f7, Page, Navbar, List, ListInput, Fab, Icon, ListItem } from 'framework7-react'
+import { useState, useContext } from 'react'
 import { StateContext } from '../data/state-provider'
-import { addStorePayment, showMessage, showError, getMessage } from '../data/actions'
+import { addStorePayment, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { paymentTypes } from '../data/config'
+import { IonContent, IonDatetime, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, useIonToast } from '@ionic/react'
+import { useHistory, useLocation, useParams } from 'react-router'
+import Header from './header'
+import { checkmarkOutline } from 'ionicons/icons'
 
-type Props = {
+type Params = {
   id: string
 }
-const AddStorePayment = (props: Props) => {
+const AddStorePayment = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
-  const [store] = useState(() => state.stores.find(s => s.id === props.id)!)
+  const params = useParams<Params>()
+  const [store] = useState(() => state.stores.find(s => s.id === params.id)!)
   const [amount, setAmount] = useState('')
   const [type, setType] = useState('')
   const [description, setDescription] = useState('')
-  const [paymentDate, setPaymentDate] = useState([new Date()])
-  const [paymentDateErrorMessage, setPaymentDateErrorMessage] = useState('')
-  // useEffect(() => {
-  //   const validateDate = value => {
-  //     if (new Date(value) > new Date()){
-  //       setPaymentDateErrorMessage(labels.invalidSpendingDate)
-  //     } else {
-  //       setPaymentDateErrorMessage('')
-  //     }
-  //   }
-  //   if (paymentDate.length > 0) validateDate(paymentDate)
-  //   else setPaymentDateErrorMessage('')
-  // }, [paymentDate])
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
+  const [paymentDate, setPaymentDate] = useState('')
+  const [message] = useIonToast()
+  const location = useLocation()
+  const history = useHistory()
   const handleSubmit = () => {
     try{
       if (Number(amount) <= 0 || Number(amount) !== Number(Number(amount).toFixed(2))) {
         throw new Error('invalidValue')
       }
-      // const formatedDate = paymentDate.length > 0 ? new Date(paymentDate) : ''
-      const formatedDate = new Date()
       const payment = {
         type,
         storeId: store.id!,
         description,
         amount: +amount * 100,
-        paymentDate: formatedDate,
+        paymentDate: new Date(paymentDate),
         time: new Date()
       }
       addStorePayment( payment, state.stores)
-      showMessage(labels.addSuccess)
-      f7.views.current.router.back()
+      message(labels.addSuccess, 3000)
+      history.goBack()
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   return (
-    <Page>
-      <Navbar title={`${labels.addPayment} ${store.name}`} backLink={labels.back} />
-      <List form inlineLabels>
-      <ListItem
-          title={labels.type}
-          smartSelect
-          smartSelectParams={{
-            openIn: "popup", 
-            closeOnSelect: true, 
-            searchbar: true, 
-            searchbarPlaceholder: labels.search,
-            popupCloseLinkText: labels.close
-          }}
-        >
-          <select name="type" value={type} onChange={e => setType(e.target.value)}>
-            <option value=""></option>
-            {paymentTypes.map(t => 
-              t.id === '1' ? '' : <option key={t.id} value={t.id}>{t.name}</option>
-            )}
-          </select>
-        </ListItem>
-        <ListInput 
-          name="amount" 
-          label={labels.amount}
-          clearButton 
-          type="number" 
-          value={amount} 
-          onChange={e => setAmount(e.target.value)}
-          onInputClear={() => setAmount('')}
-        />
-        <ListInput 
-          name="description" 
-          label={labels.description}
-          clearButton 
-          type="text" 
-          value={description} 
-          onChange={e => setDescription(e.target.value)}
-          onInputClear={() => setDescription('')}
-        />
-        <ListInput
-          name="paymentDate"
-          label={labels.paymentDate}
-          type="datepicker"
-          value={paymentDate} 
-          clearButton
-          errorMessage={paymentDateErrorMessage}
-          errorMessageForce
-          onCalendarChange={value => setPaymentDate(value)}
-          onInputClear={() => setPaymentDate([])}
-        />
-      </List>
-      {!amount || !type || !paymentDate || paymentDateErrorMessage? '' :
-        <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleSubmit()}>
-          <Icon material="done"></Icon>
-        </Fab>
+    <IonPage>
+      <Header title={`${labels.addPayment} ${store.name}`} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.type}
+            </IonLabel>
+            <IonSelect 
+              ok-text={labels.ok} 
+              cancel-text={labels.cancel} 
+              value={type}
+              onIonChange={e => setType(e.detail.value)}
+            >
+              {paymentTypes.map(t => t.id === '1' ? '' : <IonSelectOption key={t.id} value={t.id}>{t.name}</IonSelectOption>)}
+            </IonSelect>
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.amount}
+            </IonLabel>
+            <IonInput 
+              value={amount} 
+              type="number" 
+              clearInput
+              onIonChange={e => setAmount(e.detail.value!)} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.description}
+            </IonLabel>
+            <IonInput 
+              value={description} 
+              type="text" 
+              clearInput
+              onIonChange={e => setDescription(e.detail.value!)} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.paymentDate}
+            </IonLabel>
+            <IonDatetime 
+              displayFormat="DD/MM/YYYY" 
+              value={paymentDate} 
+              cancelText={labels.cancel}
+              doneText={labels.ok}
+              onIonChange={e => setPaymentDate(e.detail.value!)}
+            />
+          </IonItem>
+        </IonList>
+      </IonContent>
+      {amount && type && paymentDate &&
+        <IonFab vertical="top" horizontal="end" slot="fixed">
+          <IonFabButton onClick={handleSubmit} color="success">
+            <IonIcon ios={checkmarkOutline} />
+          </IonFabButton>
+        </IonFab>
       }
-    </Page>
+    </IonPage>
   )
 }
 export default AddStorePayment

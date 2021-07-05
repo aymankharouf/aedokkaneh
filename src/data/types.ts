@@ -61,7 +61,7 @@ export type Notification = {
   id: string,
   userId: string,
   title: string,
-  message: string,
+  text: string,
   status: string,
   time: Date
 }

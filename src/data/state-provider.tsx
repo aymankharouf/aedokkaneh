@@ -230,7 +230,7 @@ const StateProvider = ({children}: Props) => {
                   userId: doc.id,
                   id: n.id,
                   title: n.title,
-                  message: n.message,
+                  text: n.text,
                   status: n.status,
                   time: n.time.toDate()
                 })

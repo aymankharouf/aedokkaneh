@@ -1,16 +1,19 @@
 import { useState, useContext, useEffect } from 'react'
-import { f7, Page, Navbar, List, ListItem, ListInput, Fab, Icon, Toggle } from 'framework7-react'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { addPackPrice, showMessage, showError, getMessage } from '../data/actions'
+import { addPackPrice, getMessage } from '../data/actions'
 import { Store } from '../data/types'
+import { useHistory, useLocation, useParams } from 'react-router'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, IonToggle, useIonToast } from '@ionic/react'
+import Header from './header'
+import { checkmarkOutline } from 'ionicons/icons'
 
-type Props = {
+type Params = {
   id: string
 }
-const AddPackStore = (props: Props) => {
+const AddPackStore = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
+  const params = useParams<Params>()
   const [cost, setCost] = useState('')
   const [price, setPrice] = useState('')
   const [offerDays, setOfferDays] = useState('')
@@ -18,13 +21,10 @@ const AddPackStore = (props: Props) => {
   const [storeId, setStoreId] = useState('')
   const [store, setStore] = useState<Store>()
   const [stores] = useState(() => state.stores.filter(s => s.id !== 's'))
-  const [pack] = useState(() => state.packs.find(p => p.id === props.id)!)
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
+  const [pack] = useState(() => state.packs.find(p => p.id === params.id)!)
+  const [message] = useIonToast()
+  const location = useLocation()
+  const history = useHistory()
   useEffect(() => {
     if (storeId) {
       setStore(state.stores.find(s => s.id === storeId)!)
@@ -75,79 +75,78 @@ const AddPackStore = (props: Props) => {
         isAuto: false
       }
       addPackPrice(storePack, state.packPrices, state.packs)
-      showMessage(labels.addSuccess)
-      f7.views.current.router.back()
+      message(labels.addSuccess, 3000)
+      history.goBack()
     } catch(err) {
-    	setError(getMessage(f7.views.current.router.currentRoute.path, err))
+    	message(getMessage(location.pathname, err), 3000)
     }
   }
 
   return (
-    <Page>
-      <Navbar title={`${labels.addPrice} ${pack.productName} ${pack.name}${pack.closeExpired ? '(' + labels.closeExpired + ')' : ''}`} backLink={labels.back} />
-      <List form inlineLabels>
-        <ListItem
-          title={labels.store}
-          smartSelect
-          smartSelectParams={{
-            openIn: "popup", 
-            closeOnSelect: true, 
-            searchbar: true, 
-            searchbarPlaceholder: labels.search,
-            popupCloseLinkText: labels.close
-          }}
-        >
-          <select name="storeId" value={storeId} onChange={e => setStoreId(e.target.value)}>
-            <option value=""></option>
-            {stores.map(s => 
-              <option key={s.id} value={s.id}>{s.name}</option>
-            )}
-          </select>
-        </ListItem>
-        <ListInput 
-          name="cost" 
-          label={labels.cost}
-          value={cost}
-          clearButton
-          type="number" 
-          onChange={e => setCost(e.target.value)}
-          onInputClear={() => setCost('')}
-        />
-        <ListInput 
-          name="price" 
-          label={labels.price}
-          value={price}
-          clearButton
-          type="number" 
-          onChange={e => setPrice(e.target.value)}
-          onInputClear={() => setPrice('')}
-        />
-        <ListInput 
-          name="offerDays" 
-          label={labels.offerDays}
-          value={offerDays}
-          clearButton 
-          type="number" 
-          onChange={e => setOfferDays(e.target.value)}
-          onInputClear={() => setOfferDays('')}
-        />
-        <ListItem>
-          <span>{labels.isActive}</span>
-          <Toggle 
-            name="isActive" 
-            color="green" 
-            checked={isActive}
-            onToggleChange={() => setIsActive(!isActive)}
-          />
-        </ListItem>
-      </List>
-      {!storeId || !cost ? '' :
-        <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleSubmit()}>
-          <Icon material="done"></Icon>
-        </Fab>
+    <IonPage>
+      <Header title={`${labels.addPrice} ${pack.productName} ${pack.name}${pack.closeExpired ? '(' + labels.closeExpired + ')' : ''}`} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.store}
+            </IonLabel>
+            <IonSelect 
+              ok-text={labels.ok} 
+              cancel-text={labels.cancel} 
+              value={storeId}
+              onIonChange={e => setStoreId(e.detail.value)}
+            >
+              {stores.map(s => <IonSelectOption key={s.id} value={s.id}>{s.name}</IonSelectOption>)}
+            </IonSelect>
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.cost}
+            </IonLabel>
+            <IonInput 
+              value={cost} 
+              type="number" 
+              clearInput
+              onIonChange={e => setCost(e.detail.value!)} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.price}
+            </IonLabel>
+            <IonInput 
+              value={price} 
+              type="number" 
+              clearInput
+              onIonChange={e => setPrice(e.detail.value!)} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.offerDays}
+            </IonLabel>
+            <IonInput 
+              value={offerDays} 
+              type="number" 
+              clearInput
+              onIonChange={e => setOfferDays(e.detail.value!)} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel color="primary">{labels.isActive}</IonLabel>
+            <IonToggle checked={isActive} onIonChange={() => setIsActive(s => !s)}/>
+          </IonItem>
+        </IonList>
+      </IonContent>
+      {storeId && cost &&
+        <IonFab vertical="top" horizontal="end" slot="fixed">
+          <IonFabButton onClick={handleSubmit} color="success">
+            <IonIcon ios={checkmarkOutline} />
+          </IonFabButton>
+        </IonFab>
       }
-      
-    </Page>
+    </IonPage>
   )
 }
 export default AddPackStore

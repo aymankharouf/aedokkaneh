@@ -1,145 +1,177 @@
 import { useContext, useState, useEffect } from 'react'
-import { f7, Page, Navbar, List, ListInput, Fab, Icon, Toolbar, ListItem, Toggle, FabBackdrop, FabButton, FabButtons } from 'framework7-react'
 import { StateContext } from '../data/state-provider'
-import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
+import { IonToggle, IonList, IonItem, IonContent, IonFab, IonFabButton, IonFabList, IonLabel, IonIcon, IonInput, IonPage } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { useParams } from 'react-router'
+import { chevronDownOutline, pencilOutline, swapVerticalOutline } from 'ionicons/icons'
 
-type Props = {
+type Params = {
   id: string
 }
-const CustomerDetails = (props: Props) => {
+const CustomerDetails = () => {
   const { state } = useContext(StateContext)
-  const [customer, setCustomer] = useState(() => state.customers.find(c => c.id === props.id)!)
-  const [userInfo, setUserInfo] = useState(() => state.users.find(u => u.id === props.id)!)
+  const params = useParams<Params>()
+  const [customer, setCustomer] = useState(() => state.customers.find(c => c.id === params.id)!)
+  const [userInfo, setUserInfo] = useState(() => state.users.find(u => u.id === params.id)!)
   const [storeName] = useState(() => state.stores.find(s => s.id === customer.storeId)?.name || '')
   useEffect(() => {
-    setCustomer(() => state.customers.find(c => c.id === props.id)!)
-    setUserInfo(() => state.users.find(u => u.id === props.id)!)
-  }, [state.customers, state.users, props.id])
+    setCustomer(() => state.customers.find(c => c.id === params.id)!)
+    setUserInfo(() => state.users.find(u => u.id === params.id)!)
+  }, [state.customers, state.users, params.id])
   return (
-    <Page>
-      <Navbar title={labels.customerDetails} backLink={labels.back} />
-      <FabBackdrop slot="fixed" />
-      <Fab position="left-top" slot="fixed" color="orange" className="top-fab">
-        <Icon material="keyboard_arrow_down"></Icon>
-        <Icon material="close"></Icon>
-        <FabButtons position="bottom">
-          <FabButton color="blue" onClick={() => f7.views.current.router.navigate(`/edit-customer/${props.id}`)}>
-            <Icon material="edit"></Icon>
-          </FabButton>
-          <FabButton color="pink" onClick={() => f7.views.current.router.navigate(`/orders-list/${props.id}/type/u`)}>
-            <Icon material="import_export"></Icon>
-          </FabButton>
-        </FabButtons>
-      </Fab>
-      <List form inlineLabels>
-        <ListInput 
-          name="name" 
-          label={labels.name}
-          value={userInfo.name}
-          type="text" 
-          readonly
-        />
-        <ListInput 
-          name="fullName" 
-          label={labels.fullName}
-          value={customer.name}
-          type="text" 
-          readonly
-        />
-        <ListInput 
-          name="regionName" 
-          label={labels.region}
-          value={state.regions.find(r => r.id === userInfo.regionId)?.name}
-          type="text"
-          readonly
-        />
-        <ListInput 
-          name="orderLimit" 
-          label={labels.orderLimit}
-          value={(customer.orderLimit / 100).toFixed(2)}
-          type="number"
-          readonly
-        />
-        <ListInput 
-          name="totalOrders" 
-          label={labels.totalOrders}
-          value={customer.ordersCount}
-          type="number"
-          readonly
-        />
-        <ListInput 
-          name="deliveredOrdersCount" 
-          label={labels.deliveredOrdersCount}
-          value={customer.deliveredOrdersCount}
-          type="number"
-          readonly
-        />
-        <ListInput 
-          name="deliveredOrdersTotal" 
-          label={labels.deliveredOrdersTotal}
-          value={(customer.deliveredOrdersTotal / 100).toFixed(2)}
-          type="number"
-          readonly
-        />
-        <ListInput 
-          name="returnedCount" 
-          label={labels.returnedCount}
-          value={customer.returnedCount}
-          type="number"
-          readonly
-        />
-        <ListInput 
-          name="discounts" 
-          label={labels.discountBalance}
-          value={(customer.discounts / 100).toFixed(2)}
-          type="number"
-          readonly
-        />
-        <ListInput 
-          name="deliveryFees"
-          label={labels.deliveryFees}
-          value={(customer.deliveryFees / 100).toFixed(2)}
-          type="number"
-          readonly
-        />
-        <ListInput 
-          name="specialDiscount"
-          label={labels.specialDiscount}
-          value={(customer.specialDiscount / 100).toFixed(2)}
-          type="number"
-          readonly
-        />
-        <ListInput 
-          name="storeName" 
-          label={labels.store}
-          value={storeName}
-          type="text"
-          readonly
-        />
-        <ListInput 
-          name="mapPosition" 
-          label={labels.mapPosition}
-          value={customer.mapPosition}
-          type="text"
-          readonly
-        />
-        <ListInput 
-          name="address" 
-          label={labels.address}
-          value={customer.address}
-          type="text" 
-          readonly
-        />
-        <ListItem>
-          <span>{labels.isBlocked}</span>
-          <Toggle color="red" checked={customer.isBlocked} disabled />
-        </ListItem>
-      </List>
-      <Toolbar bottom>
-        <BottomToolbar />
-      </Toolbar>
-    </Page>
+    <IonPage>
+      <Header title={labels.customerDetails} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.name}
+            </IonLabel>
+            <IonInput 
+              value={userInfo.name} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.fullName}
+            </IonLabel>
+            <IonInput 
+              value={customer.name} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.region}
+            </IonLabel>
+            <IonInput 
+              value={state.regions.find(r => r.id === userInfo.regionId)?.name} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.orderLimit}
+            </IonLabel>
+            <IonInput 
+              value={(customer.orderLimit / 100).toFixed(2)} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.totalOrders}
+            </IonLabel>
+            <IonInput 
+              value={customer.ordersCount} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.deliveredOrdersCount}
+            </IonLabel>
+            <IonInput 
+              value={customer.deliveredOrdersCount} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.deliveredOrdersTotal}
+            </IonLabel>
+            <IonInput 
+              value={(customer.deliveredOrdersTotal / 100).toFixed(2)} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.returnedCount}
+            </IonLabel>
+            <IonInput 
+              value={customer.returnedCount} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.discountBalance}
+            </IonLabel>
+            <IonInput 
+              value={(customer.discounts / 100).toFixed(2)} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.deliveryFees}
+            </IonLabel>
+            <IonInput 
+              value={(customer.deliveryFees / 100).toFixed(2)} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.specialDiscount}
+            </IonLabel>
+            <IonInput 
+              value={(customer.specialDiscount / 100).toFixed(2)} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.store}
+            </IonLabel>
+            <IonInput 
+              value={storeName} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.mapPosition}
+            </IonLabel>
+            <IonInput 
+              value={customer.mapPosition} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.address}
+            </IonLabel>
+            <IonInput 
+              value={customer.address} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel color="primary">{labels.isBlocked}</IonLabel>
+            <IonToggle checked={customer.isBlocked} disabled/>
+          </IonItem>
+        </IonList>
+      </IonContent>
+      <IonFab horizontal="end" vertical="top" slot="fixed">
+        <IonFabButton>
+          <IonIcon ios={chevronDownOutline}></IonIcon>
+        </IonFabButton>
+        <IonFabList>
+          <IonFabButton color="success" routerLink={`/edit-customer/${params.id}`}>
+            <IonIcon ios={pencilOutline}></IonIcon>
+          </IonFabButton>
+          <IonFabButton color="danger" routerLink={`/orders-list/${params.id}/u`}>
+            <IonIcon ios={swapVerticalOutline}></IonIcon>
+          </IonFabButton>
+        </IonFabList>
+      </IonFab>
+      <Footer />
+    </IonPage>
   )
 }
 export default CustomerDetails

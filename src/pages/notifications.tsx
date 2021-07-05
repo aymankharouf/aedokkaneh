@@ -7,10 +7,10 @@ import { deleteNotification, getMessage } from '../data/actions'
 import { Notification, UserInfo } from '../data/types'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
+import Footer from './footer'
 import { useLocation } from 'react-router'
 import { colors } from '../data/config'
 import { addOutline, trashOutline } from 'ionicons/icons'
-import Footer from './footer'
 
 type ExtendedNotification = Notification & {
   userInfo: UserInfo
@@ -67,7 +67,7 @@ const Notifications = () => {
                 <IonLabel>
                   <IonText style={{color: colors[0].name}}>{`${n.userInfo.name}:${n.userInfo.mobile}`}</IonText>
                   <IonText style={{color: colors[1].name}}>{n.title}</IonText>
-                  <IonText style={{color: colors[2].name}}><p>{n.message}</p></IonText>
+                  <IonText style={{color: colors[2].name}}><p>{n.text}</p></IonText>
                   <IonText style={{color: colors[3].name}}>{n.status === 'n' ? labels.notRead : labels.read}</IonText>
                   <IonText style={{color: colors[4].name}}>{moment(n.time).fromNow()}</IonText>
                 </IonLabel>

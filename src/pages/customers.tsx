@@ -1,11 +1,13 @@
 import { useContext, useState, useEffect } from 'react'
-import { Block, Page, Navbar, List, ListItem, Toolbar, NavRight, Link, Searchbar } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import moment from 'moment'
 import 'moment/locale/ar'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { CustomerInfo } from '../data/types'
+import { IonBadge, IonContent, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { colors } from '../data/config'
 
 const Customers = () => {
   const { state } = useContext(StateContext)
@@ -14,46 +16,30 @@ const Customers = () => {
     setCustomers(() => [...state.customers].sort((c1, c2) => c2.time > c1.time ? 1 : -1))
   }, [state.customers])
 
-  if (!state.user) return <Page><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></Page>
+  if (!state.user) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
   return(
-    <Page>
-      <Navbar title={labels.customers} backLink={labels.back}>
-        <NavRight>
-          <Link searchbarEnable=".searchbar" iconMaterial="search"></Link>
-        </NavRight>
-        <Searchbar
-          className="searchbar"
-          searchContainer=".search-list"
-          searchIn=".item-inner"
-          clearButton
-          expandable
-          placeholder={labels.search}
-        />
-      </Navbar>
-      <Block>
-        <List className="searchbar-not-found">
-          <ListItem title={labels.noData} />
-        </List>
-        <List mediaList className="search-list searchbar-found">
+    <IonPage>
+      <Header title={labels.customers} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
           {customers.length === 0 ? 
-            <ListItem title={labels.noData} /> 
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem>
           : customers.map(c => 
-              <ListItem
-                link={`/customer-details/${c.id}`}
-                title={c.name}
-                subtitle={moment(c.time).fromNow()}
-                badge={c.isBlocked ? labels.isBlocked : ''}
-                badgeColor="red"
-                key={c.id}
-              />
+              <IonItem key={c.id} routerLink={`/customer-details/${c.id}`}>
+                <IonLabel>
+                  <IonText style={{color: colors[0].name}}>{c.name}</IonText>
+                  <IonText style={{color: colors[1].name}}>{moment(c.time).fromNow()}</IonText>
+                  {c.isBlocked && <IonBadge color="danger">{labels.isBlocked}</IonBadge>}
+                </IonLabel>
+              </IonItem>    
             )
           }
-        </List>
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+        </IonList>
+      </IonContent>
+      <Footer />
+    </IonPage>
   )
 }
 

@@ -1,42 +1,44 @@
-import { useState, useContext, useEffect, ChangeEvent } from 'react'
-import { f7, Page, Navbar, List, ListItem, ListInput, Fab, Icon } from 'framework7-react'
+import { useState, useContext, ChangeEvent, useRef } from 'react'
 import { StateContext } from '../data/state-provider'
-import { addProduct, showMessage, showError, getMessage } from '../data/actions'
+import { addProduct, getMessage } from '../data/actions'
 import labels from '../data/labels'
+import { IonButton, IonContent, IonSelect, IonSelectOption, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
+import { useHistory, useLocation, useParams } from 'react-router'
+import Header from './header'
+import { checkmarkOutline } from 'ionicons/icons'
 
-type Props = {
+type Params = {
   id: string
 }
-const AddProduct = (props: Props) => {
+const AddProduct = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
+  const params = useParams<Params>()
   const [name, setName] = useState('')
   const [alias, setAlias] = useState('')
   const [description, setDescription] = useState('')
-  const [categoryId, setCategoryId] = useState(props.id === '0' ? '' : props.id)
+  const [categoryId, setCategoryId] = useState(params.id === '0' ? '' : params.id)
   const [trademark, setTrademark] = useState('')
   const [country, setCountry] = useState('')
   const [imageUrl, setImageUrl] = useState('')
   const [image, setImage] = useState<File>()
+  const inputEl = useRef<HTMLInputElement | null>(null)
+  const [message] = useIonToast()
+  const location = useLocation()
+  const history = useHistory()
+  const onUploadClick = () => {
+    if (inputEl.current) inputEl.current.click()
+  }
   const [categories] = useState(() => {
     const categories = state.categories.filter(c => c.isLeaf)
     return categories.sort((c1, c2) => c1.name > c2.name ? 1 : -1)
   })
   const [countries] = useState(() => [...state.countries].sort((c1, c2) => c1 > c2 ? 1 : -1))
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
-
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files) return
     const filename = files[0].name
     if (filename.lastIndexOf('.') <= 0) {
-      setError(labels.invalidFile)
-      return
+      throw new Error('invalidFile')
     }
     const fileReader = new FileReader()
     fileReader.addEventListener('load', () => {
@@ -64,103 +66,113 @@ const AddProduct = (props: Props) => {
         imageUrl
       }
       addProduct(product, image)
-      showMessage(labels.addSuccess)
-      f7.views.current.router.back()
+      message(labels.addSuccess, 3000)
+      history.goBack()
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   return (
-    <Page>
-      <Navbar title={labels.addProduct} backLink={labels.back} />
-      <List form inlineLabels>
-        <ListInput 
-          name="name" 
-          label={labels.name}
-          clearButton
-          type="text" 
-          value={name} 
-          onChange={e => setName(e.target.value)}
-          onInputClear={() => setName('')}
-        />
-        <ListInput 
-          name="alias" 
-          label={labels.alias}
-          clearButton
-          type="text" 
-          value={alias} 
-          onChange={e => setAlias(e.target.value)}
-          onInputClear={() => setAlias('')}
-        />
-        <ListInput 
-          name="description" 
-          label={labels.description}
-          clearButton
-          type="text" 
-          value={description} 
-          onChange={e => setDescription(e.target.value)}
-          onInputClear={() => setDescription('')}
-        />
-        <ListInput 
-          name="trademark" 
-          label={labels.trademark}
-          clearButton
-          type="text" 
-          value={trademark} 
-          onChange={e => setTrademark(e.target.value)}
-          onInputClear={() => setTrademark('')}
-        />
-        <ListItem
-          title={labels.category}
-          smartSelect
-          smartSelectParams={{
-            openIn: "popup", 
-            closeOnSelect: true, 
-            searchbar: true, 
-            searchbarPlaceholder: labels.search,
-            popupCloseLinkText: labels.close
-          }}
-        >
-          <select name="categoryId" value={categoryId} onChange={e => setCategoryId(e.target.value)}>
-            <option value=""></option>
-            {categories.map(c => 
-              <option key={c.id} value={c.id}>{c.name}</option>
-            )}
-          </select>
-        </ListItem>
-        <ListItem
-          title={labels.country}
-          smartSelect
-          smartSelectParams={{
-            openIn: "popup", 
-            closeOnSelect: true, 
-            searchbar: true, 
-            searchbarPlaceholder: labels.search,
-            popupCloseLinkText: labels.close
-          }}
-        >
-          <select name="country" value={country} onChange={e => setCountry(e.target.value)}>
-            <option value=""></option>
-            {countries.map(c => 
-              <option key={c} value={c}>{c}</option>
-            )}
-          </select>
-        </ListItem>
-        <ListInput 
-          name="image" 
-          label={labels.image} 
-          type="file" 
-          accept="image/*" 
-          onChange={e => handleFileChange(e)}
-        />
-        <img src={imageUrl} className="img-card" alt={labels.noImage} />
-      </List>
-      {!name || !categoryId || !country ? '' :
-        <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleSubmit()}>
-          <Icon material="done"></Icon>
-        </Fab>
+    <IonPage>
+      <Header title={labels.addProduct} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.name}
+            </IonLabel>
+            <IonInput 
+              value={name} 
+              type="text" 
+              autofocus
+              clearInput
+              onIonChange={e => setName(e.detail.value!)} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.alias}
+            </IonLabel>
+            <IonInput 
+              value={alias} 
+              type="text" 
+              clearInput
+              onIonChange={e => setAlias(e.detail.value!)} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.description}
+            </IonLabel>
+            <IonInput 
+              value={description} 
+              type="text" 
+              clearInput
+              onIonChange={e => setDescription(e.detail.value!)} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.trademark}
+            </IonLabel>
+            <IonInput 
+              value={trademark} 
+              type="text" 
+              clearInput
+              onIonChange={e => setTrademark(e.detail.value!)} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.category}
+            </IonLabel>
+            <IonSelect 
+              ok-text={labels.ok} 
+              cancel-text={labels.cancel} 
+              value={categoryId}
+              onIonChange={e => setCategoryId(e.detail.value)}
+            >
+              {categories.map(c => <IonSelectOption key={c.id} value={c.id}>{c.name}</IonSelectOption>)}
+            </IonSelect>
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.country}
+            </IonLabel>
+            <IonSelect 
+              ok-text={labels.ok} 
+              cancel-text={labels.cancel} 
+              value={country}
+              onIonChange={e => setCategoryId(e.detail.value)}
+            >
+              {countries.map(c => <IonSelectOption key={c} value={c}>{c}</IonSelectOption>)}
+            </IonSelect>
+          </IonItem>
+          <input 
+            ref={inputEl}
+            type="file" 
+            accept="image/*" 
+            style={{display: "none" }}
+            onChange={e => handleFileChange(e)}
+          />
+          <IonButton 
+            expand="block" 
+            fill="clear" 
+            onClick={onUploadClick}
+          >
+            {labels.setImage}
+          </IonButton>
+          <IonImg src={imageUrl} alt={labels.noImage} />
+        </IonList>
+      </IonContent>
+      {name && categoryId && country &&
+        <IonFab vertical="top" horizontal="end" slot="fixed">
+          <IonFabButton onClick={handleSubmit} color="success">
+            <IonIcon ios={checkmarkOutline} />
+          </IonFabButton>
+        </IonFab>
       }
-    </Page>
+    </IonPage>
   )
 }
 export default AddProduct

@@ -1,69 +1,95 @@
 import { useContext, useState, useEffect } from 'react'
-import { Page, Navbar, List, ListInput, Fab, Icon } from 'framework7-react'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage } from '@ionic/react'
+import { useParams } from 'react-router'
+import Header from './header'
+import { pencilOutline } from 'ionicons/icons'
 
-type Props = {
+type Params = {
   id: string
 }
-const ProductDetails = (props: Props) => {
+const ProductDetails = () => {
   const { state } = useContext(StateContext)
-  const [product, setProduct] = useState(() => state.products.find(p => p.id === props.id)!)
+  const params = useParams<Params>()
+  const [product, setProduct] = useState(() => state.products.find(p => p.id === params.id)!)
   useEffect(() => {
-    setProduct(() => state.products.find(p => p.id === props.id)!)
-  }, [state.products, props.id])
+    setProduct(() => state.products.find(p => p.id === params.id)!)
+  }, [state.products, params.id])
   return (
-    <Page>
-      <Navbar title={labels.productDetails} backLink={labels.back} />
-      <List form inlineLabels>
-        <ListInput 
-          name="name" 
-          label={labels.name}
-          type="text" 
-          value={product.name}
-          readonly
-        />
-        <ListInput 
-          name="alias" 
-          label={labels.alias}
-          type="text" 
-          value={product.alias}
-          readonly
-        />
-        <ListInput 
-          name="description" 
-          label={labels.description}
-          type="text" 
-          value={product.description}
-          readonly
-        />
-        <ListInput 
-          name="categoryId" 
-          label={labels.category}
-          type="text" 
-          value={state.categories.find(c => c.id === product.categoryId)?.name}
-          readonly
-        />
-        <ListInput 
-          name="trademark" 
-          label={labels.trademark}
-          type="text" 
-          value={product.trademark}
-          readonly
-        />
-        <ListInput 
-          name="country" 
-          label={labels.country}
-          type="text" 
-          value={product.country}
-          readonly
-        />
-        <img src={product.imageUrl} className="img-card" alt={labels.noImage} />
-      </List>
-      <Fab position="left-top" slot="fixed" color="red" className="top-fab" href={`/edit-product/${props.id}`}>
-        <Icon material="edit"></Icon>
-      </Fab>
-    </Page>
+    <IonPage>
+      <Header title={labels.productDetails} />
+      <IonContent fullscreen>
+        <IonList>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.name}
+            </IonLabel>
+            <IonInput 
+              value={product.name} 
+              type="text"
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.alias}
+            </IonLabel>
+            <IonInput 
+              value={product.alias} 
+              type="text"
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.description}
+            </IonLabel>
+            <IonInput 
+              value={product.description} 
+              type="text"
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.category}
+            </IonLabel>
+            <IonInput 
+              value={state.categories.find(c => c.id === product.categoryId)?.name} 
+              type="text"
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.trademark}
+            </IonLabel>
+            <IonInput 
+              value={product.trademark} 
+              type="text"
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.country}
+            </IonLabel>
+            <IonInput 
+              value={product.country} 
+              type="text"
+              readonly
+            />
+          </IonItem>
+          <IonImg src={product.imageUrl} alt={labels.noImage} />
+        </IonList>
+      </IonContent>
+      <IonFab vertical="top" horizontal="end" slot="fixed">
+        <IonFabButton routerLink={`/edit-product/${params.id}`} color="success">
+          <IonIcon ios={pencilOutline} /> 
+        </IonFabButton>
+      </IonFab>
+    </IonPage>
   )
 }
 export default ProductDetails
