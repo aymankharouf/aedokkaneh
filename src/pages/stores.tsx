@@ -59,7 +59,7 @@ const Stores = () => {
           : stores.map(s =>
               <IonItem routerLink={`/store-details/${s.id}`} key={s.id}>
                 <IonLabel>{s.name}</IonLabel>
-                <IonLabel slot="end">{s.discount * 100}</IonLabel>
+                <IonLabel slot="end" className="price">{s.discount * 100}</IonLabel>
                 {!s.isActive && <IonBadge color="danger">{labels.inActive}</IonBadge>}
               </IonItem>
             )

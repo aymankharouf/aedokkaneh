@@ -75,7 +75,7 @@ const ArchivedPurchases = () => {
             <ListItem title={labels.noData} /> 
           : purchases.map(p => 
               <ListItem
-                link={`/purchase-details/${p.id}/type/a`}
+                link={`/purchase-details/${p.id}/a`}
                 title={p.storeInfo.name}
                 subtitle={moment(p.time).fromNow()}
                 after={(p.total / 100).toFixed(2)}

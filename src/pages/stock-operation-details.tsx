@@ -1,11 +1,12 @@
 import { useContext, useState, useEffect } from 'react'
-import { Block, Page, Navbar, List, ListItem, Toolbar, Badge } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import { StateContext } from '../data/state-provider'
 import { quantityText } from '../data/actions'
 import labels from '../data/labels'
-import { stockOperationTypes } from '../data/config'
+import { colors, stockOperationTypes } from '../data/config'
 import { Pack, StockPack } from '../data/types'
+import { IonBadge, IonContent, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
 
 type Props = {
   id: string,
@@ -28,29 +29,29 @@ const StockOperationDetails = (props: Props) => {
     }))
   }, [stockOperation, state.packs])
   return(
-    <Page>
-      <Navbar title={`${stockOperationTypes.find(ty => ty.id === stockOperation.type)?.name} ${stockOperation.storeId ? state.stores.find(s => s.id === stockOperation.storeId)?.name : ''}`} backLink={labels.back} />
-      <Block>
-        <List mediaList>
+    <IonPage>
+      <Header title={`${stockOperationTypes.find(ty => ty.id === stockOperation.type)?.name} ${stockOperation.storeId ? state.stores.find(s => s.id === stockOperation.storeId)?.name : ''}`}/>
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
           {stockOperationBasket.map(p => 
-            <ListItem 
-              title={p.packInfo.productName}
-              subtitle={p.packInfo.productAlias}
-              text={p.packInfo.name}
-              footer={`${labels.quantity}: ${quantityText(p.quantity, p.weight)}`}
-              after={(Math.round(p.cost * (p.weight || p.quantity)) / 100).toFixed(2)}
-              key={p.packId}
-            >
-              <img src={p.packInfo.imageUrl} slot="media" className="img-list" alt={labels.noImage} />
-              {p.packInfo.closeExpired ? <Badge slot="text" color="red">{labels.closeExpired}</Badge> : ''}
-            </ListItem>
+            <IonItem key={p.packId}>
+              <IonThumbnail slot="start">
+                <img src={p.packInfo.imageUrl} alt={labels.noImage} />
+              </IonThumbnail>
+              <IonLabel>
+                <IonText style={{color: colors[0].name}}>{p.packInfo.productName}</IonText>
+                <IonText style={{color: colors[1].name}}>{p.packInfo.productAlias}</IonText>
+                <IonText style={{color: colors[2].name}}>{p.packInfo.name}</IonText>
+                <IonText style={{color: colors[3].name}}>{`${labels.quantity}: ${quantityText(p.quantity, p.weight)}`}</IonText>
+              </IonLabel>
+              {p.packInfo.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
+              <IonLabel slot="end" className="price">{(Math.round(p.cost * (p.weight || p.quantity)) / 100).toFixed(2)}</IonLabel>
+            </IonItem>    
           )}
-        </List>
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+        </IonList>
+      </IonContent>
+      <Footer />
+    </IonPage>
   )
 }
 export default StockOperationDetails

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { addStore, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { storeTypes, patterns } from '../data/config'
-import { IonToggle, IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, IonTextarea, useIonToast } from '@ionic/react'
+import { IonToggle, IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, useIonToast } from '@ionic/react'
 import { useHistory, useLocation } from 'react-router'
 import Header from './header'
 import Footer from './footer'
@@ -50,6 +50,7 @@ const AddStore = () => {
 			message(getMessage(location.pathname, err), 3000)
 		}
   }
+  console.log('type == ', type)
   return (
     <IonPage>
       <Header title={labels.newStore} />

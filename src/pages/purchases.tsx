@@ -39,7 +39,7 @@ const Purchases = () => {
             <ListItem title={labels.noData} /> 
           : purchases.map(p => 
               <ListItem
-                link={`/purchase-details/${p.id}/type/n`}
+                link={`/purchase-details/${p.id}/n`}
                 title={p.storeInfo.name}
                 subtitle={moment(p.time).fromNow()}
                 after={(p.total / 100).toFixed(2)}

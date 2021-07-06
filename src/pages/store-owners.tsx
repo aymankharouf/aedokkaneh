@@ -1,41 +1,42 @@
 import { useContext, useState, useEffect } from 'react'
-import { Block, Page, Navbar, List, ListItem, Toolbar } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { CustomerInfo } from '../data/types'
+import { IonContent, IonItem, IonLabel, IonList, IonPage } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { useParams } from 'react-router'
 
-type Props = {
+type Params = {
   id: string
 }
-const StoreOwners = (props: Props) => {
+const StoreOwners = () => {
   const { state } = useContext(StateContext)
-  const [store] = useState(() => state.stores.find(s => s.id === props.id)!)
+  const params = useParams<Params>()
+  const [store] = useState(() => state.stores.find(s => s.id === params.id)!)
   const [storeOwners, setStoreOwners] = useState<CustomerInfo[]>([])
   useEffect(() => {
-    setStoreOwners(() => state.customers.filter(c => c.storeId === props.id))
-  }, [state.customers, props.id])
+    setStoreOwners(() => state.customers.filter(c => c.storeId === params.id))
+  }, [state.customers, params.id])
   return (
-    <Page>
-      <Navbar title={`${labels.storeOwners} ${store.name}`} backLink={labels.back} />
-      <Block>
-        <List mediaList>
+    <IonPage>
+      <Header title={`${labels.storeOwners} ${store.name}`} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
           {storeOwners.length === 0 ? 
-            <ListItem title={labels.noData} /> 
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem> 
           : storeOwners.map(o => 
-              <ListItem 
-                link="#"
-                title={o.name} 
-                key={o.id} 
-              />
+              <IonItem key={o.id}>
+                <IonLabel>{o.name}</IonLabel>
+              </IonItem> 
             )
           }
-        </List>
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+        </IonList>
+      </IonContent>
+      <Footer />
+    </IonPage>
   )
 }
 

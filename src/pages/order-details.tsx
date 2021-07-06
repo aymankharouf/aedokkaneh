@@ -56,8 +56,8 @@ const OrderDetails = (props: Props) => {
         {id: 'i', name: 'استيداع', status: ['f', 'e', 'p'], path: ''},
         {id: 't', name: 'تحديد موعد التسليم', status: ['p'], path: ''},
         {id: 'd', name: 'تسليم', status: ['p'], path: ''},
-        {id: 'e', name: 'تعديل', status: ['n', 'a', 'e', 's', 'f'], path: `/edit-order/${order.id}/type/e`},
-        {id: 'b', name: 'ارجاع', status: ['p', 'd'], path: `/edit-order/${props.id}/type/r`}
+        {id: 'e', name: 'تعديل', status: ['n', 'a', 'e', 's', 'f'], path: `/edit-order/${order.id}/e`},
+        {id: 'b', name: 'ارجاع', status: ['p', 'd'], path: `/edit-order/${props.id}/r`}
       ]
       return statusActions.filter(a => a.status.find(s => s === order.status))
     })

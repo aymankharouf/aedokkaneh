@@ -1,31 +1,36 @@
 import { useContext, useState, useEffect } from 'react'
-import { f7, Page, Navbar, List, ListItem, Icon, Fab, Toolbar, ListInput, BlockTitle } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import { StateContext } from '../data/state-provider'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { approveAlarm, showMessage, showError, getMessage } from '../data/actions'
+import { approveAlarm, getMessage } from '../data/actions'
 import labels from '../data/labels'
-import { alarmTypes } from '../data/config'
+import { alarmTypes, colors } from '../data/config'
 import { Pack, PackPrice, Store } from '../data/types'
+import { IonList, IonItem, IonContent, IonFab, IonFabButton, IonLabel, IonIcon, IonInput, IonPage, useIonToast, IonSelect, IonSelectOption, IonListHeader, IonText } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { useHistory, useLocation, useParams } from 'react-router'
+import { checkmarkOutline } from 'ionicons/icons'
 
-type Props = {
+type Params = {
   id: string,
   userId: string
 }
 type ExtendedPackPrice = PackPrice & {
   storeInfo: Store
 }
-const AlarmDetails = (props: Props) => {
+const AlarmDetails = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
+  const params = useParams<Params>()
   const [newPackId, setNewPackId] = useState('')
-  const [userInfo] = useState(() => state.users.find(u => u.id === props.userId))
-  const [customerInfo] = useState(() => state.customers.find(c => c.id === props.userId)!)
-  const [alarm] = useState(() => state.alarms.find(a => a.id === props.id)!)
+  const [customerInfo] = useState(() => state.customers.find(c => c.id === params.userId)!)
+  const [alarm] = useState(() => state.alarms.find(a => a.id === params.id)!)
   const [pack] = useState(() => state.packs.find(p => p.id === alarm.packId)!)
   const [storeName] = useState(() => state.stores.find(s => s.id === customerInfo.storeId)?.name)
   const [prices, setPrices] = useState<ExtendedPackPrice[]>([])
+  const [message] = useIonToast()
+  const location = useLocation()
+  const history = useHistory()
   const [packs] = useState(() => {
     const packs = state.packs.filter(p => p.id !== pack.id)
     let result: Pack[] = []
@@ -55,135 +60,145 @@ const AlarmDetails = (props: Props) => {
       return result.sort((p1, p2) => p1.price - p2.price)
     })
   }, [state.packPrices, state.stores, customerInfo, pack, newPackId])
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
   const handleApprove = () => {
     try{
       approveAlarm(alarm, state.alarms, newPackId, customerInfo, state.packPrices, state.packs)
-      showMessage(labels.approveSuccess)
-			f7.views.current.router.back()
+      message(labels.approveSuccess, 3000)
+			history.goBack()
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+      message(getMessage(location.pathname, err), 3000)
 		}
   }
   let i = 0
   return (
-    <Page>
-      <Navbar title={alarmTypes.find(t => t.id === alarm.type)?.name} backLink={labels.back} />
-      <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleApprove()}>
-        <Icon material="done"></Icon>
-      </Fab>
-      <List form inlineLabels>
-        <ListInput 
-          name="userName" 
-          label={labels.user}
-          value={customerInfo.name}
-          type="text" 
-          readonly
-        />
-        <ListInput 
-          name="productName" 
-          label={labels.product}
-          value={pack.productName}
-          type="text" 
-          readonly
-        />
-        <ListInput 
-          name="packName" 
-          label={labels.pack}
-          value={pack.name}
-          type="text" 
-          readonly
-        />
-        <ListInput 
-          name="currentPrice" 
-          label={labels.currentPrice}
-          value={(pack.price / 100).toFixed(2)}
-          type="number" 
-          readonly
-        />
-        {alarm.type === 'aa' ? 
-          <ListInput 
-            name="alternative" 
-            label={labels.alternative}
-            value={alarm.alternative}
-            type="text" 
-            readonly
-          />
-        : ''}
-        <ListInput 
-          name="newPrice"
-          label={labels.price}
-          value={(alarm.price / 100).toFixed(2)}
-          type="number" 
-          readonly
-        />
-        {['eo', 'go'].includes(alarm.type) ? 
-          <ListInput 
-            name="quantity"
-            label={labels.quantity}
-            value={alarm.quantity}
-            type="number" 
-            readonly
-          />
-        : ''}
-        <ListInput 
-          name="offerDays"
-          label={labels.offerDays}
-          value={alarm.offerDays}
-          type="number" 
-          readonly
-        />
-        <ListInput 
-          name="storeName" 
-          label={labels.storeName}
-          value={storeName}
-          type="text" 
-          readonly
-        />
-        {['aa', 'eo', 'go'].includes(alarm.type) ?
-          <ListItem
-            title={labels.newProduct}
-            smartSelect
-            smartSelectParams={{
-              openIn: "popup", 
-              closeOnSelect: true, 
-              searchbar: true, 
-              searchbarPlaceholder: labels.search,
-              popupCloseLinkText: labels.close
-            }}
-          >
-            <select name="newPackId" value={newPackId} onChange={e => setNewPackId(e.target.value)}>
-              <option value=""></option>
-              {packs.map(p => 
-                <option key={p.id} value={p.id}>{p.name}</option>
-              )}
-            </select>
-          </ListItem>
-        : ''}
-      </List>
-      <BlockTitle>
-        {labels.prices}
-      </BlockTitle>
-        <List mediaList>
-        {prices.map(p => 
-          <ListItem 
-            title={p.storeInfo.name}
-            subtitle={p.quantity ? `${labels.quantity}: ${p.quantity}` : ''}
-            text={moment(p.time).fromNow()} 
-            after={(p.price / 100).toFixed(2)} 
-            key={i++} 
-          />
-        )}
-      </List>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+    <IonPage>
+      <Header title={alarmTypes.find(t => t.id === alarm.type)?.name} />
+      <IonContent fullscreen>
+        <IonList className="ion-padding">
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.name}
+            </IonLabel>
+            <IonInput 
+              value={customerInfo.name} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.product}
+            </IonLabel>
+            <IonInput 
+              value={pack.productName} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.pack}
+            </IonLabel>
+            <IonInput 
+              value={pack.name} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.currentPrice}
+            </IonLabel>
+            <IonInput 
+              value={(pack.price / 100).toFixed(2)} 
+              readonly
+            />
+          </IonItem>
+          {alarm.type === 'aa' &&
+            <IonItem>
+              <IonLabel position="floating" color="primary">
+                {labels.alternative}
+              </IonLabel>
+              <IonInput 
+                value={alarm.alternative} 
+                readonly
+              />
+            </IonItem>
+          }
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.price}
+            </IonLabel>
+            <IonInput 
+              value={(alarm.price / 100).toFixed(2)} 
+              readonly
+            />
+          </IonItem>
+          {['eo', 'go'].includes(alarm.type) &&
+            <IonItem>
+              <IonLabel position="floating" color="primary">
+                {labels.quantity}
+              </IonLabel>
+              <IonInput 
+                value={alarm.quantity} 
+                readonly
+              />
+            </IonItem>
+          }
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.offerDays}
+            </IonLabel>
+            <IonInput 
+              value={alarm.offerDays} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.storeName}
+            </IonLabel>
+            <IonInput 
+              value={storeName} 
+              readonly
+            />
+          </IonItem>
+          {['aa', 'eo', 'go'].includes(alarm.type) &&
+            <IonItem>
+              <IonLabel position="floating" color="primary">
+                {labels.newProduct}
+              </IonLabel>
+              <IonSelect 
+                ok-text={labels.ok} 
+                cancel-text={labels.cancel} 
+                value={newPackId}
+                onIonChange={e => setNewPackId(e.detail.value)}
+              >
+                {packs.map(p => <IonSelectOption key={p.id} value={p.id}>{p.name}</IonSelectOption>)}
+              </IonSelect>
+            </IonItem>
+          }
+        </IonList>
+        <IonListHeader>
+          <IonLabel>{labels.prices}</IonLabel>
+        </IonListHeader>
+          <IonList>
+          {prices.map(p => 
+            <IonItem key={i++}>
+              <IonLabel>
+                <IonText style={{color: colors[0].name}}>{p.storeInfo.name}</IonText>
+                <IonText style={{color: colors[1].name}}>{p.quantity ? `${labels.quantity}: ${p.quantity}` : ''}</IonText>
+                <IonText style={{color: colors[2].name}}>{moment(p.time).fromNow()}</IonText>
+              </IonLabel>
+              <IonLabel slot="end" className="price">{(p.price / 100).toFixed(2)}</IonLabel>
+            </IonItem>
+          )}
+        </IonList>
+      </IonContent>
+      <IonFab vertical="top" horizontal="end" slot="fixed">
+        <IonFabButton onClick={handleApprove} color="success">
+          <IonIcon ios={checkmarkOutline} /> 
+        </IonFabButton>
+      </IonFab>
+      <Footer />
+    </IonPage>
   )
 }
 

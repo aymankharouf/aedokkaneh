@@ -371,7 +371,8 @@ const labels: Label = {
   returnedCount: 'مرات اﻻرجاع',
   gross: 'اﻻجمالي',
   confirmationBlockUser: 'هل ترغب بحظر التعامل مع هذا المستخدم؟',
-  paymentDate: 'تاريخ الدفعة'
+  paymentDate: 'تاريخ الدفعة',
+  cancel: 'رجوع'
 }
 
 export default labels

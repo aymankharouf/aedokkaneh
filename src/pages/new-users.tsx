@@ -1,11 +1,13 @@
 import { useContext, useState, useEffect } from 'react'
-import { Block, Page, Navbar, List, ListItem, Toolbar } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import moment from 'moment'
 import 'moment/locale/ar'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { UserInfo } from '../data/types'
+import { IonContent, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { colors } from '../data/config'
 
 
 const NewUsers = () => {
@@ -18,28 +20,28 @@ const NewUsers = () => {
     })
   }, [state.users, state.customers])
   return(
-    <Page>
-      <Navbar title={labels.newUsers} backLink={labels.back} />
-      <Block>
-        <List mediaList>
+    <IonPage>
+      <Header title={labels.newUsers} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
           {newUsers.length === 0 ? 
-            <ListItem title={labels.noData} /> 
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem>
           : newUsers.map(u => 
-              <ListItem
-                link={`/approve-user/${u.id}`}
-                title={`${labels.user}: ${u.name}`}
-                subtitle={`${labels.mobile}: ${u.mobile}`}
-                text={moment(u.time).fromNow()}
-                key={u.id}
-              />
+              <IonItem key={u.id} routerLink={`/approve-user/${u.id}`}>
+                <IonLabel>
+                  <IonText style={{color: colors[0].name}}>{`${labels.user}: ${u.name}`}</IonText>
+                  <IonText style={{color: colors[1].name}}>{`${labels.mobile}: ${u.mobile}`}</IonText>
+                  <IonText style={{color: colors[2].name}}>{moment(u.time).fromNow()}</IonText>
+                </IonLabel>
+              </IonItem>
             )
           }
-        </List>
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+        </IonList>
+      </IonContent>
+      <Footer />
+    </IonPage>
   )
 }
 

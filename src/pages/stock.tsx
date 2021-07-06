@@ -1,9 +1,13 @@
 import { useContext, useState, useEffect } from 'react'
-import { Block, Page, Navbar, List, ListItem, Toolbar, Searchbar, NavRight, Link, Badge } from 'framework7-react'
 import { StateContext } from '../data/state-provider'
 import { quantityText } from '../data/actions'
 import labels from '../data/labels'
 import { Pack, PackPrice } from '../data/types'
+import { IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { colors } from '../data/config'
+import { constructOutline } from 'ionicons/icons'
 
 type ExtendedPackPrice = PackPrice & {
   packInfo: Pack
@@ -25,53 +29,43 @@ const Stock = () => {
     })
   }, [state.packPrices, state.packs])
 
-  if (!state.user) return <Page><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></Page>
+  if (!state.user) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
   let i = 0
   return(
-    <Page>
-      <Navbar title={labels.stock} backLink={labels.back}>
-        <NavRight>
-          <Link searchbarEnable=".searchbar" iconMaterial="search" />
-        </NavRight>
-        <Searchbar
-          className="searchbar"
-          searchContainer=".search-list"
-          searchIn=".item-inner"
-          clearButton
-          expandable
-          placeholder={labels.search}
-        ></Searchbar>
-      </Navbar>
-      <Block>
-        <List className="searchbar-not-found">
-          <ListItem title={labels.noData} />
-        </List>
-        <List mediaList className="search-list searchbar-found">
+    <IonPage>
+      <Header title={labels.stock} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
           {stockPacks.length === 0 ? 
-            <ListItem title={labels.noData} /> 
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem>  
           : stockPacks.map(p => 
-              <ListItem
-                link={`/stock-pack-operations/${p.packId}`}
-                title={p.packInfo.productName}
-                subtitle={p.packInfo.productAlias}
-                text={p.packInfo.name}
-                footer={`${labels.gross}: ${(p.cost * (p.weight || p.quantity)/ 100).toFixed(2)}`}
-                after={(p.cost / 100).toFixed(2)}
-                key={i++}
-              >
-                <img src={p.packInfo.imageUrl} slot="media" className="img-list" alt={labels.noImage} />
-                <div className="list-subtext1">{`${labels.quantity}: ${quantityText(p.quantity, p.weight)}`}</div>
-                {p.packInfo.closeExpired ? <Badge slot="text" color="red">{labels.closeExpired}</Badge> : ''}
-              </ListItem>
+              <IonItem key={i++} routerLink={`/stock-pack-operations/${p.packId}`}>
+                <IonThumbnail slot="start">
+                  <img src={p.packInfo.imageUrl} alt={labels.noImage} />
+                </IonThumbnail>
+                <IonLabel>
+                  <IonText style={{color: colors[0].name}}>{p.packInfo.productName}</IonText>
+                  <IonText style={{color: colors[1].name}}>{p.packInfo.productAlias}</IonText>
+                  <IonText style={{color: colors[2].name}}>{p.packInfo.name}</IonText>
+                  <IonText style={{color: colors[3].name}}>{`${labels.quantity}: ${quantityText(p.quantity, p.weight)}`}</IonText>
+                  <IonText style={{color: colors[4].name}}>{`${labels.gross}: ${(p.cost * (p.weight || p.quantity)/ 100).toFixed(2)}`}</IonText>
+                </IonLabel>
+                {p.packInfo.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
+                <IonLabel slot="end" className="price">{(p.cost / 100).toFixed(2)}</IonLabel>
+              </IonItem>    
             )
           }
-        </List>
-      </Block>
-      <Toolbar bottom>
-        <Link href="/home/" iconMaterial="home" />
-        <Link href="/stock-operations/" iconMaterial="layers" />
-      </Toolbar>
-    </Page>
+        </IonList>
+      </IonContent>
+      <IonFab vertical="top" horizontal="end" slot="fixed">
+        <IonFabButton routerLink="/stock-operations" color="success">
+          <IonIcon ios={constructOutline} />
+        </IonFabButton>
+      </IonFab>
+      <Footer />
+    </IonPage>
   )
 }
 

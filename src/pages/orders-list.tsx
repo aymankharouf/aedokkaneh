@@ -59,7 +59,7 @@ const OrdersList = (props: Props) => {
             <ListItem title={labels.noData} /> 
           : orders.map(o => 
               <ListItem
-                link={`/order-details/${o.id}/type/n`}
+                link={`/order-details/${o.id}/n`}
                 title={props.type === 's' ? (o.customerInfo?.name || o.userInfo.name) : orderStatus.find(s => s.id === o.status)?.name}
                 subtitle={o.deliveryTime}
                 text={moment(o.time).fromNow()}

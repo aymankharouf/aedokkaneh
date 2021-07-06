@@ -1,10 +1,14 @@
 import { useContext, useState, useEffect } from 'react'
-import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Button } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { approveRating, showMessage, showError, getMessage } from '../data/actions'
+import { approveRating, getMessage } from '../data/actions'
 import { Product, Rating, UserInfo } from '../data/types'
+import { IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonToast } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { colors } from '../data/config'
+import { checkmarkOutline } from 'ionicons/icons'
+import { useLocation } from 'react-router'
 
 type ExtendedRating = Rating & {
   userInfo: UserInfo,
@@ -12,8 +16,9 @@ type ExtendedRating = Rating & {
 }
 const Ratings = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
   const [ratings, setRatings] = useState<ExtendedRating[]>([])
+  const [message] = useIonToast()
+  const location = useLocation()
   useEffect(() => {
     setRatings(() => {
       const ratings = state.ratings.filter(r => r.status === 'n')
@@ -28,45 +33,47 @@ const Ratings = () => {
       })
     })
   }, [state.users, state.products, state.ratings])
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
   const handleApprove = (rating: ExtendedRating) => {
     try{
       approveRating(rating, state.ratings, state.products, state.packs)
-      showMessage(labels.approveSuccess)
+      message(labels.approveSuccess, 3000)
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   let i = 0
   return(
-    <Page>
-      <Navbar title={labels.ratings} backLink={labels.back} />
-      <Block>
-        <List mediaList>
+    <IonPage>
+      <Header title={labels.ratings} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
           {ratings.length === 0 ? 
-            <ListItem title={labels.noData} /> 
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem> 
           : ratings.map(r => 
-              <ListItem
-                title={r.productInfo.name}
-                subtitle={`${r.userInfo.name}:${r.userInfo.mobile}`}
-                key={i++}
-              >
-                <img slot="media" src={r.productInfo.imageUrl} className="img-list" alt={r.productInfo.name} />
-                <Button text={labels.approve} slot="after" onClick={() => handleApprove(r)} />
-              </ListItem>
+              <IonItem key={i++}>
+                <IonThumbnail slot="start">
+                  <img src={r.productInfo.imageUrl} alt={labels.noImage} />
+                </IonThumbnail>
+                <IonLabel>
+                  <IonText style={{color: colors[0].name}}>{r.productInfo.name}</IonText>
+                  <IonText style={{color: colors[1].name}}>{`${r.userInfo.name}:${r.userInfo.mobile}`}</IonText>
+                </IonLabel>
+                <IonIcon 
+                  ios={checkmarkOutline} 
+                  slot="end" 
+                  color="success"
+                  style={{fontSize: '20px', marginRight: '10px'}} 
+                  onClick={()=> handleApprove(r)}
+                />
+              </IonItem>    
             )
           }
-        </List>
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+        </IonList>
+      </IonContent>
+      <Footer />
+    </IonPage>
   )
 }
 

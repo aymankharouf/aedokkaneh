@@ -1,12 +1,13 @@
 import { useContext, useState, useEffect } from 'react'
-import { Block, Page, Navbar, List, ListItem, Toolbar} from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import moment from 'moment'
 import 'moment/locale/ar'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { alarmTypes } from '../data/config'
+import { alarmTypes, colors } from '../data/config'
 import { Alarm, CustomerInfo, Pack, UserInfo } from '../data/types'
+import { IonContent, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
 
 type ExtendedAlarm = Alarm & {
   userInfo: UserInfo,
@@ -34,31 +35,32 @@ const Alarms = () => {
     })
   }, [state.alarms, state.packs, state.users, state.customers])
   return(
-    <Page>
-      <Navbar title={labels.alarms} backLink={labels.back} />
-      <Block>
-          <List mediaList>
-            {alarms.length === 0 ? 
-              <ListItem title={labels.noData} /> 
-            : alarms.map(a => 
-                <ListItem
-                  link={`/alarm-details/${a.id}/user/${a.userInfo.id}`}
-                  title={alarmTypes.find(t => t.id === a.type)?.name}
-                  subtitle={a.customerInfo.name}
-                  text={`${a.packInfo.productName} ${a.packInfo.name}`}
-                  footer={moment(a.time).fromNow()}
-                  key={a.id}
-                >
-                  <img src={a.packInfo.imageUrl} slot="media" className="img-list" alt={labels.noImage} />
-                </ListItem>
-              )
-            }
-          </List>
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+    <IonPage>
+      <Header title={labels.alarms} />
+      <IonContent fullscreen>
+        <IonList className="ion-padding">
+          {alarms.length === 0 ? 
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem>
+          : alarms.map(a => 
+              <IonItem key={a.id} routerLink={`/alarm-details/${a.id}/user/${a.userInfo.id}`}>
+                <IonThumbnail slot="start">
+                  <IonImg src={a.packInfo.imageUrl} alt={labels.noImage} />
+                </IonThumbnail>
+                <IonLabel>
+                  <IonText style={{color: colors[0].name}}>{alarmTypes.find(t => t.id === a.type)?.name}</IonText>
+                  <IonText style={{color: colors[1].name}}>{a.customerInfo.name}</IonText>
+                  <IonText style={{color: colors[2].name}}>{`${a.packInfo.productName} ${a.packInfo.name}`}</IonText>
+                  <IonText style={{color: colors[3].name}}>{moment(a.time).fromNow()}</IonText>
+                </IonLabel>
+              </IonItem>
+            )
+          }
+        </IonList>
+      </IonContent>
+      <Footer />
+    </IonPage>
   )
 }
 

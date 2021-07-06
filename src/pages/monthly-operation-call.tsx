@@ -1,44 +1,54 @@
 import { useState } from 'react'
-import { Page, Navbar, List, ListInput, Fab, Icon, Toolbar } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { checkmarkOutline } from 'ionicons/icons'
 
 
 const MonthlyOperationCall = () => {
   const [month, setMonth] = useState('')
   const [year, setYear] = useState('')
   return (
-    <Page>
-      <Navbar title={labels.profits} backLink={labels.back} />
-      <List form inlineLabels>
-        <ListInput 
-          name="month" 
-          label={labels.month} 
-          clearButton
-          type="number"
-          value={month}
-          onChange={e => setMonth(e.target.value)}
-          onInputClear={() => setMonth('')}
-        />
-        <ListInput 
-          name="year" 
-          label={labels.year} 
-          clearButton
-          type="number"
-          value={year}
-          onChange={e => setYear(e.target.value)}
-          onInputClear={() => setYear('')}
-        />
-      </List>
-      {!month || !year ? '' : 
-        <Fab position="left-top" slot="fixed" color="green" className="top-fab" href={`/monthly-operations/${+year * 100 + Number(month)}`}>
-          <Icon material="done"></Icon>
-        </Fab>
+    <IonPage>
+      <Header title={labels.profits} />
+      <IonContent fullscreen>
+        <IonList>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.month}
+            </IonLabel>
+            <IonInput 
+              value={month} 
+              type="number" 
+              autofocus
+              clearInput
+              onIonChange={e => setMonth(e.detail.value!)} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.year}
+            </IonLabel>
+            <IonInput 
+              value={year} 
+              type="number" 
+              autofocus
+              clearInput
+              onIonChange={e => setYear(e.detail.value!)} 
+            />
+          </IonItem>
+        </IonList>
+      </IonContent>
+      {month && year &&
+        <IonFab vertical="top" horizontal="end" slot="fixed">
+          <IonFabButton routerLink={`/monthly-operations/${+year * 100 + Number(month)}`} color="success">
+            <IonIcon ios={checkmarkOutline} /> 
+          </IonFabButton>
+        </IonFab>
       }
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+      <Footer />
+    </IonPage>
   )
 }
 export default MonthlyOperationCall

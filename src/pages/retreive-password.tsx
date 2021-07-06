@@ -1,71 +1,79 @@
-import { useContext, useState, useEffect } from 'react'
-import { f7, Page, Navbar, List, ListInput, Toolbar, Fab, Icon } from 'framework7-react'
+import { useContext, useState } from 'react'
 import { StateContext } from '../data/state-provider'
-import { resolvePasswordRequest, showMessage, showError, getMessage } from '../data/actions'
-import BottomToolbar from './bottom-toolbar'
+import { resolvePasswordRequest, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { randomColors } from '../data/config'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { checkmarkOutline } from 'ionicons/icons'
+import { useHistory, useLocation, useParams } from 'react-router'
 
-type Props = {
+type Params = {
   id: string
 }
-const RetreivePassword = (props: Props) => {
+const RetreivePassword = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
-  const [passwordRequest] = useState(() => state.passwordRequests.find(r => r.id === props.id)!)
+  const params = useParams<Params>()
+  const [message] = useIonToast()
+  const location = useLocation()
+  const history = useHistory()
+  const [passwordRequest] = useState(() => state.passwordRequests.find(r => r.id === params.id)!)
   const [userInfo] = useState(() => state.users.find(u => u.mobile === passwordRequest.mobile))
   const [password] = useState(() => {
     const password = userInfo?.colors.map(c => randomColors.find(rc => rc.name === c)!.id)
     return password?.join('')
   })
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
   const handleResolve = () => {
     try{
-      resolvePasswordRequest(props.id)
-      showMessage(labels.sendSuccess)
-      f7.views.current.router.back()
+      resolvePasswordRequest(params.id)
+      message(labels.sendSuccess, 3000)
+      history.goBack()
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   return(
-    <Page>
-      <Navbar title={labels.retreivePassword} backLink={labels.back} />
-      <List form>
-        <ListInput 
-          name="name" 
-          label={labels.name}
-          value={userInfo?.name || labels.unknown}
-          type="text" 
-          readonly
-        />
-        <ListInput 
-          name="mobile" 
-          label={labels.mobile}
-          value={passwordRequest.mobile}
-          type="number"
-          readonly
-        />
-        <ListInput 
-          name="password" 
-          label={labels.password}
-          value={password || ''}
-          type="number"
-          readonly
-        />
-      </List>
-      <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleResolve()}>
-        <Icon material="done"></Icon>
-      </Fab>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+    <IonPage>
+      <Header title={labels.retreivePassword} />
+      <IonContent fullscreen>
+        <IonList>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.name}
+            </IonLabel>
+            <IonInput 
+              value={userInfo?.name || labels.unknown} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.mobile}
+            </IonLabel>
+            <IonInput 
+              value={passwordRequest.mobile} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.password}
+            </IonLabel>
+            <IonInput 
+              value={password || ''} 
+              readonly
+            />
+          </IonItem>
+        </IonList>
+      </IonContent>
+      <IonFab vertical="top" horizontal="end" slot="fixed">
+        <IonFabButton onClick={handleResolve} color="success">
+          <IonIcon ios={checkmarkOutline} /> 
+        </IonFabButton>
+      </IonFab>
+      <Footer />
+    </IonPage>
   )
 }
 export default RetreivePassword

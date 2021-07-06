@@ -50,7 +50,7 @@ const Orders = () => {
           />
           {orderStatuses.map(s => 
             <ListItem 
-              link={`/orders-list/${s.id}/type/s`} 
+              link={`/orders-list/${s.id}/s`} 
               title={s.name} 
               badge={s.count} 
               badgeColor={randomColors[i++ % 10].name} 

@@ -75,7 +75,7 @@ const ArchivedOrders = () => {
             <ListItem title={labels.noData} /> 
           : orders.map(o => 
               <ListItem
-                link={`/order-details/${o.id}/type/a`}
+                link={`/order-details/${o.id}/a`}
                 title={o.customerInfo.name}
                 subtitle={orderStatus.find(s => s.id === o.status)?.name}
                 text={moment(o.time).fromNow()}

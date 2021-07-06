@@ -1,130 +1,137 @@
-import { useState, useContext, useEffect } from 'react'
-import { f7, Page, Navbar, List, ListInput, Fab, Icon, Toolbar, ListItem, FabBackdrop, FabButton, FabButtons } from 'framework7-react'
+import { useState, useContext } from 'react'
 import { StateContext } from '../data/state-provider'
-import BottomToolbar from './bottom-toolbar'
-import { approveUser, deleteUser, showMessage, showError, getMessage } from '../data/actions'
+import { approveUser, deleteUser, getMessage } from '../data/actions'
 import labels from '../data/labels'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, useIonToast, useIonLoading, useIonAlert, IonFabList } from '@ionic/react'
+import { useHistory, useLocation, useParams } from 'react-router'
+import Header from './header'
+import Footer from './footer'
+import { checkmarkOutline, chevronDownOutline, trashOutline } from 'ionicons/icons'
 
-type Props = {
+type Params = {
   id: string
 }
-const ApproveUser = (props: Props) => {
+const ApproveUser = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
-  const [inprocess, setInprocess] = useState(false)
-  const [userInfo] = useState(() => state.users.find(u => u.id === props.id)!)
+  const params = useParams<Params>()
+  const [userInfo] = useState(() => state.users.find(u => u.id === params.id)!)
   const [name, setName] = useState(userInfo.name)
   const [regionId, setRegionId] = useState(userInfo.regionId)
   const [address, setAddress] = useState('')
   const [regions] = useState(() => [...state.regions].sort((l1, l2) => l1.ordering - l2.ordering))
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
-  useEffect(() => {
-    if (inprocess) {
-      f7.dialog.preloader(labels.inprocess)
-    } else {
-      f7.dialog.close()
-    }
-  }, [inprocess])
+  const history = useHistory()
+  const location = useLocation()
+  const [message] = useIonToast()
+  const [loading, dismiss] = useIonLoading()
+  const [alert] = useIonAlert()
   const handleSubmit = () => {
     try {
-      approveUser(props.id, name, userInfo.mobile, regionId, userInfo.storeName, address, state.users, state.invitations)
-      showMessage(labels.approveSuccess)
-      f7.views.current.router.back()  
+      approveUser(params.id, name, userInfo.mobile, regionId, userInfo.storeName, address, state.users, state.invitations)
+      message(labels.approveSuccess)
+      history.goBack()  
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   const handleDelete = () => {
-    f7.dialog.confirm(labels.confirmationText, labels.confirmationTitle, async () => {
-      try{
-        setInprocess(true)
-        await deleteUser(userInfo, state.orders)
-        setInprocess(false)
-        showMessage(labels.deleteSuccess)
-        f7.views.current.router.back()
-      } catch(err) {
-        setInprocess(false)
-        setError(getMessage(f7.views.current.router.currentRoute.path, err))
-      }
+    alert({
+      header: labels.confirmationTitle,
+      message: labels.confirmationText,
+      buttons: [
+        {text: labels.cancel},
+        {text: labels.yes, handler: async () => {
+          try{
+            loading()
+            await deleteUser(userInfo, state.orders)
+            dismiss()
+            message(labels.deleteSuccess, 3000)
+            history.goBack()
+          } catch(err) {
+            dismiss()
+            message(getMessage(location.pathname, err), 3000)
+          }    
+        }},
+      ],
     })
   }
   return (
-    <Page>
-      <Navbar title={labels.approveUser} backLink={labels.back} />
-      <List form inlineLabels>
-        <ListInput 
-          name="name" 
-          label={labels.name}
-          type="text"
-          value={name}
-          onChange={e => setName(e.target.value)}
-        />
-        <ListInput 
-          name="mobile" 
-          label={labels.mobile}
-          type="number"
-          value={userInfo.mobile}
-          readonly
-        />
-        <ListInput 
-          name="storeName" 
-          label={labels.storeName}
-          type="text"
-          value={userInfo.storeName || ''}
-          readonly
-        />
-        <ListItem
-          title={labels.region}
-          smartSelect
-          smartSelectParams={{
-            openIn: "popup", 
-            closeOnSelect: true, 
-            searchbar: true, 
-            searchbarPlaceholder: labels.search,
-            popupCloseLinkText: labels.close
-          }}
-        >
-          <select name="regionId" value={regionId} onChange={e => setRegionId(e.target.value)}>
-            <option value=""></option>
-            {regions.map(r => 
-              <option key={r.id} value={r.id}>{r.name}</option>
-            )}
-          </select>
-        </ListItem>
-        <ListInput 
-          name="address" 
-          label={labels.address}
-          type="text" 
-          clearButton
-          value={address}
-          onChange={e => setAddress(e.target.value)}
-          onInputClear={() => setAddress('')}
-        />
-      </List>
-      <FabBackdrop slot="fixed" />
-      <Fab position="left-top" slot="fixed" color="orange" className="top-fab">
-        <Icon material="keyboard_arrow_down"></Icon>
-        <Icon material="close"></Icon>
-        <FabButtons position="bottom">
-          {!name || !regionId ? '' :
-            <FabButton color="green" onClick={() => handleSubmit()}>
-              <Icon material="done"></Icon>
-            </FabButton>
+    <IonPage>
+      <Header title={labels.approveUser} />
+      <IonContent fullscreen>
+        <IonList>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.name}
+            </IonLabel>
+            <IonInput 
+              value={name} 
+              type="text" 
+              autofocus
+              clearInput
+              onIonChange={e => setName(e.detail.value!)} 
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.mobile}
+            </IonLabel>
+            <IonInput 
+              value={userInfo.mobile} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.storeName}
+            </IonLabel>
+            <IonInput 
+              value={userInfo.storeName} 
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.region}
+            </IonLabel>
+            <IonSelect 
+              ok-text={labels.ok} 
+              cancel-text={labels.cancel} 
+              value={regionId}
+              onIonChange={e => setRegionId(e.detail.value)}
+            >
+              {regions.map(r => <IonSelectOption key={r.id} value={r.id}>{r.name}</IonSelectOption>)}
+            </IonSelect>
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.address}
+            </IonLabel>
+            <IonInput 
+              value={address} 
+              type="text" 
+              clearInput
+              onIonChange={e => setAddress(e.detail.value!)} 
+            />
+          </IonItem>
+        </IonList>
+      </IonContent>
+      <IonFab horizontal="end" vertical="top" slot="fixed">
+        <IonFabButton>
+          <IonIcon ios={chevronDownOutline}></IonIcon>
+        </IonFabButton>
+        <IonFabList>
+          <IonFabButton color="danger" onClick={handleDelete}>
+            <IonIcon ios={trashOutline}></IonIcon>
+          </IonFabButton>
+          {name && regionId &&
+            <IonFabButton color="success" onClick={handleSubmit}>
+              <IonIcon ios={checkmarkOutline}></IonIcon>
+            </IonFabButton>
           }
-          <FabButton color="red" onClick={() => handleDelete()}>
-            <Icon material="delete"></Icon>
-          </FabButton>
-        </FabButtons>
-      </Fab>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+        </IonFabList>
+      </IonFab>
+      <Footer />
+    </IonPage>
   )
 }
 export default ApproveUser

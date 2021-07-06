@@ -39,7 +39,7 @@ const Approvals = () => {
   }, [state.passwordRequests]) 
   useEffect(() => {
     setSections(() => [
-      {id: '1', name: labels.orders, path: '/orders-list/n/type/s', count: newOrders},
+      {id: '1', name: labels.orders, path: '/orders-list/n/s', count: newOrders},
       {id: '2', name: labels.orderRequests, path: '/order-requests/', count: orderRequests},
       {id: '3', name: labels.newUsers, path: '/new-users/', count: newUsers},
       {id: '4', name: labels.alarms, path: '/alarms/', count: alarms},

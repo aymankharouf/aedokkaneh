@@ -1,20 +1,26 @@
 import { useContext, useState, useEffect } from 'react'
-import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import { StateContext } from '../data/state-provider'
-import { addMonthlyOperation, showMessage, showError, getMessage } from '../data/actions'
+import { addMonthlyOperation, getMessage } from '../data/actions'
 import labels from '../data/labels'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
+import Header from './header'
+import { useHistory, useLocation, useParams } from 'react-router'
+import { checkmarkOutline } from 'ionicons/icons'
+import Footer from './footer'
 
-type Props = {
+type Params = {
   id: string
 }
-const MonthlyOperations = (props: Props) => {
+const MonthlyOperations = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
+  const params = useParams<Params>()
   const [buttonVisisble, setButtonVisible] = useState(false)
-  const month = (Number(props.id) % 100) - 1
-  const year = Math.trunc(Number(props.id) / 100)
-  const [monthlyOperation] = useState(() => state.monthlyOperations.find(t => t.id === Number(props.id))!)
+  const month = (Number(params.id) % 100) - 1
+  const year = Math.trunc(Number(params.id) / 100)
+  const history = useHistory()
+  const location = useLocation()
+  const [message] = useIonToast()
+  const [monthlyOperation] = useState(() => state.monthlyOperations.find(t => t.id === Number(params.id))!)
   const [orders] = useState(() => state.orders.filter(o => ['a', 'e', 'f', 'p', 'd'].includes(o.status) && (o.time).getFullYear() === year && (o.time).getMonth() === month))
   const [finishedOrders] = useState(() => orders.filter(o => ['f', 'p'].includes(o.status)))
   const [deliveredOrders] = useState(() => orders.filter(o => o.status === 'd'))
@@ -66,16 +72,10 @@ const MonthlyOperations = (props: Props) => {
       setButtonVisible(false)
     }
   }, [year, month, monthlyOperation])
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
   const handleMonthlyOperation = () => {
     try{
       const operation = {
-        id: Number(props.id),
+        id: Number(params.id),
         ordersCount,
         finishedOrdersCount,
         deliveredOrdersCount,
@@ -97,120 +97,120 @@ const MonthlyOperations = (props: Props) => {
         netProfit
       }
       addMonthlyOperation(operation, state.orders, state.purchases, state.stockOperations)
-      showMessage(labels.addSuccess)
-      f7.views.current.router.back()
+      message(labels.addSuccess, 3000)
+      history.goBack()
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   return(
-    <Page>
-      <Navbar title={`${labels.monthlyOperations} ${month + 1}-${year}`} backLink={labels.back} />
-      <Block>
-        <List>
-          <ListItem
-            title={labels.ordersCount}
-            after={ordersCount}
-          />
-          <ListItem
-            title={labels.finishedOrdersCount}
-            after={finishedOrdersCount}
-          />
-          <ListItem
-            title={labels.deliveredOrdersCount}
-            after={deliveredOrdersCount}
-          />
-          <ListItem
-            title={labels.stock}
-            after={(stock / 100).toFixed(2)}
-          />
-          <ListItem
-            title={labels.sales}
-            after={(sales / 100).toFixed(2)}
-          />
-          <ListItem
-            title={labels.operationProfit}
-            after={(operationProfit / 100).toFixed(2)}
-          />
-          <ListItem
-            title={labels.storesProfit}
-            after={(storesProfit / 100).toFixed(2)}
-          />
-          <ListItem
-            title={labels.fixedFees}
-            after={(fixedFees / 100).toFixed(2)}
-          />
-          <ListItem
-            title={labels.deliveryFees}
-            after={(deliveryFees / 100).toFixed(2)}
-          />
-          <ListItem
-            title={labels.storesBalance}
-            after={(storesBalance / 100).toFixed(2)}
-          />
-          <ListItem
-            title={labels.grossProfit}
-            after={((operationProfit + storesProfit + operationNet + fixedFees + deliveryFees) / 100).toFixed(2)}
-          />
-          <ListItem
-            title={labels.discounts}
-            after={(discounts / 100).toFixed(2)}
-          />
-          <ListItem
-            title={labels.fractions}
-            after={(fractions / 100).toFixed(2)}
-          />
-          <ListItem
-            title={labels.expenses}
-            after={(expenses / 100).toFixed(2)}
-          />
-          <ListItem
-            title={labels.damages}
-            after={(damages / 100).toFixed(2)}
-          />
-          <ListItem
-            title={labels.operationNet}
-            after={(operationNet / 100).toFixed(2)}
-          />
-          <ListItem
-            title={labels.grossLoss}
-            after={((discounts + expenses + damages + fractions) / 100).toFixed(2)}
-          />
-          <ListItem
-            title={labels.netProfit}
-            after={(netProfit / 100).toFixed(2)}
-          />
-          <ListItem
-            title={labels.specialDiscount}
-            after={(specialDiscounts / 100).toFixed(2)}
-          />
-          <ListItem
-            title={labels.donations}
-            after={(donations / 100).toFixed(2)}
-          />
-          <ListItem
-            title={labels.donationsBalance}
-            after={((Math.round(netProfit * 0.2) - donations - specialDiscounts) / 100).toFixed(2)}
-          />
-          <ListItem
-            title={labels.withdrawals}
-            after={(withdrawals / 100).toFixed(2)}
-          />
-          <ListItem
-            title={labels.propertyBalance}
-            after={((netProfit - Math.round(netProfit * 0.2) - withdrawals) / 100).toFixed(2)}
-          />
-        </List>
-      </Block>
-      {buttonVisisble ? 
-        <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => handleMonthlyOperation()}>
-          <Icon material="done"></Icon>
-        </Fab>
-      : ''}
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+    <IonPage>
+      <Header title={`${labels.monthlyOperations} ${month + 1}-${year}`} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
+          <IonItem>
+            <IonLabel>{labels.ordersCount}</IonLabel>
+            <IonLabel slot="end" className="price">{ordersCount}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.finishedOrdersCount}</IonLabel>
+            <IonLabel slot="end" className="price">{finishedOrdersCount}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.deliveredOrdersCount}</IonLabel>
+            <IonLabel slot="end" className="price">{deliveredOrdersCount}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.stock}</IonLabel>
+            <IonLabel slot="end" className="price">{(stock / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.sales}</IonLabel>
+            <IonLabel slot="end" className="price">{(sales / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.operationProfit}</IonLabel>
+            <IonLabel slot="end" className="price">{(operationProfit / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.storesProfit}</IonLabel>
+            <IonLabel slot="end" className="price">{(storesProfit / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.fixedFees}</IonLabel>
+            <IonLabel slot="end" className="price">{(fixedFees / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.deliveryFees}</IonLabel>
+            <IonLabel slot="end" className="price">{(deliveryFees / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.storesBalance}</IonLabel>
+            <IonLabel slot="end" className="price">{(storesBalance / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.grossProfit}</IonLabel>
+            <IonLabel slot="end" className="price">{((operationProfit + storesProfit + operationNet + fixedFees + deliveryFees) / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.discounts}</IonLabel>
+            <IonLabel slot="end" className="price">{(discounts / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.fractions}</IonLabel>
+            <IonLabel slot="end" className="price">{(fractions / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.expenses}</IonLabel>
+            <IonLabel slot="end" className="price">{(expenses / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.damages}</IonLabel>
+            <IonLabel slot="end" className="price">{(damages / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.operationNet}</IonLabel>
+            <IonLabel slot="end" className="price">{(operationNet / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.grossLoss}</IonLabel>
+            <IonLabel slot="end" className="price">{((discounts + expenses + damages + fractions) / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.netProfit}</IonLabel>
+            <IonLabel slot="end" className="price">{(netProfit / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.specialDiscount}</IonLabel>
+            <IonLabel slot="end" className="price">{(specialDiscounts / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.donations}</IonLabel>
+            <IonLabel slot="end" className="price">{(donations / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.donationsBalance}</IonLabel>
+            <IonLabel slot="end" className="price">{((Math.round(netProfit * 0.2) - donations - specialDiscounts) / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.withdrawals}</IonLabel>
+            <IonLabel slot="end" className="price">{(withdrawals / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.propertyBalance}</IonLabel>
+            <IonLabel slot="end" className="price">{((netProfit - Math.round(netProfit * 0.2) - withdrawals) / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+        </IonList>
+      </IonContent>
+      {buttonVisisble && 
+        <IonFab vertical="top" horizontal="end" slot="fixed">
+          <IonFabButton onClick={handleMonthlyOperation} color="success">
+            <IonIcon ios={checkmarkOutline} />
+          </IonFabButton>
+        </IonFab>
+      }
+      <Footer />
+    </IonPage>
   )
 }
 

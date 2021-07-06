@@ -1,12 +1,15 @@
 import { useContext, useState, useEffect } from 'react'
-import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon } from 'framework7-react'
 import moment from 'moment'
 import 'moment/locale/ar'
 import { StateContext } from '../data/state-provider'
-import BottomToolbar from './bottom-toolbar'
 import labels from '../data/labels'
 import { stockOperationTypes } from '../data/config'
 import { StockOperation, Store } from '../data/types'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { colors } from '../data/config'
+import { cloudUploadOutline } from 'ionicons/icons'
 
 type ExtendedStockOperation = StockOperation & {
   storeInfo: Store
@@ -27,32 +30,33 @@ const StockOperations = () => {
     })
   }, [state.stockOperations, state.stores])
   return(
-    <Page>
-      <Navbar title={labels.stockOperations} backLink={labels.back} />
-      <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => f7.views.current.router.navigate('/archived-stock-operations/')}>
-        <Icon material="backup"></Icon>
-      </Fab>
-
-      <Block>
-        <List mediaList>
+    <IonPage>
+      <Header title={labels.stockOperations} />
+      <IonContent fullscreen>
+        <IonList>
           {stockOperations.length === 0 ? 
-            <ListItem title={labels.noData} /> 
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem>
           : stockOperations.map(t => 
-              <ListItem
-                link={`/stock-operation-details/${t.id}/type/n`}
-                title={`${stockOperationTypes.find(tt => tt.id === t.type)?.name} ${t.storeId ? t.storeInfo.name : ''}`}
-                subtitle={moment(t.time).fromNow()}
-                after={(t.total / 100).toFixed(2)}
-                key={t.id}
-              />
+              <IonItem key={t.id} routerLink={`/stock-operation-details/${t.id}/n`}>
+                <IonLabel>
+                  <IonText style={{color: colors[0].name}}>{`${stockOperationTypes.find(tt => tt.id === t.type)?.name} ${t.storeId ? t.storeInfo.name : ''}`}</IonText>
+                  <IonText style={{color: colors[1].name}}>{moment(t.time).fromNow()}</IonText>
+                </IonLabel>
+                <IonLabel slot="end" className="price">{(t.total / 100).toFixed(2)}</IonLabel>
+              </IonItem>
             )
           }
-        </List>
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+        </IonList>
+      </IonContent>
+      <IonFab vertical="top" horizontal="end" slot="fixed">
+        <IonFabButton routerLink="/archived-stock-operations" color="success">
+          <IonIcon ios={cloudUploadOutline} />
+        </IonFabButton>
+      </IonFab>
+      <Footer />
+    </IonPage>
   )
 }
 

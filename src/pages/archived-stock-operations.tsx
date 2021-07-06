@@ -61,7 +61,7 @@ const ArchivedStockOperations = () => {
             <ListItem title={labels.noData} /> 
           : stockOperations.map(t => 
               <ListItem
-                link={`/stock-operation-details/${t.id}/type/a`}
+                link={`/stock-operation-details/${t.id}/a`}
                 title={`${stockOperationTypes.find(tt => tt.id === t.type)?.name} ${t.storeId ? t.storeInfo.name : ''}`}
                 subtitle={moment(t.time).fromNow()}
                 after={(t.total / 100).toFixed(2)}
