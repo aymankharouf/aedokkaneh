@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import labels from '../data/labels'
 import { addCategory, getMessage } from '../data/actions'
-import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonTextarea, useIonToast } from '@ionic/react'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
 import { useHistory, useLocation, useParams } from 'react-router'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'

@@ -1,22 +1,30 @@
 import { useContext, useState, useEffect } from 'react'
-import { f7, Block, Page, Navbar, List, ListItem, Toolbar, NavRight, Searchbar, Link, Button, Fab, Icon } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { permitUser, showMessage, showError, getMessage } from '../data/actions'
+import { permitUser, getMessage } from '../data/actions'
 import { CustomerInfo } from '../data/types'
+import { IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonLoading, useIonToast } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { useHistory, useLocation, useParams } from 'react-router'
+import { addOutline } from 'ionicons/icons'
+import { colors } from '../data/config'
 
-type Props = {
+type Params = {
   id: string
 }
-const PermissionList = (props: Props) => {
+const PermissionList = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
-  const [inprocess, setInprocess] = useState(false)
+  const params = useParams<Params>()
   const [customers, setCustomers] = useState<CustomerInfo[]>([])
+  const [message] = useIonToast()
+  const location = useLocation()
+  const history = useHistory()
+  const [alert] = useIonAlert()
+  const [loading, dismiss] = useIonLoading()
   useEffect(() => {
     setCustomers(() => {
-      const customers = state.customers.filter(c => (props.id === 's' && c.storeId) || (props.id === 'n' && c.storeName && !c.storeId))
+      const customers = state.customers.filter(c => (params.id === 's' && c.storeId) || (params.id === 'n' && c.storeName && !c.storeId))
       return customers.map(c => {
         const storeName = state.stores.find(s => s.id === c.storeId)?.name || c.storeName
         return {
@@ -25,79 +33,74 @@ const PermissionList = (props: Props) => {
         }
       })
     })
-  }, [state.customers, state.stores, state.users, props.id])
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
-  useEffect(() => {
-    if (inprocess) {
-      f7.dialog.preloader(labels.inprocess)
-    } else {
-      f7.dialog.close()
-    }
-  }, [inprocess])
+  }, [state.customers, state.stores, state.users, params.id])
   const handleUnPermit = (customer: CustomerInfo) => {
-    f7.dialog.confirm(labels.confirmationText, labels.confirmationTitle, async () => {
-      try{
-        setInprocess(true)
-        await permitUser(customer.id, '', state.users, state.stores)
-        setInprocess(false)
-        showMessage(labels.unPermitSuccess)
-        f7.views.current.router.back()
-      } catch (err){
-        setInprocess(false)
-        setError(getMessage(f7.views.current.router.currentRoute.path, err))
-      }
+    alert({
+      header: labels.confirmationTitle,
+      message: labels.confirmationText,
+      buttons: [
+        {text: labels.cancel},
+        {text: labels.yes, handler: async () => {
+          try{
+            loading()
+            await permitUser(customer.id, '', state.users, state.stores)
+            dismiss()
+            message(labels.unPermitSuccess, 3000)
+            history.goBack()
+          } catch (err){
+            dismiss()
+            message(getMessage(location.pathname, err), 3000)
+          }
+        }},
+      ],
     })
   }
   return(
-    <Page>
-      <Navbar title={props.id === 's' ? labels.storesOwners : labels.newOwners} backLink={labels.back}>
-      <NavRight>
-          <Link searchbarEnable=".searchbar" iconMaterial="search"></Link>
-        </NavRight>
-        <Searchbar
-          className="searchbar"
-          searchContainer=".search-list"
-          searchIn=".item-inner"
-          clearButton
-          expandable
-          placeholder={labels.search}
-        />
-      </Navbar>
-      <Fab position="left-top" slot="fixed" color="green" className="top-fab" href="/permit-user/0">
-        <Icon material="add"></Icon>
-      </Fab>
-      <Block>
-        <List className="searchbar-not-found">
-          <ListItem title={labels.noData} />
-        </List>
-        <List mediaList className="search-list searchbar-found">
+    <IonPage>
+      <Header title={params.id === 's' ? labels.storesOwners : labels.newOwners} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
           {customers.length === 0 ? 
-            <ListItem title={labels.noData} /> 
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem> 
           : customers.map(c => 
-              <ListItem
-                title={c.name}
-                subtitle={c.storeName || ''}
-                key={c.id}
-              >
-                {props.id === 'n' ?
-                  <Button text={labels.permitUser} slot="after" onClick={() => f7.views.current.router.navigate(`/permit-user/${c.id}`)} />
+              <IonItem key={c.id}>
+                <IonLabel>
+                  <IonText style={{color: colors[0].name}}>{c.name}</IonText>
+                  <IonText style={{color: colors[1].name}}>{c.storeName || ''}</IonText>
+                </IonLabel>
+                {params.id === 'n' ?
+                  <IonButton 
+                    slot="end" 
+                    color="success"
+                    fill="clear"
+                    routerLink={`/permit-user/${c.id}`}
+                  >
+                    {labels.permitUser}
+                  </IonButton>
                 : 
-                  <Button text={labels.unPermitUser} slot="after" onClick={() => handleUnPermit(c)} />
+                  <IonButton 
+                    slot="end" 
+                    color="success"
+                    fill="clear"
+                    onClick={()=> handleUnPermit(c)}
+                  >
+                    {labels.unPermitUser}
+                  </IonButton>
                 }
-              </ListItem>
+              </IonItem>
             )
           }
-        </List>
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+        </IonList>
+      </IonContent>
+      <IonFab vertical="top" horizontal="end" slot="fixed">
+        <IonFabButton routerLink="/permit-user/0" color="success">
+          <IonIcon ios={addOutline} /> 
+        </IonFabButton>
+      </IonFab>
+      <Footer />
+    </IonPage>
   )
 }
 

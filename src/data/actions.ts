@@ -1,6 +1,5 @@
 import firebase from './firebase'
 import labels from './labels'
-import { f7 } from 'framework7-react'
 import { Advert, Alarm, Basket, BasketPack, Category, CustomerInfo, Error, Friend, Region, Log, MonthlyOperation, Notification, Order, OrderBasketPack, Pack, PackPrice, Product, Purchase, Rating, RequestedPack, ReturnBasket, Spending, StockPack, StockOperation, Store, StorePayment, UserInfo } from "./types"
 import { randomColors, setup } from './config'
 import moment from 'moment'
@@ -16,22 +15,6 @@ export const getMessage = (path: string, error: Error) => {
     })
   }
   return labels[errorCode] || labels['unknownError']
-}
-
-export const showMessage = (messageText: string) => {
-  const message = f7.toast.create({
-    text: `<span class="success">${messageText}<span>`,
-    closeTimeout: 3000,
-  })
-  message.open()
-}
-
-export const showError = (messageText: string) => {
-  const message = f7.toast.create({
-    text: `<span class="error">${messageText}<span>`,
-    closeTimeout: 3000,
-  })
-  message.open()
 }
 
 export const addQuantity = (q1: number, q2: number, q3 = 0) => {

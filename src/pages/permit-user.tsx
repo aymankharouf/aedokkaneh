@@ -1,19 +1,24 @@
 import { useContext, useState, useEffect } from 'react'
-import { f7, Page, Navbar, List, ListItem, Button } from 'framework7-react'
-import { permitUser, showMessage, showError, getMessage } from '../data/actions'
+import { permitUser, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { StateContext } from '../data/state-provider'
+import { IonContent, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, useIonToast, useIonLoading, IonButton } from '@ionic/react'
+import { useHistory, useLocation, useParams } from 'react-router'
+import Header from './header'
 
-type Props = {
+type Params = {
   id: string
 }
-const PermitUser = (props: Props) => {
+const PermitUser = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
-  const [inprocess, setInprocess] = useState(false)
-  const [userId, setUserId] = useState(props.id === '0' ? '' : props.id)
-  const [customerInfo] = useState(() => state.customers.find(c => c.id === props.id)!)
+  const params = useParams<Params>()
+  const [userId, setUserId] = useState(params.id === '0' ? '' : params.id)
+  const [customerInfo] = useState(() => state.customers.find(c => c.id === params.id)!)
   const [storeId, setStoreId] = useState('')
+  const [message] = useIonToast()
+  const location = useLocation()
+  const history = useHistory()
+  const [loading, dismiss] = useIonLoading()
   const [users] = useState(() => {
     const users = state.users.map(u => {
       return {
@@ -28,21 +33,8 @@ const PermitUser = (props: Props) => {
     return stores.sort((s1, s2) => s1.name > s2.name ? 1 : -1)
   }) 
   useEffect(() => {
-    setStoreId(props.id === '0' ? '' : (customerInfo.storeId || ''))
-  }, [customerInfo, props.id])
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
-  useEffect(() => {
-    if (inprocess) {
-      f7.dialog.preloader(labels.inprocess)
-    } else {
-      f7.dialog.close()
-    }
-  }, [inprocess])
+    setStoreId(params.id === '0' ? '' : (customerInfo.storeId || ''))
+  }, [customerInfo, params.id])
   useEffect(() => {
     if (userId) {
       setStoreId(state.customers.find(c => c.id === userId)?.storeId || '')
@@ -52,64 +44,64 @@ const PermitUser = (props: Props) => {
   }, [userId, state.customers])
   const handlePermit = async () => {
     try{
-      setInprocess(true)
-      debugger
+      loading()
       await permitUser(userId, storeId, state.users, state.stores)
-      setInprocess(false)
-      showMessage(labels.permitSuccess)
-      f7.views.current.router.back()
+      dismiss()
+      message(labels.permitSuccess, 3000)
+      history.goBack()
     } catch (err){
-      setInprocess(false)
-      setError(getMessage(f7.views.current.router.currentRoute.path, err))
+      dismiss()
+      message(getMessage(location.pathname, err), 3000)
     }
   }
 
   return (
-    <Page>
-      <Navbar title={labels.permitUser} backLink={labels.back} />
-      <List form>
-        <ListItem
-          title={labels.user}
-          smartSelect
-          smartSelectParams={{
-            openIn: "popup", 
-            closeOnSelect: true, 
-            searchbar: true, 
-            searchbarPlaceholder: labels.search,
-            popupCloseLinkText: labels.close
-          }}
-          disabled={props.id !== '0'}
-        >
-          <select name="userId" value={userId} onChange={e => setUserId(e.target.value)}>
-            <option value=""></option>
-            {users.map(u => 
-              <option key={u.id} value={u.id}>{u.name}</option>
-            )}
-          </select>
-        </ListItem>
-        <ListItem
-          title={labels.store}
-          smartSelect
-          smartSelectParams={{
-            openIn: "popup", 
-            closeOnSelect: true, 
-            searchbar: true, 
-            searchbarPlaceholder: labels.search,
-            popupCloseLinkText: labels.close
-          }}
-        >
-          <select name="store" value={storeId} onChange={e => setStoreId(e.target.value)}>
-            <option value=""></option>
-            {stores.map(s => 
-              <option key={s.id} value={s.id}>{s.name}</option>
-            )}
-          </select>
-        </ListItem>
-      </List>
-      {!userId || !storeId ? '' :
-        <Button text={labels.permit} href="#" large onClick={() => handlePermit()} />
+    <IonPage>
+      <Header title={labels.permitUser} />
+      <IonContent fullscreen>
+        <IonList>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.user}
+            </IonLabel>
+            <IonSelect 
+              ok-text={labels.ok} 
+              cancel-text={labels.cancel} 
+              value={userId}
+              onIonChange={e => setUserId(e.detail.value)}
+              disabled={params.id !== '0'}
+            >
+              {users.map(u => <IonSelectOption key={u.id} value={u.id}>{u.name}</IonSelectOption>)}
+            </IonSelect>
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.store}
+            </IonLabel>
+            <IonSelect 
+              ok-text={labels.ok} 
+              cancel-text={labels.cancel} 
+              value={storeId}
+              onIonChange={e => setStoreId(e.detail.value)}
+            >
+              {stores.map(s => <IonSelectOption key={s.id} value={s.id}>{s.name}</IonSelectOption>)}
+            </IonSelect>
+          </IonItem>
+        </IonList>
+      </IonContent>
+      {userId && storeId &&
+        <div className="ion-padding" style={{textAlign: 'center'}}>
+          <IonButton 
+            fill="solid" 
+            shape="round"
+            style={{width: '10rem'}}
+            onClick={handlePermit}
+          >
+            {labels.permit}
+          </IonButton>
+        </div>    
       }
-    </Page>
+    </IonPage>
   )
 }
 export default PermitUser

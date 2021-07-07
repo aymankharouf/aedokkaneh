@@ -171,7 +171,7 @@ const EditStore = () => {
             <IonIcon ios={checkmarkOutline} /> 
           </IonFabButton>
         </IonFab>
-    }
+      }
       <Footer />
     </IonPage>
   )

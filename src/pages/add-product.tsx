@@ -143,7 +143,7 @@ const AddProduct = () => {
               ok-text={labels.ok} 
               cancel-text={labels.cancel} 
               value={country}
-              onIonChange={e => setCategoryId(e.detail.value)}
+              onIonChange={e => setCountry(e.detail.value)}
             >
               {countries.map(c => <IonSelectOption key={c} value={c}>{c}</IonSelectOption>)}
             </IonSelect>

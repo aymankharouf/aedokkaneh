@@ -1,26 +1,32 @@
 import { useContext, useState, useEffect } from 'react'
-import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Button, Badge } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { showMessage, showError, getMessage, quantityText } from '../data/actions'
+import { getMessage, quantityText } from '../data/actions'
 import { Pack, Purchase, StockPack } from '../data/types'
+import { IonBadge, IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonToast } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { useLocation, useParams } from 'react-router'
+import { colors } from '../data/config'
+import { refreshOutline } from 'ionicons/icons'
 
-type Props = {
+type Params = {
   id: string,
   type: string
 }
 type ExtendedStockPack = StockPack & {
   packInfo: Pack
 }
-const PurchaseDetails = (props: Props) => {
+const PurchaseDetails = () => {
   const { state, dispatch } = useContext(StateContext)
-  const [error, setError] = useState('')
+  const params = useParams<Params>()
   const [purchase, setPurchase] = useState<Purchase>()
   const [purchaseBasket, setPurchaseBasket] = useState<ExtendedStockPack[]>([])
+  const [message] = useIonToast()
+  const location = useLocation()
   useEffect(() => {
-    setPurchase(() => props.type === 'a' ? state.archivedPurchases.find(p => p.id === props.id)! : state.purchases.find(p => p.id === props.id)!)
-  }, [state.purchases, state.archivedPurchases, props.id, props.type])
+    setPurchase(() => params.type === 'a' ? state.archivedPurchases.find(p => p.id === params.id)! : state.purchases.find(p => p.id === params.id)!)
+  }, [state.purchases, state.archivedPurchases, params.id, params.type])
   useEffect(() => {
     setPurchaseBasket(() => {
       const purchaseBasket =  purchase ? purchase.basket.filter(p => !(state.returnBasket?.purchaseId === purchase.id && state.returnBasket?.packs?.find(bp => bp.packId === p.packId && (!bp.weight || bp.weight === p.weight)))) : []
@@ -33,12 +39,6 @@ const PurchaseDetails = (props: Props) => {
       })
     })
   }, [state.packs, state.returnBasket, purchase])
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
   const handleReturn = (pack: ExtendedStockPack) => {
     try{
       const affectedOrders = state.orders.filter(o => o.basket.find(p => p.packId === pack.packId && p.lastPurchaseId === purchase?.id) && ['p', 'd'].includes(o.status))
@@ -59,40 +59,50 @@ const PurchaseDetails = (props: Props) => {
         purchaseId: purchase!.id
       }
       dispatch({type: 'ADD_TO_RETURN_BASKET', payload: params})
-      showMessage(labels.addToBasketSuccess)
+      message(labels.addToBasketSuccess, 3000)
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   let i = 0
   return(
-    <Page>
-      <Navbar title={labels.purchaseDetails} backLink={labels.back} />
-      <Block>
-        <List mediaList>
+    <IonPage>
+      <Header title={labels.purchaseDetails} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
           {purchaseBasket.length === 0 ? 
-            <ListItem title={labels.noData} /> 
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem>
           : purchaseBasket.map(p => 
-            <ListItem 
-              title={p.packInfo.productName}
-              subtitle={p.packInfo.productAlias}
-              text={p.packInfo.name}
-              footer={`${labels.price}: ${(Math.round(p.cost * (p.weight || p.quantity)) / 100).toFixed(2)}`}
-              key={i++} 
-            >
-              <img src={p.packInfo.imageUrl} slot="media" className="img-list" alt={labels.noImage} />
-              <div className="list-subtext1">{`${labels.unitPrice}: ${(p.cost / 100).toFixed(2)}`}</div>
-              <div className="list-subtext2">{`${labels.quantity}: ${quantityText(p.quantity, p.weight)}`}</div>
-              {p.packInfo.closeExpired ? <Badge slot="text" color="red">{labels.closeExpired}</Badge> : ''}
-              {props.type === 'n' ? <Button text={labels.return} slot="after" onClick={() => handleReturn(p)} /> : ''}
-            </ListItem>
+              <IonItem key={i++}>
+                <IonThumbnail slot="start">
+                  <img src={p.packInfo.imageUrl} alt={labels.noImage} />
+                </IonThumbnail>
+                <IonLabel>
+                  <IonText style={{color: colors[0].name}}>{p.packInfo.productName}</IonText>
+                  <IonText style={{color: colors[1].name}}>{p.packInfo.productAlias}</IonText>
+                  <IonText style={{color: colors[2].name}}>{p.packInfo.name}</IonText>
+                  <IonText style={{color: colors[3].name}}>{`${labels.unitPrice}: ${(p.cost / 100).toFixed(2)}`}</IonText>
+                  <IonText style={{color: colors[4].name}}>{`${labels.quantity}: ${quantityText(p.quantity, p.weight)}`}</IonText>
+                  <IonText style={{color: colors[5].name}}>{`${labels.price}: ${(Math.round(p.cost * (p.weight || p.quantity)) / 100).toFixed(2)}`}</IonText>
+                </IonLabel>
+                {p.packInfo.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
+                {params.type === 'n' &&
+                  <IonIcon 
+                    ios={refreshOutline} 
+                    slot="end" 
+                    color="danger"
+                    style={{fontSize: '20px', marginRight: '10px'}} 
+                    onClick={()=> handleReturn(p)}
+                  />
+                }
+              </IonItem>    
           )}
-        </List>
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+        </IonList>
+      </IonContent>
+      <Footer />
+    </IonPage>
   )
 }
 export default PurchaseDetails

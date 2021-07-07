@@ -11,7 +11,7 @@ const MonthlyOperationCall = () => {
   const [year, setYear] = useState('')
   return (
     <IonPage>
-      <Header title={labels.profits} />
+      <Header title={labels.monthlyOperations} />
       <IonContent fullscreen>
         <IonList>
           <IonItem>

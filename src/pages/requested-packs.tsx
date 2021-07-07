@@ -54,7 +54,7 @@ const RequestedPacks = () => {
 								</IonLabel>
 								{p.packInfo.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
 								<IonLabel slot="end" className="price">{p.offerId ? '' : (p.price / 100).toFixed(2)}</IonLabel>
-								{p.offerId && <IonBadge color="success">{(p.price / 100).toFixed(2)}</IonBadge>}
+								{p.offerId && <IonBadge slot="end" color="success">{(p.price / 100).toFixed(2)}</IonBadge>}
 							</IonItem>    
 						)
 					}

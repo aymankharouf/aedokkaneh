@@ -1,9 +1,13 @@
 import { useContext, useEffect, useState } from 'react'
-import { f7, Block, Fab, Page, Navbar, List, ListItem, Toolbar, Link, Icon, Stepper } from 'framework7-react'
 import { StateContext } from '../data/state-provider'
-import { updateOrderStatus, editOrder, showMessage, showError, getMessage, quantityDetails, returnOrder } from '../data/actions'
+import { updateOrderStatus, editOrder, getMessage, quantityDetails, returnOrder } from '../data/actions'
 import labels from '../data/labels'
 import { OrderBasketPack, Pack } from '../data/types'
+import { IonButton, IonButtons, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonAlert, useIonToast } from '@ionic/react'
+import Header from './header'
+import { addOutline, removeOutline, trashOutline } from 'ionicons/icons'
+import { useHistory, useLocation } from 'react-router'
+import { colors } from '../data/config'
 
 type Props = {
   id: string,
@@ -14,11 +18,15 @@ type ExtendedOrderBasketPack = OrderBasketPack & {
 }
 const EditOrder = (props: Props) => {
   const { state, dispatch } = useContext(StateContext)
-  const [error, setError] = useState('')
   const [order] = useState(() => state.orders.find(o => o.id === props.id)!)
   const [orderBasket, setOrderBasket] = useState<ExtendedOrderBasketPack[]>([])
   const [total, setTotal] = useState(0)
   const [hasChanged, setHasChanged] = useState(false)
+  const [message] = useIonToast()
+  const location = useLocation()
+  const history = useHistory()
+  const [alert] = useIonAlert()
+
   useEffect(() => {
     const basket = order.basket.map(p => {
       return {
@@ -47,24 +55,25 @@ const EditOrder = (props: Props) => {
   useEffect(() => {
     setTotal(() => orderBasket.reduce((sum, p) => sum + p.gross, 0))
   }, [orderBasket])
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
   const handleDelete = () => {
-    f7.dialog.confirm(labels.confirmationText, labels.confirmationTitle, () => {
-      try{
-        const type = ['f', 'p', 'e'].includes(order.status) ? 'i' : 'c'
-        updateOrderStatus(order, type, state.packPrices, state.packs, false)
-        showMessage(labels.deleteSuccess)
-        dispatch({type: 'CLEAR_ORDER_BASKET'})
-        f7.views.current.router.back()
-      } catch(err) {
-        setError(getMessage(f7.views.current.router.currentRoute.path, err))
-      }
-    })  
+    alert({
+      header: labels.confirmationTitle,
+      message: labels.confirmationText,
+      buttons: [
+        {text: labels.cancel},
+        {text: labels.yes, handler: () => {
+          try{
+            const type = ['f', 'p', 'e'].includes(order.status) ? 'i' : 'c'
+            updateOrderStatus(order, type, state.packPrices, state.packs, false)
+            message(labels.deleteSuccess, 3000)
+            dispatch({type: 'CLEAR_ORDER_BASKET'})
+            history.goBack()
+          } catch(err) {
+            message(getMessage(location.pathname, err), 3000)
+          }    
+        }},
+      ],
+    })
   }
   const handleSubmit = () => {
     try{
@@ -75,11 +84,11 @@ const EditOrder = (props: Props) => {
         const regionFees = state.regions.find(r => r.id === userRegion)?.fees || 0
         returnOrder(order, state.orderBasket!, regionFees, state.packPrices, state.packs)
       }
-      showMessage(labels.editSuccess)
+      message(labels.editSuccess, 3000)
       dispatch({type: 'CLEAR_ORDER_BASKET'})
-      f7.views.current.router.back()
+      history.goBack()
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   const handleIncrease = (pack: ExtendedOrderBasketPack) => {
@@ -95,46 +104,64 @@ const EditOrder = (props: Props) => {
     dispatch({type: 'DECREASE_ORDER_QUANTITY', payload: params})
   }
   return (
-    <Page>
-      <Navbar title={props.type === 'e' ? labels.editOrder : labels.returnOrder} backLink={labels.back} />
-      <Block>
-        <List mediaList>
+    <IonPage>
+      <Header title={props.type === 'e' ? labels.editOrder : labels.returnOrder} />
+      <IonContent fullscreen>
+        <IonList className="ion-padding">
           {orderBasket.length === 0 ? 
-            <ListItem title={labels.noData} />
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem> 
           :orderBasket.map(p =>
-            <ListItem
-              title={p.productName}
-              subtitle={p.productAlias}
-              text={p.packName}
-              footer={`${labels.grossPrice}: ${(p.gross / 100).toFixed(2)}`}
-              key={p.packId}
-            >
-              <img src={p.imageUrl} slot="media" className="img-list" alt={labels.noImage} />
-              <div className="list-subtext1">{`${labels.unitPrice}: ${((p.actual || p.price) / 100).toFixed(2)}`}</div>
-              <div className="list-subtext2">{quantityDetails(p)}</div>
-              <Stepper
-                slot="after"
-                fill
-                buttonsOnly
-                onStepperPlusClick={() => handleIncrease(p)}
-                onStepperMinusClick={() => handleDecrease(p)}
-              />
-            </ListItem>
+            <IonItem key={p.packId}>
+              <IonThumbnail slot="start">
+                <IonImg src={p.imageUrl} alt={labels.noImage} />
+              </IonThumbnail>
+              <IonLabel>
+                <IonText style={{color: colors[0].name}}>{p.productName}</IonText>
+                <IonText style={{color: colors[1].name}}>{p.productAlias}</IonText>
+                <IonText style={{color: colors[2].name}}>{p.packName}</IonText>
+                <IonText style={{color: colors[3].name}}>{`${labels.unitPrice}: ${((p.actual || p.price) / 100).toFixed(2)}`}</IonText>
+                <IonText style={{color: colors[4].name}}>{quantityDetails(p)}</IonText>
+                <IonText style={{color: colors[5].name}}>{`${labels.grossPrice}: ${(p.gross / 100).toFixed(2)}`}</IonText>
+              </IonLabel>
+                <IonButtons slot="end" onClick={() => handleDecrease(p)}>
+                  <IonIcon 
+                    ios={removeOutline} 
+                    color="primary" 
+                    style={{fontSize: '25px', marginRight: '5px'}} 
+                  />
+                </IonButtons>
+                <IonButtons slot="end" onClick={() => handleIncrease(p)}>
+                  <IonIcon 
+                    ios={addOutline} 
+                    color="primary" 
+                    style={{fontSize: '25px', marginRight: '5px'}} 
+                  />
+                </IonButtons>
+            </IonItem>
           )}
-        </List>
-      </Block>
-      {hasChanged ? 
-        <Fab position="center-bottom" slot="fixed" text={`${labels.submit} ${(total / 100).toFixed(2)}`} color="green" onClick={() => handleSubmit()}>
-          <Icon material="done"></Icon>
-        </Fab>
-      : ''}
-      <Toolbar bottom>
-        <Link href='/home/' iconMaterial="home" />
-        {props.type === 'n' ?
-          <Link href='#' iconMaterial="delete" onClick={() => handleDelete()} />
-        : ''}
-      </Toolbar>
-    </Page>
+        </IonList>
+      </IonContent>
+      {hasChanged && 
+        <div className="ion-text-center">
+          <IonButton 
+            fill="solid" 
+            shape="round"
+            color="secondary"
+            style={{width: '10rem'}}
+            onClick={handleSubmit}
+          >
+            {`${labels.submit} ${(total / 100).toFixed(2)}`}
+          </IonButton>
+        </div>    
+      }
+      <IonFab vertical="top" horizontal="end" slot="fixed">
+        <IonFabButton onClick={handleDelete} color="danger">
+          <IonIcon ios={trashOutline} /> 
+        </IonFabButton>
+      </IonFab>    
+    </IonPage>
   )
 }
 export default EditOrder

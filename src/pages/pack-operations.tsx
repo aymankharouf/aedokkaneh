@@ -1,14 +1,17 @@
 import { useContext, useState, useEffect } from 'react'
-import { Block, Page, Navbar, List, ListItem, Toolbar } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import moment from 'moment'
 import 'moment/locale/ar'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { quantityText } from '../data/actions'
 import { StockPack, Store } from '../data/types'
+import { IonContent, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { useParams } from 'react-router'
+import { colors } from '../data/config'
 
-type Props = {
+type Params = {
   id: string
 }
 type ExtendedStockPack = StockPack & {
@@ -16,9 +19,10 @@ type ExtendedStockPack = StockPack & {
   id: string,
   time: Date
 }
-const PackOperations = (props: Props) => {
+const PackOperations = () => {
   const { state } = useContext(StateContext)
-  const [pack] = useState(() => state.packs.find(p => p.id === props.id)!)
+  const params = useParams<Params>()
+  const [pack] = useState(() => state.packs.find(p => p.id === params.id)!)
   const [packOperations, setPackOperations] = useState<ExtendedStockPack[]>([])
   useEffect(() => {
     setPackOperations(() => {
@@ -37,28 +41,29 @@ const PackOperations = (props: Props) => {
     })
   }, [state.purchases, state.stores, pack])
   return(
-    <Page>
-      <Navbar title={`${pack.productName} ${pack.name}`} backLink={labels.back} />
-      <Block>
-        <List mediaList>
+    <IonPage>
+      <Header title={`${pack.productName} ${pack.name}`} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
           {packOperations.length === 0 ? 
-            <ListItem title={labels.noData} /> 
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem>
           : packOperations.map(t => 
-              <ListItem
-                title={t.storeInfo.name}
-                subtitle={`${labels.quantity}: ${quantityText(t.quantity, t.weight)}`}
-                footer={moment(t.time).fromNow()}
-                after={(t.cost / 100).toFixed(2)}
-                key={t.id}
-              />
+              <IonItem key={t.id}>
+                <IonLabel>
+                  <IonText style={{color: colors[0].name}}>{t.storeInfo.name}</IonText>
+                  <IonText style={{color: colors[1].name}}>{`${labels.quantity}: ${quantityText(t.quantity, t.weight)}`}</IonText>
+                  <IonText style={{color: colors[2].name}}>{moment(t.time).fromNow()}</IonText>
+                </IonLabel>
+                <IonLabel slot="end" className="price">{(t.cost / 100).toFixed(2)}</IonLabel>
+              </IonItem>    
             )
           }
-        </List>
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+        </IonList>
+      </IonContent>
+      <Footer />
+    </IonPage>
   )
 }
 

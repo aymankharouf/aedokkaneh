@@ -1,10 +1,12 @@
 import { useContext, useEffect, useState } from 'react'
-import { Block, Page, Navbar, List, ListItem, Toolbar } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import { StateContext } from '../data/state-provider'
 import { getRequestedPacks, getPackStores } from '../data/actions'
 import labels from '../data/labels'
 import { Store } from '../data/types'
+import { IonContent, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { colors } from '../data/config'
 
 type ExtendedStore = Store & {
 	sales: number,
@@ -60,29 +62,29 @@ const PurchasePlan = () => {
 	}, [state.basket, approvedOrders, state.stores, state.packs, state.customers, state.packPrices, state.purchases])
 	let i = 0
 	return(
-    <Page>
-      <Navbar title={labels.purchasePlan} backLink={labels.back} />
-      <Block>
-				<List mediaList>
+    <IonPage>
+			<Header title={labels.purchasePlan} />
+      <IonContent fullscreen>
+				<IonList>
 					{stores.length === 0 ? 
-						<ListItem title={labels.noData} /> 
+						<IonItem> 
+							<IonLabel>{labels.noData}</IonLabel>
+						</IonItem> 
 					: stores.map(s => 
-							<ListItem
-								link={`/purchase-plan-details/${s.id}`}
-								title={s.name}
-								subtitle={s.id === 's' ? '' : `${labels.discount}: ${s.discount}`}
-								text={s.id === 's' ? '' : `${labels.sales}: ${(s.sales / 100).toFixed(2)}`}
-								after={s.packsCount}
-								key={i++}
-							/>
+							<IonItem key={i++} routerLink={`/purchase-plan-details/${s.id}`}>
+								<IonLabel>
+									<IonText style={{color: colors[0].name}}>{s.name}</IonText>
+									<IonText style={{color: colors[1].name}}>{s.id === 's' ? '' : `${labels.discount}: ${s.discount}`}</IonText>
+									<IonText style={{color: colors[2].name}}>{s.id === 's' ? '' : `${labels.sales}: ${(s.sales / 100).toFixed(2)}`}</IonText>
+								</IonLabel>
+								<IonLabel slot="end" className="price">{s.packsCount}</IonLabel>
+							</IonItem>
 						)
 					}
-				</List>
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+				</IonList>
+      </IonContent>
+      <Footer />
+    </IonPage>
   )
 }
 

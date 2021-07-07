@@ -1,12 +1,16 @@
 import { useContext, useState, useEffect } from 'react'
-import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Button } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import { StateContext } from '../data/state-provider'
-import { allocateOrderPack, showMessage, getMessage, showError } from '../data/actions'
+import { allocateOrderPack, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { CustomerInfo, Order, OrderBasketPack } from '../data/types'
+import { IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { useHistory, useLocation, useParams } from 'react-router'
+import { colors } from '../data/config'
+import { checkmarkOutline } from 'ionicons/icons'
 
-type Props = {
+type Params = {
   packId: string,
   orderId: string
 }
@@ -14,17 +18,20 @@ type ExtendedOrder = Order & {
   customerInfo: CustomerInfo,
   basketInfo: OrderBasketPack
 }
-const PrepareOrdersList = (props: Props) => {
+const PrepareOrdersList = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
+  const params = useParams<Params>()
   const [orders, setOrders] = useState<ExtendedOrder[]>([])
-  const [pack] = useState(() => state.packs.find(p => p.id === props.packId)!)
+  const [pack] = useState(() => state.packs.find(p => p.id === params.packId)!)
+  const [message] = useIonToast()
+  const location = useLocation()
+  const history = useHistory()
   useEffect(() => {
     setOrders(() => {
-      const orders = state.orders.filter(o => o.id === props.orderId || (props.orderId === '0' && o.status === 'f' && o.basket.find(p => p.packId === props.packId && !p.isAllocated)))
+      const orders = state.orders.filter(o => o.id === params.orderId || (params.orderId === '0' && o.status === 'f' && o.basket.find(p => p.packId === params.packId && !p.isAllocated)))
       const result = orders.map(o => {
         const customerInfo = state.customers.find(c => c.id === o.userId)!
-        const basketInfo = o.basket.find(p => p.packId === props.packId)!
+        const basketInfo = o.basket.find(p => p.packId === params.packId)!
         return {
           ...o,
           customerInfo,
@@ -33,45 +40,45 @@ const PrepareOrdersList = (props: Props) => {
       })
       return result.sort((o1, o2) => o2.time > o1.time ? 1 : -1)
     })
-  }, [state.orders, state.customers, props.orderId, props.packId])
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
+  }, [state.orders, state.customers, params.orderId, params.packId])
   const handleAllocate = (order: ExtendedOrder) => {
     try{
       allocateOrderPack(order, pack)
-      showMessage(labels.editSuccess)
-      f7.views.current.router.back()
+      message(labels.editSuccess, 3000)
+      history.goBack()
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   return(
-    <Page>
-      <Navbar title={`${pack.productName} ${pack.name}`} backLink={labels.back} />
-      <Block>
-        <List mediaList>
+    <IonPage>
+      <Header title={`${pack.productName} ${pack.name}`} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
           {orders.length === 0 ? 
-            <ListItem title={labels.noData} /> 
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem>
           : orders.map(o => 
-              <ListItem
-                title={o.customerInfo.name}
-                subtitle={`${labels.quantity}: ${o.basketInfo.weight || o.basketInfo.quantity}`}
-                key={o.id}
-              >
-                <Button text={labels.allocate} slot="after" onClick={() => handleAllocate(o)} />
-              </ListItem>
+              <IonItem key={o.id}>
+                <IonLabel>
+                  <IonText style={{color: colors[0].name}}>{o.customerInfo.name}</IonText>
+                  <IonText style={{color: colors[1].name}}>{`${labels.quantity}: ${o.basketInfo.weight || o.basketInfo.quantity}`}</IonText>
+                </IonLabel>
+                <IonIcon 
+                  ios={checkmarkOutline} 
+                  slot="end" 
+                  color="success"
+                  style={{fontSize: '20px', marginRight: '10px'}} 
+                  onClick={()=> handleAllocate(o)}
+                />
+              </IonItem>    
             )
           }
-        </List>
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+        </IonList>
+      </IonContent>
+      <Footer />
+    </IonPage>
   )
 }
 

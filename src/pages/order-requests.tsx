@@ -1,12 +1,13 @@
 import { useContext, useState, useEffect } from 'react'
-import { Block, Page, Navbar, List, ListItem, Toolbar } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import moment from 'moment'
 import 'moment/locale/ar'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { orderStatus, orderRequestTypes } from '../data/config'
+import { orderStatus, orderRequestTypes, colors } from '../data/config'
 import { CustomerInfo, Order } from '../data/types'
+import { IonContent, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
 
 type ExtendedOrder = Order & {
   customerInfo: CustomerInfo
@@ -28,30 +29,30 @@ const OrderRequests = () => {
     })
   }, [state.orders, state.customers])
   return(
-    <Page>
-      <Navbar title={labels.orderRequests} backLink={labels.back} />
-      <Block>
-        <List mediaList>
+    <IonPage>
+      <Header title={labels.orderRequests} />
+      <IonContent fullscreen>
+        <IonList>
           {orderRequests.length === 0 ? 
-            <ListItem title={labels.noData} /> 
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem> 
           : orderRequests.map(r => 
-              <ListItem
-                link={`/order-request-details/${r.id}`}
-                title={r.customerInfo.name}
-                subtitle={orderStatus.find(s => s.id === r.status)?.name}
-                text={`${labels.type}: ${orderRequestTypes.find(t => t.id === r.requestType)?.name}`}
-                footer={moment(r.time).fromNow()}
-                after={(r.total / 100).toFixed(2)}
-                key={r.id}
-              />
+              <IonItem key={r.id} routerLink={`/order-request-details/${r.id}`}>
+                <IonLabel>
+                  <IonText style={{color: colors[0].name}}>{r.customerInfo.name}</IonText>
+                  <IonText style={{color: colors[1].name}}>{orderStatus.find(s => s.id === r.status)?.name}</IonText>
+                  <IonText style={{color: colors[2].name}}>{`${labels.type}: ${orderRequestTypes.find(t => t.id === r.requestType)?.name}`}</IonText>
+                  <IonText style={{color: colors[3].name}}>{moment(r.time).fromNow()}</IonText>
+                </IonLabel>
+                <IonLabel slot="end" className="price">{(r.total / 100).toFixed(2)}</IonLabel>
+              </IonItem>    
             )
           }
-        </List>
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+        </IonList>
+      </IonContent>
+      <Footer />
+    </IonPage>
   )
 }
 

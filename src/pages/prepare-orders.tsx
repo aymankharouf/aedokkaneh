@@ -1,10 +1,12 @@
 import { useContext, useState, useEffect } from 'react'
-import { Block, Page, Navbar, Toolbar, List, ListItem, Badge } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import { StateContext } from '../data/state-provider'
 import { quantityText } from '../data/actions'
 import labels from '../data/labels'
 import { RequestedPack } from '../data/types'
+import { IonBadge, IonContent, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { colors } from '../data/config'
 
 const PrepareOrders = () => {
   const { state } = useContext(StateContext)
@@ -46,32 +48,33 @@ const PrepareOrders = () => {
 	}, [state.orders, state.packs, state.products])
 	let i = 0
   return(
-    <Page>
-      <Navbar title={labels.PurchasedProducts} backLink={labels.back} />
-      <Block>
-				<List mediaList>
+    <IonPage>
+			<Header title={labels.PurchasedProducts} />
+      <IonContent fullscreen className="ion-padding">
+				<IonList>
 					{packs.length === 0 ? 
-						<ListItem title={labels.noData} /> 
+						<IonItem> 
+							<IonLabel>{labels.noData}</IonLabel>
+						</IonItem> 
 					: packs.map(p => 
-							<ListItem
-								link={`/prepare-orders-list/${p.packId}/order/${p.orderId || 0}`}
-								title={p.packInfo.productName}
-								subtitle={p.packInfo.productAlias}
-								text={p.packInfo.name}
-								key={i++}
-							>
-								<img src={p.packInfo.imageUrl} slot="media" className="img-list" alt={labels.noImage} />
-								<div className="list-subtext1">{`${labels.quantity}: ${quantityText(p.quantity, p.weight)}`}</div>
-								{p.packInfo.closeExpired ? <Badge slot="text" color="red">{labels.closeExpired}</Badge> : ''}
-							</ListItem>
+							<IonItem key={i++} routerLink={`/prepare-orders-list/${p.packId}/order/${p.orderId || 0}`}>
+								<IonThumbnail slot="start">
+									<img src={p.packInfo.imageUrl} alt={labels.noImage} />
+								</IonThumbnail>
+								<IonLabel>
+									<IonText style={{color: colors[0].name}}>{p.packInfo.productName}</IonText>
+									<IonText style={{color: colors[1].name}}>{p.packInfo.productAlias}</IonText>
+									<IonText style={{color: colors[2].name}}>{p.packInfo.name}</IonText>
+									<IonText style={{color: colors[3].name}}>{`${labels.quantity}: ${quantityText(p.quantity, p.weight)}`}</IonText>
+								</IonLabel>
+								{p.packInfo.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
+							</IonItem>    
 						)
 					}
-				</List>
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+				</IonList>
+      </IonContent>
+      <Footer />
+    </IonPage>
   )
 }
 export default PrepareOrders

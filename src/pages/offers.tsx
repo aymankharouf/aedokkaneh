@@ -1,11 +1,14 @@
 import { useContext, useState, useEffect } from 'react'
-import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Button, Badge } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import { StateContext } from '../data/state-provider'
 import moment from 'moment'
 import labels from '../data/labels'
-import { changeStorePackStatus, showMessage, getMessage, showError } from '../data/actions'
+import { changeStorePackStatus, getMessage } from '../data/actions'
 import { Pack, PackPrice } from '../data/types'
+import { IonBadge, IonButton, IonContent, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonAlert, useIonToast } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { useLocation } from 'react-router'
+import { colors } from '../data/config'
 
 type ExtendedPackPrice = PackPrice & {
   packInfo: Pack,
@@ -13,8 +16,10 @@ type ExtendedPackPrice = PackPrice & {
 }
 const Offers = () => {
   const { state } = useContext(StateContext)
-  const [error, setError] = useState('')
   const [offers, setOffers] = useState<ExtendedPackPrice[]>([])
+  const [message] = useIonToast()
+  const location = useLocation()
+  const [alert] = useIonAlert()
   useEffect(() => {
     setOffers(() => {
       const offers = state.packPrices.filter(p => p.offerEnd)
@@ -30,64 +35,76 @@ const Offers = () => {
       return result.sort((o1, o2) => (o1.offerEnd || new Date()) > (o2.offerEnd || new Date()) ? 1 : -1)
     })
   }, [state.packPrices, state.packs, state.stores])
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
   const handleHaltOffer = (storePack: ExtendedPackPrice) => {
     try{
       const offerEndDate = storePack.offerEnd?.setHours(0, 0, 0, 0)
       const today = (new Date()).setHours(0, 0, 0, 0)
       if (offerEndDate && offerEndDate > today) {
-        f7.dialog.confirm(labels.confirmationText, labels.confirmationTitle, () => {
-          try{
-            changeStorePackStatus(storePack, state.packPrices, state.packs)
-            showMessage(labels.haltSuccess)
-          } catch(err) {
-            setError(getMessage(f7.views.current.router.currentRoute.path, err))
-          }
+        alert({
+          header: labels.confirmationTitle,
+          message: labels.confirmationText,
+          buttons: [
+            {text: labels.cancel},
+            {text: labels.yes, handler: () => {
+              try{
+                changeStorePackStatus(storePack, state.packPrices, state.packs)
+                message(labels.haltSuccess, 3000)
+              } catch(err) {
+                message(getMessage(location.pathname, err), 3000)
+              }    
+            }},
+          ],
         })
       } else {
         changeStorePackStatus(storePack, state.packPrices, state.packs)
-        showMessage(labels.haltSuccess)
+        message(labels.haltSuccess, 3000)
       }
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   let i = 0
   return(
-    <Page>
-      <Navbar title={labels.offers} backLink={labels.back} />
-      <Block>
-        <List mediaList>
+    <IonPage>
+      <Header title={labels.offers} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
           {offers.length === 0 ? 
-            <ListItem title={labels.noData} /> 
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem>  
           : offers.map(p => 
-              <ListItem
-                title={p.packInfo.productName}
-                subtitle={p.packInfo.productAlias}
-                text={p.packInfo.name}
-                footer={moment(p.offerEnd).format('Y/M/D')}
-                key={i++}
-              >
-                <img src={p.packInfo.imageUrl} slot="media" className="img-list" alt={labels.noImage} />
-                <div className="list-subtext1">{`${labels.storeName}: ${p.storeName}`}</div>
-                <div className="list-subtext1">{`${labels.price}: ${(p.price / 100).toFixed(2)}`}</div>
-                {p.isActive ? '' : <Badge slot="text" color='red'>{labels.inActive}</Badge>}
-                {p.packInfo.closeExpired ? <Badge slot="text" color="red">{labels.closeExpired}</Badge> : ''}
-                {p.isActive ? <Button text={labels.haltOffer} slot="after" onClick={() => handleHaltOffer(p)} /> : ''}
-              </ListItem>
+              <IonItem key={i++}>
+                <IonThumbnail slot="start">
+                  <img src={p.packInfo.imageUrl} alt={labels.noImage} />
+                </IonThumbnail>
+                <IonLabel>
+                  <IonText style={{color: colors[0].name}}>{p.packInfo.productName}</IonText>
+                  <IonText style={{color: colors[1].name}}>{p.packInfo.productAlias}</IonText>
+                  <IonText style={{color: colors[2].name}}>{p.packInfo.name}</IonText>
+                  <IonText style={{color: colors[3].name}}>{`${labels.storeName}: ${p.storeName}`}</IonText>
+                  <IonText style={{color: colors[4].name}}>{`${labels.price}: ${(p.price / 100).toFixed(2)}`}</IonText>
+                  <IonText style={{color: colors[5].name}}>{}</IonText>
+                  <IonText style={{color: colors[6].name}}>{moment(p.offerEnd).format('Y/M/D')}</IonText>
+                </IonLabel>
+                {!p.isActive && <IonBadge color="danger">{labels.inActive}</IonBadge>}
+                {p.packInfo.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
+                {p.isActive &&
+                  <IonButton 
+                    slot="end" 
+                    color="success"
+                    onClick={() => handleHaltOffer(p)}
+                  >
+                    {labels.haltOffer}
+                  </IonButton>
+                }
+              </IonItem>    
             )
           }
-        </List>
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+        </IonList>
+      </IonContent>
+      <Footer />
+    </IonPage>
   )
 }
 

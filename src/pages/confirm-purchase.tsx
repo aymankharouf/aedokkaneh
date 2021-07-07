@@ -1,14 +1,20 @@
-import { useContext, useState, useEffect } from 'react'
-import { f7, Block, Page, Navbar, List, ListItem, Toolbar, Fab, Icon, Link, Badge } from 'framework7-react'
+import { useContext, useState } from 'react'
 import { StateContext } from '../data/state-provider'
-import { confirmPurchase, stockOut, showMessage, showError, getMessage, quantityText } from '../data/actions'
+import { confirmPurchase, stockOut, getMessage, quantityText } from '../data/actions'
 import labels from '../data/labels'
+import { IonBadge, IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
+import Header from './header'
+import { useHistory, useLocation } from 'react-router'
+import { trashOutline } from 'ionicons/icons'
+import { colors } from '../data/config'
 
 
 const ConfirmPurchase = () => {
   const { state, dispatch } = useContext(StateContext)
-  const [error, setError] = useState('')
   const [store] = useState(() => state.stores.find(s => s.id === state.basket?.storeId)!)
+  const [message] = useIonToast()
+  const location = useLocation()
+  const history = useHistory()
   const [basket] = useState(() => state.basket?.packs.map(p => {
     const packInfo = state.packs.find(pa => pa.id === p.packId)!
     return {
@@ -17,72 +23,75 @@ const ConfirmPurchase = () => {
     }
   }))
   const [total] = useState(() => state.basket?.packs.reduce((sum, p) => sum + Math.round(p.cost * (p.weight || p.quantity)), 0) || 0)
-  useEffect(() => {
-    if (error) {
-      showError(error)
-      setError('')
-    }
-  }, [error])
   const handlePurchase = () => {
     try{
       if (store.id === 's') {
         stockOut(state.basket?.packs!, state.orders, state.packPrices, state.packs)
-        showMessage(labels.purchaseSuccess)
-        f7.views.current.router.navigate('/home/', {reloadAll: true})
+        message(labels.purchaseSuccess, 3000)
+        history.push('/')
         dispatch({type: 'CLEAR_BASKET'})    
       } else {
         confirmPurchase(state.basket?.packs!, state.orders, store.id!, state.packPrices, state.packs, state.stores, total)
-        showMessage(labels.purchaseSuccess)
-        f7.views.current.router.navigate('/home/', {reloadAll: true})
+        message(labels.purchaseSuccess, 3000)
+        history.push('/')
         dispatch({type: 'CLEAR_BASKET'})    
       }  
     } catch(err) {
-			setError(getMessage(f7.views.current.router.currentRoute.path, err))
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   const handleDelete = () => {
-    f7.views.current.router.navigate('/home/', {reloadAll: true})
+    history.push('/')
     dispatch({type: 'CLEAR_BASKET'})  
   }
   let i = 0
   return(
-    <Page>
-    <Navbar title={`${labels.confirmPurchase} ${store.name}`} backLink={labels.back} />
-    <Block>
-      <List mediaList>
-        {basket?.map(p => 
-          <ListItem 
-            key={i++} 
-            title={p.packInfo.productName}
-            subtitle={p.packInfo.productAlias}
-            text={p.packInfo.name}
-            footer={`${labels.quantity}: ${quantityText(p.quantity, p.weight)}`}
-            after={((p.cost * (p.weight || p.quantity)) / 100).toFixed(2)}
-          >
-            <div className="list-subtext1">{`${labels.unitPrice}: ${(p.cost / 100).toFixed(2)}`}</div>
-            {p.packInfo.closeExpired ? <Badge slot="text" color="red">{labels.closeExpired}</Badge> : ''}
-          </ListItem>
-        )}
-        <ListItem 
-          title={labels.total} 
-          className="total" 
-          after={(total / 100).toFixed(2)} 
-        />
-        <ListItem 
-          title={labels.net} 
-          className="net" 
-          after={(total / 100).toFixed(2)} 
-        />
-      </List>
-    </Block>
-    <Fab position="center-bottom" slot="fixed" text={labels.confirm} color="green" onClick={() => handlePurchase()}>
-      <Icon material="done"></Icon>
-    </Fab>
-    <Toolbar bottom>
-      <Link href='/home/' iconMaterial="home" />
-      <Link href='#' iconMaterial="delete" onClick={() => handleDelete()} />
-    </Toolbar>
-  </Page>
+    <IonPage>
+      <Header title={`${labels.confirmPurchase} ${store.name}`} />
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
+          {basket?.map(p => 
+            <IonItem key={i++}>
+              <IonLabel>
+                <IonText style={{color: colors[0].name}}>{p.packInfo.productName}</IonText>
+                <IonText style={{color: colors[1].name}}>{p.packInfo.productAlias}</IonText>
+                <IonText style={{color: colors[2].name}}>{p.packInfo.name}</IonText>
+                <IonText style={{color: colors[3].name}}>{`${labels.unitPrice}: ${(p.cost / 100).toFixed(2)}`}</IonText>
+                <IonText style={{color: colors[4].name}}>{`${labels.quantity}: ${quantityText(p.quantity, p.weight)}`}</IonText>
+              </IonLabel>
+              {p.packInfo.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
+              <IonLabel slot="end" className="price">{((p.cost * (p.weight || p.quantity)) / 100).toFixed(2)}</IonLabel>
+            </IonItem>   
+        
+          )}
+          <IonItem>
+            <IonLabel>{labels.total}</IonLabel>
+            <IonLabel slot="end" className="price">{(total / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.net}</IonLabel>
+            <IonLabel slot="end" className="price">{(total / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+         </IonList>
+      </IonContent>
+      <div className="ion-text-center">
+        <IonButton 
+          fill="solid" 
+          shape="round"
+          color="secondary"
+          style={{width: '10rem'}}
+          onClick={handlePurchase}
+        >
+          {labels.submit}
+        </IonButton>
+      </div>
+
+      <IonFab vertical="top" horizontal="end" slot="fixed">
+        <IonFabButton onClick={handleDelete} color="danger">
+          <IonIcon ios={trashOutline} /> 
+        </IonFabButton>
+      </IonFab>
+    </IonPage>
   )
 }
 export default ConfirmPurchase

@@ -1,9 +1,11 @@
 import { useContext, useState, useEffect } from 'react'
-import { f7, Block, Page, Navbar, Toolbar, List, ListItem, Fab, Icon } from 'framework7-react'
-import BottomToolbar from './bottom-toolbar'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { randomColors, orderStatus } from '../data/config'
+import { orderStatus, colors } from '../data/config'
+import { IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage } from '@ionic/react'
+import Header from './header'
+import Footer from './footer'
+import { cloudUploadOutline } from 'ionicons/icons'
 
 type OrderStatus = {
   id: string,
@@ -27,42 +29,35 @@ const Orders = () => {
     setFinishedOrders(() => state.orders.filter(o => o.status === 'f').length)
   }, [state.orders])
   let i = 0
-  if (!state.user) return <Page><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></Page>
+  if (!state.user) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
   return(
-    <Page>
-      <Navbar title={labels.orders} backLink={labels.back} />
-      <Fab position="left-top" slot="fixed" color="green" className="top-fab" onClick={() => f7.views.current.router.navigate('/archived-orders/')}>
-        <Icon material="backup"></Icon>
-      </Fab>
-      <Block>
-				<List>
-          <ListItem 
-            link="/order-requests/" 
-            title={labels.orderRequests} 
-            badge={orderRequests} 
-            badgeColor={randomColors[i++ % 10].name} 
-          />
-          <ListItem 
-            link="/prepare-orders/" 
-            title={labels.prepareOrders} 
-            badge={finishedOrders} 
-            badgeColor={randomColors[i++ % 10].name} 
-          />
+    <IonPage>
+      <Header title={labels.orders} />
+      <IonContent fullscreen>
+				<IonList>
+          <IonItem routerLink="/order-requests"> 
+            <IonLabel>{labels.orderRequests}</IonLabel>
+            <IonBadge color={colors[i++ % 10].name}>{orderRequests}</IonBadge>
+          </IonItem>
+          <IonItem routerLink="/prepare-orders"> 
+            <IonLabel>{labels.prepareOrders}</IonLabel>
+            <IonBadge color={colors[i++ % 10].name}>{finishedOrders}</IonBadge>
+          </IonItem>
           {orderStatuses.map(s => 
-            <ListItem 
-              link={`/orders-list/${s.id}/s`} 
-              title={s.name} 
-              badge={s.count} 
-              badgeColor={randomColors[i++ % 10].name} 
-              key={s.id}
-            />
+            <IonItem key={s.id} routerLink={`/orders-list/${s.id}/s`}> 
+              <IonLabel>{s.name}</IonLabel>
+              <IonBadge color={colors[i++ % 10].name}>{s.count}</IonBadge>
+            </IonItem>
           )}
-				</List>
-      </Block>
-      <Toolbar bottom>
-        <BottomToolbar/>
-      </Toolbar>
-    </Page>
+				</IonList>
+      </IonContent>
+      <IonFab vertical="top" horizontal="end" slot="fixed">
+        <IonFabButton routerLink="/archived-orders" color="success">
+          <IonIcon ios={cloudUploadOutline} />
+        </IonFabButton>
+      </IonFab>
+      <Footer />
+    </IonPage>
   )
 }
 
