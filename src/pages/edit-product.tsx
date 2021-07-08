@@ -18,13 +18,14 @@ const EditProduct = () => {
   const [alias, setAlias] = useState(product.alias)
   const [description, setDescription] = useState(product.description)
   const [categoryId, setCategoryId] = useState(product.categoryId)
-  const [trademark, setTrademark] = useState(product.trademark)
-  const [country, setCountry] = useState(product.country)
+  const [trademarkId, setTrademarkId] = useState(product.trademarkId)
+  const [countryId, setCountryId] = useState(product.countryId)
   const [imageUrl, setImageUrl] = useState(product.imageUrl)
   const [image, setImage] = useState<File>()
   const [hasChanged, setHasChanged] = useState(false)
   const [categories] = useState(() => [...state.categories].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
-  const [countries] = useState(() => [...state.countries].sort((c1, c2) => c1 > c2 ? 1 : -1))
+  const [countries] = useState(() => [...state.countries].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
+  const [trademarks] = useState(() => [...state.trademarks].sort((t1, t2) => t1.name > t2.name ? 1 : -1))
   const inputEl = useRef<HTMLInputElement | null>(null)
   const [message] = useIonToast()
   const location = useLocation()
@@ -34,7 +35,7 @@ const EditProduct = () => {
   }
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
-    if (!files) return
+    if (!files || files.length === 0) return
     const filename = files[0].name
     if (filename.lastIndexOf('.') <= 0) {
       throw new Error('invalidFile')
@@ -50,15 +51,15 @@ const EditProduct = () => {
     if (name !== product.name
     || alias !== product.alias
     || description !== product.description
-    || country !== product.country
+    || countryId !== product.countryId
     || categoryId !== product.categoryId
-    || trademark !== product.trademark
+    || trademarkId !== product.trademarkId
     || imageUrl !== product.imageUrl) setHasChanged(true)
     else setHasChanged(false)
-  }, [product, name, alias, description, country, categoryId, trademark, imageUrl])
+  }, [product, name, alias, description, countryId, categoryId, trademarkId, imageUrl])
   const handleSubmit = () => {
     try{
-      if (state.products.find(p => p.id !== product.id && p.categoryId === categoryId && p.country === country && p.name === name && p.alias === alias)) {
+      if (state.products.find(p => p.id !== product.id && p.categoryId === categoryId && p.countryId === countryId && p.name === name && p.alias === alias)) {
         throw new Error('duplicateProduct')
       }
       const newProduct = {
@@ -67,8 +68,8 @@ const EditProduct = () => {
         name,
         alias,
         description,
-        trademark,
-        country,
+        trademarkId,
+        countryId,
       }
       editProduct(newProduct, product.name, state.packs, image)
       message(labels.editSuccess, 3000)
@@ -120,12 +121,14 @@ const EditProduct = () => {
             <IonLabel position="floating" color="primary">
               {labels.trademark}
             </IonLabel>
-            <IonInput 
-              value={trademark} 
-              type="text" 
-              clearInput
-              onIonChange={e => setTrademark(e.detail.value!)} 
-            />
+            <IonSelect 
+              ok-text={labels.ok} 
+              cancel-text={labels.cancel} 
+              value={trademarkId}
+              onIonChange={e => setTrademarkId(e.detail.value)}
+            >
+              {trademarks.map(t => <IonSelectOption key={t.id} value={t.id}>{t.name}</IonSelectOption>)}
+            </IonSelect>
           </IonItem>
           <IonItem>
             <IonLabel position="floating" color="primary">
@@ -147,10 +150,10 @@ const EditProduct = () => {
             <IonSelect 
               ok-text={labels.ok} 
               cancel-text={labels.cancel} 
-              value={country}
-              onIonChange={e => setCountry(e.detail.value)}
+              value={countryId}
+              onIonChange={e => setCountryId(e.detail.value)}
             >
-              {countries.map(c => <IonSelectOption key={c} value={c}>{c}</IonSelectOption>)}
+              {countries.map(c => <IonSelectOption key={c.id} value={c.id}>{c.name}</IonSelectOption>)}
             </IonSelect>
           </IonItem>
           <input 
@@ -170,7 +173,7 @@ const EditProduct = () => {
             <IonImg src={imageUrl} alt={labels.noImage} />
         </IonList>
       </IonContent>
-      {name && categoryId && country && hasChanged &&
+      {name && categoryId && countryId && hasChanged &&
         <IonFab vertical="top" horizontal="end" slot="fixed">
           <IonFabButton onClick={handleSubmit} color="success">
             <IonIcon ios={checkmarkOutline} />

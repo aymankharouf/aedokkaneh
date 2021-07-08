@@ -66,7 +66,7 @@ const ProductDetails = () => {
               {labels.trademark}
             </IonLabel>
             <IonInput 
-              value={product.trademark} 
+              value={product.trademarkId} 
               type="text"
               readonly
             />
@@ -76,7 +76,7 @@ const ProductDetails = () => {
               {labels.country}
             </IonLabel>
             <IonInput 
-              value={product.country} 
+              value={product.countryId} 
               type="text"
               readonly
             />

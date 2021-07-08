@@ -4,7 +4,7 @@ import { updateOrderStatus, getMessage, quantityDetails, mergeOrder, setDelivery
 import labels from '../data/labels'
 import { colors, orderPackStatus } from '../data/config'
 import { Order, OrderBasketPack } from '../data/types'
-import { IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
+import { IonActionSheet, IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useHistory, useLocation, useParams } from 'react-router'
@@ -19,20 +19,13 @@ type ExtendedOrderBasketPack = OrderBasketPack & {
   priceNote: string,
   statusNote: string
 }
-type StatusAction = {
-  id: string,
-  name: string,
-  status: string[],
-  path: string
-}
 const OrderDetails = () => {
   const { state } = useContext(StateContext)
   const params = useParams<Params>()
   const [order, setOrder] = useState(() => params.type === 'a' ? state.archivedOrders.find(o => o.id === params.id)! : state.orders.find(o => o.id === params.id)!)
   const [orderBasket, setOrderBasket] = useState<ExtendedOrderBasketPack[]>([])
-  const [statusActions, setStatusActions] = useState<StatusAction[]>([])
   const [lastOrder, setLastOrder] = useState<Order>()
-  const [actionsOpen, setActionsOpened] = useState(false)
+  const [actionsOpened, setActionsOpened] = useState(false)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
@@ -53,22 +46,6 @@ const OrderDetails = () => {
       }
     }))
   }, [order, state.stores])
-  useEffect(() => {
-    setStatusActions(() => {
-      const statusActions = [
-        {id: 'a', name: 'اعتماد', status: ['n', 's'], path: ''},
-        {id: 's', name: 'تعليق', status: ['n', 'a'], path: ''},
-        {id: 'r', name: 'رفض', status: ['n', 's'], path: ''},
-        {id: 'c', name: 'الغاء', status: ['n', 's', 'a'], path: ''},
-        {id: 'i', name: 'استيداع', status: ['f', 'e', 'p'], path: ''},
-        {id: 't', name: 'تحديد موعد التسليم', status: ['p'], path: ''},
-        {id: 'd', name: 'تسليم', status: ['p'], path: ''},
-        {id: 'e', name: 'تعديل', status: ['n', 'a', 'e', 's', 'f'], path: `/edit-order/${order.id}/e`},
-        {id: 'b', name: 'ارجاع', status: ['p', 'd'], path: `/edit-order/${params.id}/r`}
-      ]
-      return statusActions.filter(a => a.status.includes(order.status))
-    })
-  }, [order, params.id])
   useEffect(() => {
     setLastOrder(() => {
       const userOrders = state.orders.filter(o => o.id !== order.id && o.userId === order.userId && !['c', 'm', 'r'].includes(o.status))
@@ -95,79 +72,76 @@ const OrderDetails = () => {
       message(getMessage(location.pathname, err), 3000)
     }
   }
-  const rejectMerge = (action: StatusAction) => {
+  const rejectMerge = (actionId: string) => {
     try{
-      updateOrderStatus(order, action.id, state.packPrices, state.packs, false)
+      updateOrderStatus(order, actionId, state.packPrices, state.packs, false)
       message(labels.editSuccess, 3000)
       history.goBack()
     } catch(err) {
       message(getMessage(location.pathname, err), 3000)
     }
   }
-  const handleAction = (action: StatusAction) => {
+  const handleAction = (actionId: string) => {
     try{
-      if (action.path) {
-        history.push(action.path)
+    if (actionId === 'a' && !state.customers.find(c => c.id === order.userId)){
+        throw new Error('notApprovedUser')
+      } else if (actionId === 'a' && lastOrder) {
+        alert({
+          header: labels.confirmationTitle,
+          message: labels.confirmMergeText,
+          buttons: [
+            {text: labels.cancel, handler: () => rejectMerge(actionId)},
+            {text: labels.yes, handler: () => confirmMerge()},
+          ],
+        })
+      } else if (actionId === 'i') {
+        alert({
+          header: labels.confirmationTitle,
+          message: labels.confirmationBlockUser,
+          buttons: [
+            {text: labels.cancel},
+            {text: labels.yes, handler: () => {
+              try{
+                updateOrderStatus(order, actionId, state.packPrices, state.packs, false)
+                message(labels.editSuccess, 3000)
+                history.goBack()
+              } catch(err) {
+                message(getMessage(location.pathname, err), 3000)
+              }    
+            }},
+          ],
+        })
+      } else if (actionId === 'd') {
+        updateOrderStatus(order, 'd', state.packPrices, state.packs, false)
+        message(labels.editSuccess, 3000)
+        history.goBack()
+      } else if (actionId === 't') {
+        alert({
+          header: labels.enterDeliveryTime,
+          inputs: [{name: 'deliveryTime', type: 'text'}],
+          buttons: [
+            {text: labels.cancel},
+            {text: labels.ok, handler: (e) => {
+              try{
+                setDeliveryTime(order.id!, e.deliveryTime)
+                message(labels.editSuccess, 3000)
+                history.goBack()
+              } catch(err) {
+                message(getMessage(location.pathname, err), 3000)
+              }
+            }}
+          ],
+        })
       } else {
-        if (action.id === 'a' && !state.customers.find(c => c.id === order.userId)){
-          throw new Error('notApprovedUser')
-        } else if (action.id === 'a' && lastOrder) {
-          alert({
-            header: labels.confirmationTitle,
-            message: labels.confirmMergeText,
-            buttons: [
-              {text: labels.cancel, handler: () => rejectMerge(action)},
-              {text: labels.yes, handler: () => confirmMerge()},
-            ],
-          })
-        } else if (action.id === 'i') {
-          alert({
-            header: labels.confirmationTitle,
-            message: labels.confirmationBlockUser,
-            buttons: [
-              {text: labels.cancel},
-              {text: labels.yes, handler: () => {
-                try{
-                  updateOrderStatus(order, action.id, state.packPrices, state.packs, false)
-                  message(labels.editSuccess, 3000)
-                  history.goBack()
-                } catch(err) {
-                  message(getMessage(location.pathname, err), 3000)
-                }    
-              }},
-            ],
-          })
-        } else if (action.id === 'd') {
-          updateOrderStatus(order, 'd', state.packPrices, state.packs, false)
-          message(labels.editSuccess, 3000)
-          history.goBack()
-        } else if (action.id === 't') {
-          alert({
-            header: labels.enterDeliveryTime,
-            inputs: [{name: 'deliveryTime', type: 'text'}],
-            buttons: [
-              {text: labels.cancel},
-              {text: labels.ok, handler: (e) => {
-                try{
-                  setDeliveryTime(order.id!, e.deliveryTime)
-                  message(labels.editSuccess, 3000)
-                  history.goBack()
-                } catch(err) {
-                  message(getMessage(location.pathname, err), 3000)
-                }
-              }}
-            ],
-          })
-        } else {
-          updateOrderStatus(order, action.id, state.packPrices, state.packs, false)
-          message(labels.editSuccess, 3000)
-          history.goBack()
-        }  
-      }
+        updateOrderStatus(order, actionId, state.packPrices, state.packs, false)
+        message(labels.editSuccess, 3000)
+        history.goBack()
+      }  
     } catch(err) {
 			message(getMessage(location.pathname, err), 3000)
 		}
   }
+  let i = 0
   return(
     <IonPage>
       <Header title={labels.orderDetails} />
@@ -217,13 +191,62 @@ const OrderDetails = () => {
           <IonIcon ios={constructOutline} /> 
         </IonFabButton>
       </IonFab>
-
-      {/* <Actions>
-        <ActionsButton onClick={() => f7.views.current.router.navigate(`/customer-details/${order.userId}`)}>{labels.customerInfo}</ActionsButton>
-        {params.type === 'n' && statusActions.map(a => 
-          <ActionsButton key={a.id} onClick={() => handleAction(a)}>{a.name}</ActionsButton>
-        )}
-      </Actions> */}
+      <IonActionSheet
+        isOpen={actionsOpened}
+        onDidDismiss={() => setActionsOpened(false)}
+        buttons={[
+          {
+            text: labels.customerInfo,
+            cssClass: colors[i++ % 10].name,
+            handler: () => history.push(`/customer-details/${order.userId}`)
+          },
+          {
+            text: labels.approve,
+            cssClass: params.type === 'n' && ['n', 's'].includes(order.status) ? colors[i++ % 10].name : 'ion-hide',
+            handler: () => handleAction('a')
+          },
+          {
+            text: labels.suspend,
+            cssClass: params.type === 'n' && ['n', 'a'].includes(order.status) ? colors[i++ % 10].name : 'ion-hide',
+            handler: () => handleAction('s')
+          },
+          {
+            text: labels.reject,
+            cssClass: params.type === 'n' && ['n', 's'].includes(order.status) ? colors[i++ % 10].name : 'ion-hide',
+            handler: () => handleAction('r')
+          },
+          {
+            text: labels.cancel,
+            cssClass: params.type === 'n' && ['n', 's', 'a'].includes(order.status) ? colors[i++ % 10].name : 'ion-hide',
+            handler: () => handleAction('c')
+          },
+          {
+            text: labels.insert,
+            cssClass: params.type === 'n' && ['f', 'e', 'p'].includes(order.status) ? colors[i++ % 10].name : 'ion-hide',
+            handler: () => handleAction('i')
+          },
+          {
+            text: labels.timing,
+            cssClass: params.type === 'n' && order.status === 'p' ? colors[i++ % 10].name : 'ion-hide',
+            handler: () => handleAction('t')
+          },
+          {
+            text: labels.deliver,
+            cssClass: params.type === 'n' && order.status === 'p' ? colors[i++ % 10].name : 'ion-hide',
+            handler: () => handleAction('d')
+          },
+          {
+            text: labels.edit,
+            cssClass: params.type === 'n' && ['n', 'a', 'e', 's', 'f'].includes(order.status) ? colors[i++ % 10].name : 'ion-hide',
+            handler: () => history.push(`/edit-order/${order.id}/e`)
+          },
+          {
+            text: labels.return,
+            cssClass: params.type === 'n' && ['p', 'd'].includes(order.status) ? colors[i++ % 10].name : 'ion-hide',
+            handler: () => history.push(`/edit-order/${params.id}/r`)
+          },
+        ]}
+      />
       <Footer />
     </IonPage>
   )

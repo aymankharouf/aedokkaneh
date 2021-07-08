@@ -181,6 +181,7 @@ export type Region = {
   fees: number,
   ordering: number
 }
+
 export type PasswordRequest = {
   id: string,
   mobile: string,
@@ -227,8 +228,8 @@ export type Product = {
   name: string,
   alias: string,
   description: string,
-  trademark: string,
-  country: string,
+  trademarkId: string,
+  countryId: string,
   categoryId: string,
   imageUrl: string,
   sales: number,
@@ -327,11 +328,19 @@ export type RequestedPack = {
   packInfo: Pack,
   weight: number
 }
+export type Country = {
+  id: string,
+  name: string,
+}
+export type Trademark = {
+  id: string,
+  name: string
+}
 export type State = {
   user?: firebase.User,
   categories: Category[], 
   regions: Region[], 
-  countries: string[],
+  countries: Country[],
   stores: Store[], 
   users: UserInfo[],
   purchases: Purchase[],
@@ -359,7 +368,8 @@ export type State = {
   basket?: Basket,
   returnBasket?: ReturnBasket,
   orderBasket?: OrderBasketPack[],
-  searchText: string
+  searchText: string,
+  trademarks: Trademark[],
 }
 
 export type Action = {

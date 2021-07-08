@@ -159,14 +159,14 @@ const CustomerDetails = () => {
       </IonContent>
       <IonFab horizontal="end" vertical="top" slot="fixed">
         <IonFabButton>
-          <IonIcon ios={chevronDownOutline}></IonIcon>
+          <IonIcon ios={chevronDownOutline} />
         </IonFabButton>
         <IonFabList>
           <IonFabButton color="success" routerLink={`/edit-customer/${params.id}`}>
-            <IonIcon ios={pencilOutline}></IonIcon>
+            <IonIcon ios={pencilOutline} />
           </IonFabButton>
           <IonFabButton color="danger" routerLink={`/orders-list/${params.id}/u`}>
-            <IonIcon ios={swapVerticalOutline}></IonIcon>
+            <IonIcon ios={swapVerticalOutline} />
           </IonFabButton>
         </IonFabList>
       </IonFab>

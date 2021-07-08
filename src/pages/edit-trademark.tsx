@@ -1,11 +1,10 @@
-import { useState, useContext, useEffect, useRef } from 'react'
+import { useState, useContext, useRef, useEffect } from 'react'
 import { StateContext } from '../data/state-provider'
-import { editCountry, getMessage, deleteCountry } from '../data/actions'
+import { deleteTrademark, editTrademark, getMessage } from '../data/actions'
 import labels from '../data/labels'
-import { IonContent, IonFab, IonFabButton, IonFabList, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonAlert, useIonToast } from '@ionic/react'
 import { useHistory, useLocation, useParams } from 'react-router'
+import { IonContent, IonFab, IonFabButton, IonFabList, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
 import Header from './header'
-import Footer from './footer'
 import { checkmarkOutline, chevronDownOutline, trashOutline } from 'ionicons/icons'
 
 type Params = {
@@ -14,29 +13,27 @@ type Params = {
 const EditCountry = () => {
   const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [country] = useState(() => state.countries.find(c => c.id === params.id)!)
-  const [name, setName] = useState(country.name)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-  const [alert] = useIonAlert()
+  const [trademark] = useState(() => state.trademarks.find(t => t.id === params.id)!)
+  const [name, setName] = useState(trademark.name)
   const [hasChanged, setHasChanged] = useState(false)
   const fabList = useRef<HTMLIonFabElement | null>(null)
   useEffect(() => {
     if (hasChanged && fabList.current) fabList.current!.close()
   }, [hasChanged])
   useEffect(() => {
-    if (name !== country.name) setHasChanged(true)
+    if (name !== trademark.name) setHasChanged(true)
     else setHasChanged(false)
-  }, [country, name])
-
-  const handleEdit = () => {
+  }, [trademark, name])
+  const handleSubmit = () => {
     try{
-      const newCountry = {
-        ...country,
+      const newTrademark = {
+        ...trademark,
         name
       }
-      editCountry(newCountry, state.countries)
+      editTrademark(newTrademark, state.trademarks)
       message(labels.editSuccess, 3000)
       history.goBack()
     } catch(err) {
@@ -49,23 +46,24 @@ const EditCountry = () => {
       message: labels.confirmationText,
       buttons: [
         {text: labels.cancel},
-        {text: labels.yes, handler: () => {
+        {text: labels.ok, handler: async () => {
           try{
-            deleteCountry(country.id, state.countries)
+            const trademarkProducts = state.products.filter(p => p.trademarkId === params.id)
+            if (trademarkProducts.length > 0) throw new Error('trademarkProductsFound') 
+            deleteTrademark(params.id, state.trademarks)
             message(labels.deleteSuccess, 3000)
             history.goBack()
           } catch(err) {
             message(getMessage(location.pathname, err), 3000)
-          }    
+          }
         }},
       ],
     })
-
   }
   return (
     <IonPage>
-      <Header title={labels.editCountry} />
-      <IonContent fullscreen>
+      <Header title={labels.editTrademark} />
+      <IonContent fullscreen className="ion-padding">
         <IonList>
           <IonItem>
             <IonLabel position="floating" color="primary">
@@ -86,17 +84,18 @@ const EditCountry = () => {
           <IonIcon ios={chevronDownOutline} />
         </IonFabButton>
         <IonFabList>
-          <IonFabButton color="danger" onClick={handleDelete}>
-            <IonIcon ios={trashOutline} />
-          </IonFabButton>
-        </IonFabList>
           {name && hasChanged &&
-            <IonFabButton color="success" onClick={handleEdit}>
+            <IonFabButton color="success" onClick={handleSubmit}>
               <IonIcon ios={checkmarkOutline} />
             </IonFabButton>
           }
+          {state.products.filter(p => p.trademarkId === params.id).length === 0 &&
+            <IonFabButton color="danger" onClick={handleDelete}>
+              <IonIcon ios={trashOutline} />
+            </IonFabButton>
+          }
+        </IonFabList>
       </IonFab>
-      <Footer />
     </IonPage>
   )
 }

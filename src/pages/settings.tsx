@@ -7,10 +7,11 @@ import Footer from './footer'
 
 const Settings = () => {
   const [sections] = useState(() => [
-    {id: '1', name: labels.countries, path: '/countries/'},
-    {id: '2', name: labels.categories, path: '/categories/0'},
-    {id: '3', name: labels.regions, path: '/regions/'},
-    {id: '4', name: labels.adverts, path: '/adverts/'}
+    {id: '1', name: labels.countries, path: '/countries'},
+    {id: '2', name: labels.trademarks, path: '/trademarks'},
+    {id: '3', name: labels.categories, path: '/categories/0'},
+    {id: '4', name: labels.regions, path: '/regions'},
+    {id: '5', name: labels.adverts, path: '/adverts'}
   ])
   let i = 0
   return(

@@ -2,10 +2,10 @@ import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonIte
 import { useEffect, useState } from 'react'
 import labels from '../data/labels'
 import Fuse from "fuse.js"
-import { chevronForwardOutline } from 'ionicons/icons'
+import { chevronForwardOutline, closeOutline } from 'ionicons/icons'
 
 type Element = {
-  id: string,
+  id?: string,
   name: string
 }
 type Props = {
@@ -34,10 +34,10 @@ const SmartSelect = (props: Props) => {
     setValues(result.map(p => p.item))
   }, [searchText, props.data])
 
-  const handleSelect = (i: Element) => {
-    setValue(i.name)
+  const handleSelect = (i: Element | null) => {
+    setValue(i?.name || '')
     setIsOpen(false)
-    props.onChange(i.id)
+    props.onChange(i?.id || '')
   }
   return (
     <>
@@ -49,11 +49,20 @@ const SmartSelect = (props: Props) => {
                 <IonIcon
                   ios={chevronForwardOutline} 
                   color="primary" 
-                  style={{fontSize: '20px', marginRight: '10px'}} 
+                  style={{fontSize: '25px', marginRight: '10px'}} 
                 />
               </IonButton>
             </IonButtons>
             <IonTitle>{props.label}</IonTitle>
+            <IonButtons slot="end">
+              <IonButton onClick={() => handleSelect(null)}>
+                <IonIcon
+                  ios={closeOutline} 
+                  color="primary" 
+                  style={{fontSize: '25px', marginLeft: '10px'}} 
+                />
+              </IonButton>
+            </IonButtons>
           </IonToolbar>
           <IonToolbar>
           <IonSearchbar
@@ -76,13 +85,12 @@ const SmartSelect = (props: Props) => {
       </IonModal>
       <IonItem>
         <IonLabel position="floating" color="primary">
-          {props.label}
+          {props.label + "🔍"}
         </IonLabel>
         <IonInput 
           value={value} 
           type="text" 
-          clearInput
-          onClick={() => setIsOpen(true)} 
+          onIonFocus={() => setIsOpen(true)} 
         />
       </IonItem>
     </>

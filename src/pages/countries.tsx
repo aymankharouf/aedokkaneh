@@ -10,11 +10,10 @@ import Footer from './footer'
 
 const Countries = () => {
   const { state } = useContext(StateContext)
-  const [countries, setCountries] = useState(() => [...state.countries].sort((c1, c2) => c1 > c2 ? 1 : -1))
+  const [countries, setCountries] = useState(() => [...state.countries].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
   useEffect(() => {
-    setCountries(() => [...state.countries].sort((c1, c2) => c1 > c2 ? 1 : -1))
+    setCountries(() => [...state.countries].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
   }, [state.countries])
-  let i = 0
   return (
     <IonPage>
       <Header title={labels.countries} />
@@ -25,9 +24,9 @@ const Countries = () => {
               <IonLabel>{labels.noData}</IonLabel>
             </IonItem> 
           : countries.map(c =>
-              <IonItem key={i++} routerLink={`/edit-country/${c}`}>
+              <IonItem key={c.id} routerLink={`/edit-country/${c.id}`}>
                 <IonLabel>
-                  <IonText style={{color: colors[0].name}}>{c}</IonText>
+                  <IonText style={{color: colors[0].name}}>{c.name}</IonText>
                 </IonLabel>
               </IonItem>    
             )

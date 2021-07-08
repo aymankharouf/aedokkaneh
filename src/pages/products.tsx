@@ -2,7 +2,7 @@ import { useContext, useState, useEffect } from 'react'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { productOfText, getCategoryName } from '../data/actions'
-import { Category, Product } from '../data/types'
+import { Product } from '../data/types'
 import { useParams } from 'react-router'
 import { IonContent, IonFab, IonFabButton, IonFabList, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
 import Header from './header'
@@ -15,7 +15,9 @@ type Params = {
   id: string
 }
 type ExtendedProduct = Product & {
-  categoryInfo: Category
+  categoryName: string,
+  trademarkName: string,
+  countryName: string
 }
 const Products = () => {
   const { state, dispatch } = useContext(StateContext)
@@ -33,12 +35,16 @@ const Products = () => {
       const products = state.products.filter(p => params.id === '-1' ? !state.packs.find(pa => pa.productId === p.id) || state.packs.filter(pa => pa.productId === p.id).length === state.packs.filter(pa => pa.productId === p.id && pa.price === 0).length : params.id === '0' || p.categoryId === params.id)
       const result = products.map(p => {
         const categoryInfo = state.categories.find(c => c.id === p.categoryId)!
+        const trademarkInfo = state.trademarks.find(t => t.id === p.trademarkId)
+        const countryInfo = state.countries.find(c => c.id === p.countryId)!
         return {
           ...p,
-          categoryInfo
+          categoryName: getCategoryName(categoryInfo, state.categories),
+          trademarkName: trademarkInfo?.name || '',
+          countryName: countryInfo.name
         }
       })
-      return result.sort((p1, p2) => p1.categoryId === p2.categoryId ? (p1.name > p2.name ? 1 : -1) : (p1.categoryInfo.name > p2.categoryInfo.name ? 1 : -1))
+      return result.sort((p1, p2) => p1.categoryId === p2.categoryId ? (p1.name > p2.name ? 1 : -1) : (p1.categoryName > p2.categoryName ? 1 : -1))
     })
   }, [state.products, state.categories, state.packs, params.id])
   useEffect(() => {
@@ -75,30 +81,30 @@ const Products = () => {
                   <IonText style={{color: colors[0].name}}>{p.name}</IonText>
                   <IonText style={{color: colors[1].name}}>{p.alias}</IonText>
                   <IonText style={{color: colors[2].name}}>{p.description}</IonText>
-                  <IonText style={{color: colors[3].name}}>{getCategoryName(p.categoryInfo, state.categories)}</IonText>
-                  <IonText style={{color: colors[4].name}}>{productOfText(p.trademark, p.country)}</IonText>
+                  <IonText style={{color: colors[3].name}}>{p.categoryName}</IonText>
+                  <IonText style={{color: colors[4].name}}>{productOfText(p.trademarkName, p.countryName)}</IonText>
                 </IonLabel>
               </IonItem>    
             )
           }
         </IonList>
-      </IonContent>
       <IonFab horizontal="end" vertical="top" slot="fixed">
-        <IonFabButton>
-          <IonIcon ios={chevronDownOutline}></IonIcon>
+        <IonFabButton size="small" >
+          <IonIcon ios={chevronDownOutline} />
         </IonFabButton>
         <IonFabList>
           <IonFabButton color="success" routerLink={`/add-product/${params.id}`}>
-            <IonIcon ios={addOutline}></IonIcon>
+            <IonIcon ios={addOutline} />
           </IonFabButton>
           <IonFabButton color="secondary" routerLink="/archived-products">
-            <IonIcon ios={cloudDownloadOutline}></IonIcon>
+            <IonIcon ios={cloudDownloadOutline} />
           </IonFabButton>
           <IonFabButton color="danger" routerLink="/products/-1">
-            <IonIcon ios={trashBinOutline}></IonIcon>
+            <IonIcon ios={trashBinOutline} />
           </IonFabButton>
         </IonFabList>
       </IonFab>
+          </IonContent>
       <Footer />
     </IonPage>
   )

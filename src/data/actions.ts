@@ -1,6 +1,6 @@
 import firebase from './firebase'
 import labels from './labels'
-import { Advert, Alarm, Basket, BasketPack, Category, CustomerInfo, Error, Friend, Region, Log, MonthlyOperation, Notification, Order, OrderBasketPack, Pack, PackPrice, Product, Purchase, Rating, RequestedPack, ReturnBasket, Spending, StockPack, StockOperation, Store, StorePayment, UserInfo } from "./types"
+import { Advert, Alarm, Basket, BasketPack, Category, CustomerInfo, Error, Friend, Region, Log, MonthlyOperation, Notification, Order, OrderBasketPack, Pack, PackPrice, Product, Purchase, Rating, RequestedPack, ReturnBasket, Spending, StockPack, StockOperation, Store, StorePayment, UserInfo, Trademark, Country } from "./types"
 import { randomColors, setup } from './config'
 import moment from 'moment'
 
@@ -26,42 +26,25 @@ export const quantityText = (quantity: number, weight?: number): string => {
 }
 
 
-export const addCountry = (name: string) => {
+export const addCountry = (country: Country) => {
   firebase.firestore().collection('lookups').doc('c').set({
-    values: firebase.firestore.FieldValue.arrayUnion(name)
+    values: firebase.firestore.FieldValue.arrayUnion(country)
   }, {merge: true})
 }
 
-export const deleteCountry = (name: string) => {
-  firebase.firestore().collection('lookups').doc('c').set({
-    values: firebase.firestore.FieldValue.arrayRemove(name)
-  }, {merge: true})
+export const deleteCountry = (countryId: string, countries: Country[]) => {
+  const values = countries.filter(c => c.id !== countryId)
+  firebase.firestore().collection('lookups').doc('c').update({
+    values
+  })
 }
 
-export const editCountry = (name: string, oldName: string, products: Product[], packs: Pack[]) => {
-  const batch = firebase.firestore().batch()
-  const countriesRef = firebase.firestore().collection('lookups').doc('c')
-  batch.update(countriesRef, {
-    values: firebase.firestore.FieldValue.arrayRemove(oldName)
+export const editCountry = (country: Country, countries: Country[]) => {
+  const values = countries.filter(c => c.id !== country.id)
+  values.push(country)
+  firebase.firestore().collection('lookups').doc('c').update({
+    values
   })
-  batch.update(countriesRef, {
-    values: firebase.firestore.FieldValue.arrayUnion(name)
-  })
-  const affectedProducts = products.filter(p => p.country === oldName)
-  affectedProducts.forEach(p => {
-    const productRef = firebase.firestore().collection('products').doc(p.id)
-    batch.update(productRef, {
-      country: name
-    })
-    const affectedPacks = packs.filter(pa => pa.productId === p.id)
-    affectedPacks.forEach(pa => {
-      const packRef = firebase.firestore().collection('packs').doc(pa.id)
-      batch.update(packRef, {
-        country: name
-      })
-    })
-  })
-  batch.commit()
 }
 
 export const addRegion = (region: Region) => {
@@ -385,8 +368,8 @@ export const editProduct = async (product: Product, oldName: string, packs: Pack
       productAlias: product.alias,
       productDescription: product.description,
       categoryId: product.categoryId,
-      country: product.country,
-      trademark: product.trademark,
+      country: product.countryId,
+      trademark: product.trademarkId,
       sales: product.sales,
       rating: product.rating,
       ratingCount: product.ratingCount,
@@ -1855,8 +1838,8 @@ export const getArchivedProducts = async () => {
         name: doc.data().name,
         alias: doc.data().alias,
         description: doc.data().description,
-        trademark: doc.data().trademark,
-        country: doc.data().country,
+        trademarkId: doc.data().trademarkId,
+        countryId: doc.data().countryId,
         categoryId: doc.data().categoryId,
         imageUrl: doc.data().imageUrl,
         sales: doc.data().sales,
@@ -2074,4 +2057,25 @@ export const getArchivedStockOperations = (month: number) => {
     })
   })
   return stockOperations
+}
+
+export const addTrademark = (trademark: Trademark) => {
+  firebase.firestore().collection('lookups').doc('t').set({
+    values: firebase.firestore.FieldValue.arrayUnion(trademark)
+  }, {merge: true})
+}
+
+export const editTrademark = (trademark: Trademark, trademarks: Trademark[]) => {
+  const values = trademarks.filter(t => t.id !== trademark.id)
+  values.push(trademark)
+  firebase.firestore().collection('lookups').doc('t').update({
+    values
+  })
+}
+
+export const deleteTrademark = (trademarkId: string, trademarks: Trademark[]) => {
+  const values = trademarks.filter(t => t.id !== trademarkId)
+  firebase.firestore().collection('lookups').doc('t').update({
+    values
+  })
 }

@@ -117,15 +117,15 @@ const ApproveUser = () => {
       </IonContent>
       <IonFab horizontal="end" vertical="top" slot="fixed">
         <IonFabButton>
-          <IonIcon ios={chevronDownOutline}></IonIcon>
+          <IonIcon ios={chevronDownOutline} />
         </IonFabButton>
         <IonFabList>
           <IonFabButton color="danger" onClick={handleDelete}>
-            <IonIcon ios={trashOutline}></IonIcon>
+            <IonIcon ios={trashOutline} />
           </IonFabButton>
           {name && regionId &&
             <IonFabButton color="success" onClick={handleSubmit}>
-              <IonIcon ios={checkmarkOutline}></IonIcon>
+              <IonIcon ios={checkmarkOutline} />
             </IonFabButton>
           }
         </IonFabList>

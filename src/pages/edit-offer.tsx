@@ -65,7 +65,7 @@ const EditOffer = () => {
   }
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
-    if (!files) return
+    if (!files || files.length === 0) return
     const filename = files[0].name
     if (filename.lastIndexOf('.') <= 0) {
       throw new Error('invalidFile')

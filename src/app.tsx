@@ -117,7 +117,9 @@ import ArchivedProducts from './pages/archived-products'
 import ReturnBasket from './pages/return-basket'
 import StoreBalance from './pages/store-balance'
 import StoreBalanceOperations from './pages/store-balance-operations'
-
+import Trademarks from './pages/trademarks'
+import AddTrademark from './pages/add-trademark'
+import EditTrademark from './pages/edit-trademark'
 
 const app = () => {
   const href = window.location.href
@@ -157,7 +159,7 @@ const app = () => {
               <Route path="/offers" exact={true} component={Offers} />
               <Route path="/countries" exact={true} component={Countries} />
               <Route path="/add-country" exact={true} component={AddCountry} />
-              <Route path="/edit-country/:name" exact={true} component={EditCountry} />
+              <Route path="/edit-country/:id" exact={true} component={EditCountry} />
               <Route path="/spendings" exact={true} component={Spendings} />
               <Route path="/add-spending" exact={true} component={AddSpending} />
               <Route path="/edit-spending/:id" exact={true} component={EditSpending} />
@@ -224,6 +226,9 @@ const app = () => {
               <Route path="/return-basket" exact={true} component={ReturnBasket} />
               <Route path="/store-balance/:id" exact={true} component={StoreBalance} />
               <Route path="/store-balance-operations/:storeId/:month" exact={true} component={StoreBalanceOperations} />
+              <Route path="/trademarks" exact={true} component={Trademarks} />
+              <Route path="/add-trademark" exact={true} component={AddTrademark} />
+              <Route path="/edit-trademark/:id" exact={true} component={EditTrademark} />
             </IonRouterOutlet>
           </IonSplitPane>
         </IonReactRouter>

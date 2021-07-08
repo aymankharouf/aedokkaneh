@@ -246,24 +246,24 @@ const PackDetails = () => {
       </IonContent>
       <IonFab horizontal="end" vertical="top" slot="fixed">
         <IonFabButton>
-          <IonIcon ios={chevronDownOutline}></IonIcon>
+          <IonIcon ios={chevronDownOutline} />
         </IonFabButton>
         <IonFabList>
           <IonFabButton color="success" routerLink={`/add-pack-store/${params.id}`}>
-            <IonIcon ios={addOutline}></IonIcon>
+            <IonIcon ios={addOutline} />
           </IonFabButton>
           <IonFabButton color="secondary" routerLink={`/${pack.isOffer ? 'edit-offer' : (pack.subPackId ? 'edit-bulk' : 'edit-pack')}/${params.id}`}>
-            <IonIcon ios={pencilOutline}></IonIcon>
+            <IonIcon ios={pencilOutline} />
           </IonFabButton>
           <IonFabButton color="warning" onClick={() => handleRefreshPrice()}>
-            <IonIcon ios={repeatOutline}></IonIcon>
+            <IonIcon ios={repeatOutline} />
           </IonFabButton>
           <IonFabButton color="tertiary" routerLink={`/pack-operations/${params.id}`}>
-            <IonIcon ios={swapVerticalOutline}></IonIcon>
+            <IonIcon ios={swapVerticalOutline} />
           </IonFabButton>
           {detailsCount === 0 &&
             <IonFabButton color="danger" onClick={() => handleDelete()}>
-              <IonIcon ios={trashOutline}></IonIcon>
+              <IonIcon ios={trashOutline} />
             </IonFabButton>
           }
         </IonFabList>

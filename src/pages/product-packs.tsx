@@ -74,7 +74,7 @@ const ProductPacks = () => {
             </IonCol>
           </IonRow>
           <IonRow>
-            <IonCol>{productOfText(product.trademark, product.country)}</IonCol>
+            <IonCol>{productOfText(product.trademarkId, product.countryId)}</IonCol>
             <IonCol className="ion-text-end"><RatingStars rating={product.rating} count={product.ratingCount} /></IonCol>
           </IonRow>
         </IonCard>

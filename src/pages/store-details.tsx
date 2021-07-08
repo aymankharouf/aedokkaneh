@@ -99,23 +99,23 @@ const StoreDetails = () => {
       </IonContent>
       <IonFab horizontal="end" vertical="top" slot="fixed">
         <IonFabButton>
-          <IonIcon ios={chevronDownOutline}></IonIcon>
+          <IonIcon ios={chevronDownOutline} />
         </IonFabButton>
         <IonFabList>
           <IonFabButton color="success" routerLink={`/store-packs/${params.id}`}>
-            <IonIcon ios={cartOutline}></IonIcon>
+            <IonIcon ios={cartOutline} />
           </IonFabButton>
           <IonFabButton color="secodary" routerLink={`/edit-store/${params.id}`}>
-            <IonIcon ios={pencilOutline}></IonIcon>
+            <IonIcon ios={pencilOutline} />
           </IonFabButton>
           <IonFabButton color="warning" routerLink={`/store-operations/${store.id}`}>
-            <IonIcon ios={swapVerticalOutline}></IonIcon>
+            <IonIcon ios={swapVerticalOutline} />
           </IonFabButton>
           <IonFabButton color="tertiary" routerLink={`/store-owners/${store.id}`}>
-            <IonIcon ios={personOutline}></IonIcon>
+            <IonIcon ios={personOutline} />
           </IonFabButton>
           <IonFabButton color="danger" routerLink={`/store-balance/${store.id}`}>
-            <IonIcon ios={walletOutline}></IonIcon>
+            <IonIcon ios={walletOutline} />
           </IonFabButton>
         </IonFabList>
       </IonFab>

@@ -78,7 +78,7 @@ const Categories = () => {
       </IonContent>
       <IonFab horizontal="end" vertical="top" slot="fixed">
         <IonFabButton onClick={() => setActionOpened(true)}>
-          <IonIcon ios={menuOutline}></IonIcon>
+          <IonIcon ios={menuOutline} />
         </IonFabButton>
       </IonFab>
       <IonActionSheet

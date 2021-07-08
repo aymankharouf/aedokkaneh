@@ -66,7 +66,7 @@ const ArchivedProducts = () => {
                 <IonLabel>
                   <IonText style={{color: colors[0].name}}>{p.name}</IonText>
                   <IonText style={{color: colors[1].name}}>{getCategoryName(p.categoryInfo, state.categories)}</IonText>
-                  <IonText style={{color: colors[2].name}}>{`${labels.productOf} ${p.trademark ? labels.company + ' ' + p.trademark + '-' : ''}${p.country}`}</IonText>
+                  <IonText style={{color: colors[2].name}}>{`${labels.productOf} ${p.trademarkId ? labels.company + ' ' + p.trademarkId + '-' : ''}${p.countryId}`}</IonText>
                 </IonLabel>
               </IonItem>   
             )

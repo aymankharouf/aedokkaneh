@@ -40,7 +40,8 @@ const StateProvider = ({children}: Props) => {
     ratings: [],
     invitations: [],
     storePayments: [],
-    searchText: ''
+    searchText: '',
+    trademarks: []
   }
   const [state, dispatch] = useReducer(Reducer, initState)
   useEffect(() => {
@@ -160,6 +161,11 @@ const StateProvider = ({children}: Props) => {
         }, err => {
           unsubscribeCountries()
         })
+        const unsubscribeTrademarks = firebase.firestore().collection('lookups').doc('t').onSnapshot(doc => {
+          if (doc.exists) dispatch({type: 'SET_TRADEMARKS', payload: doc.data()?.values})
+        }, err => {
+          unsubscribeTrademarks()
+        })
         const unsubscribeProducts = firebase.firestore().collection('products').where('isArchived', '==', false).onSnapshot(docs => {
           let products: Product[] = []
           docs.forEach(doc => {
@@ -168,8 +174,8 @@ const StateProvider = ({children}: Props) => {
               name: doc.data().name,
               alias: doc.data().alias,
               description: doc.data().description,
-              trademark: doc.data().trademark,
-              country: doc.data().country,
+              trademarkId: doc.data().trademarkId,
+              countryId: doc.data().countryId,
               categoryId: doc.data().categoryId,
               imageUrl: doc.data().imageUrl,
               sales: doc.data().sales,

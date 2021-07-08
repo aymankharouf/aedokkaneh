@@ -160,6 +160,8 @@ const Reducer = (state: State, action: Action) => {
         return {...state, regions: action.payload}
       case 'SET_COUNTRIES':
         return {...state, countries: action.payload}
+      case 'SET_TRADEMARKS':
+        return {...state, trademarks: action.payload}
       case 'SET_NOTIFICATIONS':
         return {...state, notifications: action.payload}
       case 'SET_ALARMS':
@@ -214,6 +216,8 @@ const Reducer = (state: State, action: Action) => {
         return {...state, user: action.payload}
       case 'LOGOUT':
         return {...state, user: undefined}
+      case 'SET_SEARCH':
+        return {...state, searchText: action.payload}
       default:
         return state
     }

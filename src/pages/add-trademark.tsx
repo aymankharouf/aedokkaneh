@@ -1,39 +1,38 @@
 import { useContext, useState } from 'react'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { addCountry, getMessage } from '../data/actions'
+import { addTrademark, getMessage } from '../data/actions'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
 import { useHistory, useLocation } from 'react-router'
 import Header from './header'
-import Footer from './footer'
 import { checkmarkOutline } from 'ionicons/icons'
 
-const AddCountry = () => {
+
+const AddTrademark = () => {
   const { state } = useContext(StateContext)
-  const [name, setName] = useState('')
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-
+  const [name, setName] = useState('')
   const handleSubmit = () => {
     try{
-      if (state.countries.find(c => c.name === name)) {
+      if (state.trademarks.filter(t => t.name === name).length > 0) {
         throw new Error('duplicateName')
       }
-      addCountry({
+      addTrademark({
         id: Math.random().toString(),
         name
       })
       message(labels.addSuccess, 3000)
       history.goBack()
     } catch(err) {
-      message(getMessage(location.pathname, err), 3000)
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   return (
     <IonPage>
-      <Header title={labels.addCountry} />
-      <IonContent fullscreen>
+      <Header title={labels.addTrademark} />
+      <IonContent fullscreen className="ion-padding">
         <IonList>
           <IonItem>
             <IonLabel position="floating" color="primary">
@@ -48,16 +47,15 @@ const AddCountry = () => {
             />
           </IonItem>
         </IonList>
+        {name && 
+          <IonFab vertical="top" horizontal="end" slot="fixed">
+            <IonFabButton onClick={handleSubmit} color="success">
+              <IonIcon ios={checkmarkOutline} />
+            </IonFabButton>
+          </IonFab>
+        }
       </IonContent>
-      {name &&
-        <IonFab vertical="top" horizontal="end" slot="fixed">
-          <IonFabButton onClick={handleSubmit} color="success">
-            <IonIcon ios={checkmarkOutline} /> 
-          </IonFabButton>
-        </IonFab>    
-      }
-      <Footer />
     </IonPage>
   )
 }
-export default AddCountry
+export default AddTrademark

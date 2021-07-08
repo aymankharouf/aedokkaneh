@@ -372,7 +372,14 @@ const labels: Label = {
   gross: 'اﻻجمالي',
   confirmationBlockUser: 'هل ترغب بحظر التعامل مع هذا المستخدم؟',
   paymentDate: 'تاريخ الدفعة',
-  cancel: 'رجوع'
+  cancel: 'الغاء',
+  suspend: 'تعليق',
+  reject: 'رفض',
+  insert: 'استيداع',
+  timing: 'تحديد موعد التسليم',
+  yes: 'موافق',
+  setImage: 'حمل الصورة',
+
 }
 
 export default labels
