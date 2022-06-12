@@ -4,7 +4,7 @@ import 'moment/locale/ar'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { getArchivedPurchases, getMessage } from '../data/actions'
-import { Purchase, Store } from '../data/types'
+import { Err, Purchase, Store } from '../data/types'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -45,8 +45,9 @@ const ArchivedPurchases = () => {
         dispatch({type: 'ADD_ARCHIVED_PURCHASES', payload: purchases})
       }
       lastMonth.current++
-  } catch(err) {
-    message(getMessage(location.pathname, err), 3000)
+    } catch(error) {
+      const err = error as Err
+      message(getMessage(location.pathname, err), 3000)
     }
   }
 

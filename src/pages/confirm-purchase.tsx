@@ -7,6 +7,7 @@ import Header from './header'
 import { useHistory, useLocation } from 'react-router'
 import { trashOutline } from 'ionicons/icons'
 import { colors } from '../data/config'
+import { Err } from '../data/types'
 
 
 const ConfirmPurchase = () => {
@@ -36,7 +37,8 @@ const ConfirmPurchase = () => {
         history.push('/')
         dispatch({type: 'CLEAR_BASKET'})    
       }  
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }

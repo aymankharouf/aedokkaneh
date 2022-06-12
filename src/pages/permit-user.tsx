@@ -5,6 +5,7 @@ import { StateContext } from '../data/state-provider'
 import { IonContent, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, useIonToast, useIonLoading, IonButton } from '@ionic/react'
 import { useHistory, useLocation, useParams } from 'react-router'
 import Header from './header'
+import { Err } from '../data/types'
 
 type Params = {
   id: string
@@ -49,8 +50,9 @@ const PermitUser = () => {
       dismiss()
       message(labels.permitSuccess, 3000)
       history.goBack()
-    } catch (err){
+    } catch (error){
       dismiss()
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }

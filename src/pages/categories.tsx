@@ -2,7 +2,7 @@ import { useContext, useState, useEffect } from 'react'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { deleteCategory, getMessage } from '../data/actions'
-import { Category } from '../data/types'
+import { Category, Err } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { IonActionSheet, IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
 import Header from './header'
@@ -48,7 +48,8 @@ const Categories = () => {
       deleteCategory(currentCategory, state.categories)
       message(labels.deleteSuccess, 3000)
       history.goBack()
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }

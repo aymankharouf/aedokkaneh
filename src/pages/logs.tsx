@@ -4,7 +4,7 @@ import 'moment/locale/ar'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { deleteLog, getMessage } from '../data/actions'
-import { Log, UserInfo } from '../data/types'
+import { Err, Log, UserInfo } from '../data/types'
 import { IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import { useLocation } from 'react-router'
 import Header from './header'
@@ -42,7 +42,8 @@ const Logs = () => {
           try{
             deleteLog(log)
             message(labels.deleteSuccess, 3000)
-          } catch(err) {
+          } catch(error) {
+            const err = error as Err
             message(getMessage(location.pathname, err), 3000)
           }    
         }},

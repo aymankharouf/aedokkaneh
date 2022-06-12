@@ -6,6 +6,7 @@ import { useHistory, useLocation, useParams } from 'react-router'
 import { IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonListHeader, IonPage, IonSelect, IonSelectOption, IonToggle, useIonToast } from '@ionic/react'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
+import { Err } from '../data/types'
 
 type Params = {
   id: string
@@ -117,7 +118,8 @@ const EditOffer = () => {
       editPack(newPack, pack, state.packs, image)
       message(labels.editSuccess, 3000)
       history.goBack()
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }

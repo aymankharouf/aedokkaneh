@@ -3,7 +3,7 @@ import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { confirmReturnBasket, getMessage, quantityText } from '../data/actions'
 import { stockOperationTypes } from '../data/config'
-import { Pack, StockPack } from '../data/types'
+import { Err, Pack, StockPack } from '../data/types'
 import { useHistory, useLocation } from 'react-router'
 import { IonBadge, IonButton, IonButtons, IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, IonText, useIonToast } from '@ionic/react'
 import Header from './header'
@@ -50,7 +50,8 @@ const ReturnBasket = () => {
       dispatch({type: 'CLEAR_RETURN_BASKET'})
       message(labels.executeSuccess, 3000)
       history.goBack()
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }

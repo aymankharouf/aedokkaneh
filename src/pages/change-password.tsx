@@ -5,6 +5,7 @@ import { IonButton, IonContent, IonInput, IonItem, IonLabel, IonList, IonPage, u
 import Header from './header'
 import { useHistory, useLocation } from 'react-router'
 import { patterns } from '../data/config'
+import { Err } from '../data/types'
 
 const ChangePassword = () => {
   const [oldPassword, setOldPassword] = useState('')
@@ -29,8 +30,9 @@ const ChangePassword = () => {
       dismiss()
       message(labels.changePasswordSuccess, 3000)
       history.goBack()
-    } catch(err) {
+    } catch(error) {
       dismiss()
+      const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }

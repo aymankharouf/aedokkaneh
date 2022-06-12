@@ -3,7 +3,7 @@ import RatingStars from './rating-stars'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { archiveProduct, deleteProduct, getMessage, productOfText } from '../data/actions'
-import { Pack } from '../data/types'
+import { Err, Pack } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { IonActionSheet, IonBadge, IonCard, IonCol, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonRow, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
@@ -19,6 +19,8 @@ const ProductPacks = () => {
   const { state } = useContext(StateContext)
   const params = useParams<Params>()
   const [product] = useState(() => params.type === 'a' ? state.archivedProducts.find(p => p.id === params.id)! : state.products.find(p => p.id === params.id)!)
+  const [trademark] = useState(() => state.trademarks.find(t => t.id === product.trademarkId))
+  const [country] = useState(() => state.countries.find(c => c.id === product.countryId))
   const [packs, setPacks] = useState<Pack[]>([])
   const [activePacks, setActivePacks] = useState<Pack[]>([])
   const [actionOpened, setActionOpened] = useState(false)
@@ -40,7 +42,8 @@ const ProductPacks = () => {
       archiveProduct(product, state.packs)
       message(labels.editSuccess, 3000)
       history.goBack()
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }
@@ -55,7 +58,8 @@ const ProductPacks = () => {
             deleteProduct(product)
             message(labels.deleteSuccess, 3000)
             history.goBack()
-          } catch(err) {
+          } catch(error) {
+            const err = error as Err
             message(getMessage(location.pathname, err), 3000)
           }    
         }},
@@ -74,7 +78,7 @@ const ProductPacks = () => {
             </IonCol>
           </IonRow>
           <IonRow>
-            <IonCol>{productOfText(product.trademarkId, product.countryId)}</IonCol>
+            <IonCol>{productOfText(trademark?.name || '', country?.name || '')}</IonCol>
             <IonCol className="ion-text-end"><RatingStars rating={product.rating} count={product.ratingCount} /></IonCol>
           </IonRow>
         </IonCard>

@@ -18,6 +18,10 @@ ion-text {
 ion-toast {
   color: var(--ion-color-secondary);
 }
+
+ion-img {
+  width: 90%;
+}
   
 .left {
   text-align: left;

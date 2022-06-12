@@ -7,6 +7,7 @@ import { useHistory, useLocation, useParams } from 'react-router'
 import Header from './header'
 import Footer from './footer'
 import { checkmarkOutline, chevronDownOutline, trashOutline } from 'ionicons/icons'
+import { Err } from '../data/types'
 
 type Params = {
   id: string
@@ -29,7 +30,8 @@ const ApproveUser = () => {
       approveUser(params.id, name, userInfo.mobile, regionId, userInfo.storeName, address, state.users, state.invitations)
       message(labels.approveSuccess)
       history.goBack()  
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }
@@ -46,9 +48,10 @@ const ApproveUser = () => {
             dismiss()
             message(labels.deleteSuccess, 3000)
             history.goBack()
-          } catch(err) {
+          } catch(error) {
             dismiss()
-            message(getMessage(location.pathname, err), 3000)
+            const err = error as Err
+			      message(getMessage(location.pathname, err), 3000)
           }    
         }},
       ],

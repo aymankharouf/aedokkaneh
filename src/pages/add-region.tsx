@@ -6,6 +6,7 @@ import { useHistory, useLocation } from 'react-router'
 import Header from './header'
 import Footer from './footer'
 import { checkmarkOutline } from 'ionicons/icons'
+import { Err } from '../data/types'
 
 const AddRegion = () => {
   const [name, setName] = useState('')
@@ -27,7 +28,8 @@ const AddRegion = () => {
       })
       message(labels.addSuccess)
       history.goBack()
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }

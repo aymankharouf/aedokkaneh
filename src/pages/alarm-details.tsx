@@ -5,7 +5,7 @@ import 'moment/locale/ar'
 import { approveAlarm, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { alarmTypes, colors } from '../data/config'
-import { Pack, PackPrice, Store } from '../data/types'
+import { Err, Pack, PackPrice, Store } from '../data/types'
 import { IonList, IonItem, IonContent, IonFab, IonFabButton, IonLabel, IonIcon, IonInput, IonPage, useIonToast, IonSelect, IonSelectOption, IonListHeader, IonText } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -65,8 +65,9 @@ const AlarmDetails = () => {
       approveAlarm(alarm, state.alarms, newPackId, customerInfo, state.packPrices, state.packs)
       message(labels.approveSuccess, 3000)
 			history.goBack()
-    } catch(err) {
-      message(getMessage(location.pathname, err), 3000)
+    } catch(error) {
+      const err = error as Err
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   let i = 0

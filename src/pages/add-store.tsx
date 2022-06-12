@@ -7,6 +7,7 @@ import { useHistory, useLocation } from 'react-router'
 import Header from './header'
 import Footer from './footer'
 import { checkmarkOutline } from 'ionicons/icons'
+import { Err } from '../data/types'
 
 const AddStore = () => {
   const [type, setType] = useState('')
@@ -46,11 +47,11 @@ const AddStore = () => {
       addStore(store)
       message(labels.addSuccess, 3000)
       history.goBack()
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }
-  console.log('type == ', type)
   return (
     <IonPage>
       <Header title={labels.newStore} />

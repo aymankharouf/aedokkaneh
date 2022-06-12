@@ -2,7 +2,7 @@ import { useState, useContext, useEffect } from 'react'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { addPackPrice, getMessage } from '../data/actions'
-import { Store } from '../data/types'
+import { Err, Store } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, IonToggle, useIonToast } from '@ionic/react'
 import Header from './header'
@@ -77,9 +77,10 @@ const AddPackStore = () => {
       addPackPrice(storePack, state.packPrices, state.packs)
       message(labels.addSuccess, 3000)
       history.goBack()
-    } catch(err) {
-    	message(getMessage(location.pathname, err), 3000)
-    }
+    } catch(error) {
+      const err = error as Err
+			message(getMessage(location.pathname, err), 3000)
+		}
   }
 
   return (

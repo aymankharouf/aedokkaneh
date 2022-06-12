@@ -5,6 +5,7 @@ import { IonButton, IonButtons, IonContent, IonFooter, IonInput, IonItem, IonLab
 import Header from './header'
 import { useHistory, useLocation } from 'react-router'
 import { patterns } from '../data/config'
+import { Err } from '../data/types'
 
 const Login = () => {
   const [password, setPassword] = useState('')
@@ -28,8 +29,9 @@ const Login = () => {
       dismiss()
       message(labels.loginSuccess, 3000)
       history.replace('/')
-    } catch (err){
+    } catch (error){
       dismiss()
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }

@@ -7,6 +7,7 @@ import { useHistory, useLocation, useParams } from 'react-router'
 import Header from './header'
 import Footer from './footer'
 import { checkmarkOutline, chevronDownOutline, trashOutline } from 'ionicons/icons'
+import { Err } from '../data/types'
 
 type Params = {
   id: string
@@ -39,7 +40,8 @@ const EditCountry = () => {
       editCountry(newCountry, state.countries)
       message(labels.editSuccess, 3000)
       history.goBack()
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }
@@ -54,7 +56,8 @@ const EditCountry = () => {
             deleteCountry(country.id, state.countries)
             message(labels.deleteSuccess, 3000)
             history.goBack()
-          } catch(err) {
+          } catch(error) {
+            const err = error as Err
             message(getMessage(location.pathname, err), 3000)
           }    
         }},

@@ -46,7 +46,7 @@ const Products = () => {
       })
       return result.sort((p1, p2) => p1.categoryId === p2.categoryId ? (p1.name > p2.name ? 1 : -1) : (p1.categoryName > p2.categoryName ? 1 : -1))
     })
-  }, [state.products, state.categories, state.packs, params.id])
+  }, [state.products, state.categories, state.packs, state.trademarks, state.countries, params.id])
   useEffect(() => {
     if (!state.searchText) {
       setData(products)

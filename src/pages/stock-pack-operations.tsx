@@ -5,7 +5,7 @@ import { StateContext } from '../data/state-provider'
 import { getMessage, quantityText, unfoldStockPack } from '../data/actions'
 import labels from '../data/labels'
 import { stockOperationTypes } from '../data/config'
-import { StockPack, Store } from '../data/types'
+import { Err, StockPack, Store } from '../data/types'
 import { IonActionSheet, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -95,7 +95,8 @@ const StockPackOperations = () => {
       }
       dispatch({type: 'ADD_TO_RETURN_BASKET', payload: params})
       message(labels.addToBasketSuccess, 3000)
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }    
   }
@@ -114,7 +115,8 @@ const StockPackOperations = () => {
       unfoldStockPack(stockPackInfo, state.packPrices, state.packs, state.stores)
       message(labels.executeSuccess, 3000)
       history.goBack()
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }      
   }

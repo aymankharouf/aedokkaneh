@@ -7,6 +7,7 @@ import Header from './header'
 import Footer from './footer'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { checkmarkOutline } from 'ionicons/icons'
+import { Err } from '../data/types'
 
 type Params = {
   userId: string,
@@ -41,7 +42,8 @@ const InvitationDetails = () => {
       approveInvitation(newInvitation, state.invitations)
       message(labels.approveSuccess, 3000)
       history.goBack()
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }

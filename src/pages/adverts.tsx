@@ -5,7 +5,7 @@ import moment from 'moment'
 import 'moment/locale/ar'
 import { updateAdvertStatus, getMessage, deleteAdvert } from '../data/actions'
 import { advertType } from '../data/config'
-import { Advert } from '../data/types'
+import { Advert, Err } from '../data/types'
 import { IonActionSheet, IonButtons, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -40,9 +40,10 @@ const Adverts = () => {
             if (!currentAdvert) return
             updateAdvertStatus(currentAdvert, state.adverts)
             message(labels.editSuccess, 3000)
-          } catch(err) {
+          } catch(error) {
+            const err = error as Err
             message(getMessage(location.pathname, err), 3000)
-          }    
+          }
         }},
       ],
     })
@@ -58,9 +59,10 @@ const Adverts = () => {
             if (!currentAdvert) return
             deleteAdvert(currentAdvert)
             message(labels.deleteSuccess, 3000)
-          } catch(err) {
+          } catch(error) {
+            const err = error as Err
             message(getMessage(location.pathname, err), 3000)
-          }    
+          }
         }},
       ],
     })

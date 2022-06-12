@@ -7,6 +7,7 @@ import { useHistory, useLocation } from 'react-router'
 import Header from './header'
 import Footer from './footer'
 import { checkmarkOutline } from 'ionicons/icons'
+import { Err } from '../data/types'
 
 const AddCountry = () => {
   const { state } = useContext(StateContext)
@@ -26,8 +27,9 @@ const AddCountry = () => {
       })
       message(labels.addSuccess, 3000)
       history.goBack()
-    } catch(err) {
-      message(getMessage(location.pathname, err), 3000)
+    } catch(error) {
+      const err = error as Err
+			message(getMessage(location.pathname, err), 3000)
 		}
   }
   return (

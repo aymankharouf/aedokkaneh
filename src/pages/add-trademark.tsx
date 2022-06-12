@@ -6,6 +6,7 @@ import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel,
 import { useHistory, useLocation } from 'react-router'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
+import { Err } from '../data/types'
 
 
 const AddTrademark = () => {
@@ -25,7 +26,8 @@ const AddTrademark = () => {
       })
       message(labels.addSuccess, 3000)
       history.goBack()
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }

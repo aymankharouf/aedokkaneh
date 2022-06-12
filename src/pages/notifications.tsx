@@ -4,7 +4,7 @@ import labels from '../data/labels'
 import moment from 'moment'
 import 'moment/locale/ar'
 import { deleteNotification, getMessage } from '../data/actions'
-import { Notification, UserInfo } from '../data/types'
+import { Err, Notification, UserInfo } from '../data/types'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -44,7 +44,8 @@ const Notifications = () => {
             const notification = state.notifications.find(n => n.id === notificationId)!
             deleteNotification(notification, state.notifications)
             message(labels.deleteSuccess, 3000)
-          } catch(err) {
+          } catch(error) {
+            const err = error as Err
             message(getMessage(location.pathname, err), 3000)
           }    
         }},

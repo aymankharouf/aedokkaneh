@@ -2,7 +2,7 @@ import { useContext, useState, useEffect } from 'react'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { approveRating, getMessage } from '../data/actions'
-import { Product, Rating, UserInfo } from '../data/types'
+import { Err, Product, Rating, UserInfo } from '../data/types'
 import { IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -37,7 +37,8 @@ const Ratings = () => {
     try{
       approveRating(rating, state.ratings, state.products, state.packs)
       message(labels.approveSuccess, 3000)
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }

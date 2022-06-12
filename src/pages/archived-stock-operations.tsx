@@ -5,7 +5,7 @@ import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { colors, stockOperationTypes } from '../data/config'
 import { getArchivedStockOperations, getMessage } from '../data/actions'
-import { StockOperation, Store } from '../data/types'
+import { Err, StockOperation, Store } from '../data/types'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -45,7 +45,8 @@ const ArchivedStockOperations = () => {
         dispatch({type: 'ADD_ARCHIVED_STOCK_OPERATIONS', payload: operations})
       }
       lastMonth.current++
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }

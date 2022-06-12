@@ -11,7 +11,7 @@ export type Category = {
   isLeaf: boolean,
   isActive: boolean
 }
-export type Error = {
+export type Err = {
   code: string,
   message: string
 }

@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from 'react'
 import { StateContext } from '../data/state-provider'
 import { updateOrderStatus, editOrder, getMessage, quantityDetails, returnOrder } from '../data/actions'
 import labels from '../data/labels'
-import { OrderBasketPack, Pack } from '../data/types'
+import { Err, OrderBasketPack, Pack } from '../data/types'
 import { IonButton, IonButtons, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import { addOutline, removeOutline, trashOutline } from 'ionicons/icons'
@@ -68,7 +68,8 @@ const EditOrder = (props: Props) => {
             message(labels.deleteSuccess, 3000)
             dispatch({type: 'CLEAR_ORDER_BASKET'})
             history.goBack()
-          } catch(err) {
+          } catch(error) {
+            const err = error as Err
             message(getMessage(location.pathname, err), 3000)
           }    
         }},
@@ -87,7 +88,8 @@ const EditOrder = (props: Props) => {
       message(labels.editSuccess, 3000)
       dispatch({type: 'CLEAR_ORDER_BASKET'})
       history.goBack()
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }

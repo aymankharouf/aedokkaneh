@@ -2,7 +2,7 @@ import { useContext, useState, useEffect } from 'react'
 import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { getCategoryName, getArchivedProducts, getArchivedPacks, getMessage } from '../data/actions'
-import { Category, Product } from '../data/types'
+import { Category, Err, Product } from '../data/types'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonLoading, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -43,8 +43,9 @@ const ArchivedProducts = () => {
         dispatch({type: 'SET_ARCHIVED_PACKS', payload: packs})
       }
       dismiss()
-    } catch(err) {
+    } catch(error) {
       dismiss()
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }

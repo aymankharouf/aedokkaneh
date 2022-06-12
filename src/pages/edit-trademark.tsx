@@ -6,6 +6,7 @@ import { useHistory, useLocation, useParams } from 'react-router'
 import { IonContent, IonFab, IonFabButton, IonFabList, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
 import Header from './header'
 import { checkmarkOutline, chevronDownOutline, trashOutline } from 'ionicons/icons'
+import { Err } from '../data/types'
 
 type Params = {
   id: string
@@ -36,7 +37,8 @@ const EditCountry = () => {
       editTrademark(newTrademark, state.trademarks)
       message(labels.editSuccess, 3000)
       history.goBack()
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }
@@ -53,7 +55,8 @@ const EditCountry = () => {
             deleteTrademark(params.id, state.trademarks)
             message(labels.deleteSuccess, 3000)
             history.goBack()
-          } catch(err) {
+          } catch(error) {
+            const err = error as Err
             message(getMessage(location.pathname, err), 3000)
           }
         }},

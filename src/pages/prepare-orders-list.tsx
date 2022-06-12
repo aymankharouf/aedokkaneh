@@ -2,7 +2,7 @@ import { useContext, useState, useEffect } from 'react'
 import { StateContext } from '../data/state-provider'
 import { allocateOrderPack, getMessage } from '../data/actions'
 import labels from '../data/labels'
-import { CustomerInfo, Order, OrderBasketPack } from '../data/types'
+import { CustomerInfo, Err, Order, OrderBasketPack } from '../data/types'
 import { IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -46,7 +46,8 @@ const PrepareOrdersList = () => {
       allocateOrderPack(order, pack)
       message(labels.editSuccess, 3000)
       history.goBack()
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }

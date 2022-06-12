@@ -8,6 +8,7 @@ import Header from './header'
 import Footer from './footer'
 import { checkmarkOutline } from 'ionicons/icons'
 import { useHistory, useLocation, useParams } from 'react-router'
+import { Err } from '../data/types'
 
 type Params = {
   id: string
@@ -29,7 +30,8 @@ const RetreivePassword = () => {
       resolvePasswordRequest(params.id)
       message(labels.sendSuccess, 3000)
       history.goBack()
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }

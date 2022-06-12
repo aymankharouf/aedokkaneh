@@ -3,7 +3,7 @@ import { StateContext } from '../data/state-provider'
 import { updateOrderStatus, getMessage, quantityDetails, mergeOrder, setDeliveryTime } from '../data/actions'
 import labels from '../data/labels'
 import { colors, orderPackStatus } from '../data/config'
-import { Order, OrderBasketPack } from '../data/types'
+import { Err, Order, OrderBasketPack } from '../data/types'
 import { IonActionSheet, IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -68,7 +68,8 @@ const OrderDetails = () => {
       mergeOrder(lastOrder!, order.basket, order.id!)
       message(labels.mergeSuccess, 3000)
       history.goBack()
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }
@@ -77,7 +78,8 @@ const OrderDetails = () => {
       updateOrderStatus(order, actionId, state.packPrices, state.packs, false)
       message(labels.editSuccess, 3000)
       history.goBack()
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }
@@ -105,7 +107,8 @@ const OrderDetails = () => {
                 updateOrderStatus(order, actionId, state.packPrices, state.packs, false)
                 message(labels.editSuccess, 3000)
                 history.goBack()
-              } catch(err) {
+              } catch(error) {
+                const err = error as Err
                 message(getMessage(location.pathname, err), 3000)
               }    
             }},
@@ -126,7 +129,8 @@ const OrderDetails = () => {
                 setDeliveryTime(order.id!, e.deliveryTime)
                 message(labels.editSuccess, 3000)
                 history.goBack()
-              } catch(err) {
+              } catch(error) {
+                const err = error as Err
                 message(getMessage(location.pathname, err), 3000)
               }
             }}
@@ -137,7 +141,8 @@ const OrderDetails = () => {
         message(labels.editSuccess, 3000)
         history.goBack()
       }  
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }

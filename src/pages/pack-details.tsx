@@ -3,7 +3,7 @@ import { StateContext } from '../data/state-provider'
 import { getPackStores, deleteStorePack, refreshPackPrice, deletePack, changeStorePackStatus, getMessage, quantityText } from '../data/actions'
 import moment from 'moment'
 import labels from '../data/labels'
-import { Pack, PackPrice, Store } from '../data/types'
+import { Err, Pack, PackPrice, Store } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { IonActionSheet, IonBadge, IonCard, IonCol, IonContent, IonFab, IonFabButton, IonFabList, IonGrid, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonRow, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
@@ -83,7 +83,8 @@ const PackDetails = () => {
     try{
       refreshPackPrice(pack, state.packPrices)
       message(labels.refreshSuccess, 3000)
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }
@@ -98,7 +99,8 @@ const PackDetails = () => {
             deletePack(pack.id!)
             message(labels.deleteSuccess, 3000)
             history.goBack()
-          } catch(err) {
+          } catch(error) {
+            const err = error as Err
             message(getMessage(location.pathname, err), 3000)
           }    
         }},
@@ -116,7 +118,8 @@ const PackDetails = () => {
             if (!currentStorePack) return
             deleteStorePack(currentStorePack, state.packPrices, state.packs)
             message(labels.deleteSuccess, 3000)
-          } catch(err) {
+          } catch(error) {
+            const err = error as Err
             message(getMessage(location.pathname, err), 3000)
           }    
         }},
@@ -172,7 +175,8 @@ const PackDetails = () => {
         message(labels.addToBasketSuccess, 3000)
         history.goBack()
       }
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }
@@ -181,7 +185,8 @@ const PackDetails = () => {
       if (!currentStorePack) return
       changeStorePackStatus(currentStorePack, state.packPrices, state.packs)
       message(labels.editSuccess, 3000)
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }

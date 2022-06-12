@@ -5,7 +5,7 @@ import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { colors, orderStatus } from '../data/config'
 import { getArchivedOrders, getMessage } from '../data/actions'
-import { CustomerInfo, Order } from '../data/types'
+import { CustomerInfo, Err, Order } from '../data/types'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -46,9 +46,10 @@ const ArchivedOrders = () => {
         dispatch({type: 'ADD_ARCHIVED_ORDERS', payload: orders})
       }
       lastMonth.current++
-    } catch(err) {
-      message(getMessage(location.pathname, err), 3000)
-    }
+    } catch(error) {
+      const err = error as Err
+			message(getMessage(location.pathname, err), 3000)
+		}
   }
   return(
     <IonPage>

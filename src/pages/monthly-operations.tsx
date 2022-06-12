@@ -7,6 +7,7 @@ import Header from './header'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { checkmarkOutline } from 'ionicons/icons'
 import Footer from './footer'
+import { Err } from '../data/types'
 
 type Params = {
   id: string
@@ -99,7 +100,8 @@ const MonthlyOperations = () => {
       addMonthlyOperation(operation, state.orders, state.purchases, state.stockOperations)
       message(labels.addSuccess, 3000)
       history.goBack()
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }

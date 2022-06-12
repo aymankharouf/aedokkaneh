@@ -5,6 +5,7 @@ import { IonButton, IonContent, IonInput, IonItem, IonLabel, IonList, IonPage, u
 import Header from './header'
 import { useHistory, useLocation } from 'react-router'
 import { patterns } from '../data/config'
+import { Err } from '../data/types'
 
 const Register = () => {
   const [password, setPassword] = useState('')
@@ -28,8 +29,9 @@ const Register = () => {
       dismiss()
       message(labels.registerSuccess, 3000)
       history.replace('/') 
-    } catch (err){
+    } catch (error){
       dismiss()
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }

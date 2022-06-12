@@ -3,7 +3,7 @@ import { StateContext } from '../data/state-provider'
 import { packUnavailable, getMessage, addQuantity, getPackStores } from '../data/actions'
 import labels from '../data/labels'
 import moment from 'moment'
-import { Pack, PackPrice, Store } from '../data/types'
+import { Err, Pack, PackPrice, Store } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { IonBadge, IonCard, IonCol, IonContent, IonGrid, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonRow, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
@@ -97,7 +97,8 @@ const RequestedPackDetails = () => {
       dispatch({type: 'ADD_TO_BASKET', payload: basketItem})
       message(labels.addToBasketSuccess, 3000)
       history.goBack()
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }   
   }
@@ -151,7 +152,8 @@ const RequestedPackDetails = () => {
         message(labels.addToBasketSuccess, 3000)
         history.goBack()  
       }
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }
@@ -193,7 +195,8 @@ const RequestedPackDetails = () => {
           })
         }
       }
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }
@@ -209,7 +212,8 @@ const RequestedPackDetails = () => {
             packUnavailable(pack, Number(params.price), approvedOrders, overPriced)
             message(labels.executeSuccess, 3000)
             history.goBack()
-          } catch(err) {
+          } catch(error) {
+            const err = error as Err
             message(getMessage(location.pathname, err), 3000)
           }    
         }},
