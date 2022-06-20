@@ -1,14 +1,14 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
 import { deleteCategory, getMessage } from '../data/actions'
-import { Category, Err } from '../data/types'
+import { Category, Err, Product, State } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { IonActionSheet, IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { menuOutline } from 'ionicons/icons'
 import { colors } from '../data/config'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
@@ -18,22 +18,23 @@ type ExtendedCategory = Category & {
   productsCount: number
 }
 const Categories = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
+  const stateCategories = useSelector<State, Category[]>(state => state.categories)
+  const stateProducts = useSelector<State, Product[]>(state => state.products)
   const [categories, setCategories] = useState<ExtendedCategory[]>([])
-  const [currentCategory] = useState(() => state.categories.find(c => c.id === params.id)!)
-  const [categoryChildrenCount] = useState(() => state.categories.filter(c => c.parentId === currentCategory?.id).length)
-  const [categoryProductsCount] = useState(() => state.products.filter(p => p.categoryId === currentCategory?.id).length)
+  const [currentCategory] = useState(() => stateCategories.find(c => c.id === params.id)!)
+  const [categoryChildrenCount] = useState(() => stateCategories.filter(c => c.parentId === currentCategory?.id).length)
+  const [categoryProductsCount] = useState(() => stateProducts.filter(p => p.categoryId === currentCategory?.id).length)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
   const [actionOpened, setActionOpened] = useState(false);
   useEffect(() => {
     setCategories(() => {
-      const categories = state.categories.filter(c => c.parentId === params.id)
+      const categories = stateCategories.filter(c => c.parentId === params.id)
       const result = categories.map(c => {
-        const childrenCount = state.categories.filter(cc => cc.parentId === c.id).length
-        const productsCount = state.products.filter(p => p.categoryId === c.id).length
+        const childrenCount = stateCategories.filter(cc => cc.parentId === c.id).length
+        const productsCount = stateProducts.filter(p => p.categoryId === c.id).length
         return {
           ...c,
           childrenCount,
@@ -42,10 +43,10 @@ const Categories = () => {
       })
       return result.sort((c1, c2) => c1.ordering - c2.ordering)
     })
-  }, [state.categories, state.products, params.id])
+  }, [stateCategories, stateProducts, params.id])
   const handleDelete = () => {
     try{
-      deleteCategory(currentCategory, state.categories)
+      deleteCategory(currentCategory, stateCategories)
       message(labels.deleteSuccess, 3000)
       history.goBack()
     } catch(error) {

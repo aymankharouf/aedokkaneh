@@ -1,52 +1,59 @@
-import { useContext, useEffect, useState } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useEffect, useState } from 'react'
 import labels from '../data/labels'
 import { confirmReturnBasket, getMessage, quantityText } from '../data/actions'
 import { stockOperationTypes } from '../data/config'
-import { Err, Pack, StockPack } from '../data/types'
+import { Err, Order, Pack, PackPrice, Purchase, ReturnBasket as ReturnBasketType, State, StockOperation, StockPack, Store } from '../data/types'
 import { useHistory, useLocation } from 'react-router'
 import { IonBadge, IonButton, IonButtons, IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, IonText, useIonToast } from '@ionic/react'
 import Header from './header'
 import { trashOutline } from 'ionicons/icons'
 import { colors } from '../data/config'
+import { useSelector, useDispatch } from 'react-redux'
 
 type ExtendedStockPack = StockPack & {
   packInfo: Pack
 }
 const ReturnBasket = () => {
-  const { state, dispatch } = useContext(StateContext)
-  const [store] = useState(() => state.stores.find(s => s.id === state.returnBasket?.storeId))
+  const dispatch = useDispatch()
+  const stateReturnBasket = useSelector<State, ReturnBasketType | undefined>(state => state.returnBasket)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
+  const statePurchases = useSelector<State, Purchase[]>(state => state.purchases)
+  const stateOrders = useSelector<State, Order[]>(state => state.orders)
+  const stateStockOperations = useSelector<State, StockOperation[]>(state => state.stockOperations)
+  const [store] = useState(() => stateStores.find(s => s.id === stateReturnBasket?.storeId))
   const [basket, setBasket] = useState<ExtendedStockPack[]>([])
   const [totalPrice, setTotalPrice] = useState(0)
   const [storeId, setStoreId] = useState('')
-  const [stores] = useState(() => state.stores.filter(s => s.id !== 's'))
+  const [stores] = useState(() => stateStores.filter(s => s.id !== 's'))
   const history = useHistory()
   const location = useLocation()
   const [message] = useIonToast()
   useEffect(() => {
     setBasket(() => {
-      const basket = state.returnBasket?.packs || []
+      const basket = stateReturnBasket?.packs || []
       return basket.map(p => {
-        const packInfo = state.packs.find(pa => pa.id === p.packId)!
+        const packInfo = statePacks.find(pa => pa.id === p.packId)!
         return {
           ...p,
           packInfo
         }
       })
     })
-    setTotalPrice(() => state.returnBasket?.packs?.reduce((sum, p) => sum + Math.round(p.cost * (p.weight || p.quantity)), 0) || 0)
-  }, [state.returnBasket, state.packs])
+    setTotalPrice(() => stateReturnBasket?.packs?.reduce((sum, p) => sum + Math.round(p.cost * (p.weight || p.quantity)), 0) || 0)
+  }, [stateReturnBasket, statePacks])
   useEffect(() => {
-    if (!state.returnBasket) history.push('/')
-  }, [state.returnBasket, history])
+    if (!stateReturnBasket) history.push('/')
+  }, [stateReturnBasket, history])
   const handleSubmit = () => {
     try{
-      const packs = state.returnBasket!.packs.slice()
+      const packs = stateReturnBasket!.packs.slice()
       const returnBasket = {
-        ...state.returnBasket!,
+        ...stateReturnBasket!,
         packs
       }
-      confirmReturnBasket(returnBasket, storeId || state.returnBasket!.storeId, state.orders, state.stockOperations, state.packPrices, state.packs, state.purchases, state.stores)
+      confirmReturnBasket(returnBasket, storeId || stateReturnBasket!.storeId, stateOrders, stateStockOperations, statePackPrices, statePacks, statePurchases, stateStores)
       dispatch({type: 'CLEAR_RETURN_BASKET'})
       message(labels.executeSuccess, 3000)
       history.goBack()
@@ -58,7 +65,7 @@ const ReturnBasket = () => {
   let i = 0  
   return (
     <IonPage>
-      <Header title={`${labels.basket} ${stockOperationTypes.find(t => t.id === state.returnBasket?.type)?.name} ${store?.name || ''}`} />
+      <Header title={`${labels.basket} ${stockOperationTypes.find(t => t.id === stateReturnBasket?.type)?.name} ${store?.name || ''}`} />
       <IonContent fullscreen>
         <IonList className="ion-padding">
           {basket.map(p => 
@@ -82,7 +89,7 @@ const ReturnBasket = () => {
           )}
         </IonList>
         <IonList>
-          {state.returnBasket?.type === 's' &&
+          {stateReturnBasket?.type === 's' &&
             <IonItem>
               <IonLabel position="floating" color="primary">
                 {labels.store}
@@ -99,7 +106,7 @@ const ReturnBasket = () => {
           }
         </IonList>
       </IonContent>
-      {(state.returnBasket?.type !== 's' || storeId) &&
+      {(stateReturnBasket?.type !== 's' || storeId) &&
         <div className="ion-text-center">
           <IonButton 
             fill="solid" 

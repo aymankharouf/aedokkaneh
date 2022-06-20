@@ -1,5 +1,4 @@
-import { useContext, useState } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState } from 'react'
 import { getMessage, quantityDetails, approveOrderRequest, addQuantity } from '../data/actions'
 import labels from '../data/labels'
 import { colors, orderPackStatus, orderRequestTypes, setup } from '../data/config'
@@ -8,15 +7,19 @@ import Header from './header'
 import Footer from './footer'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { checkmarkOutline } from 'ionicons/icons'
-import { Err } from '../data/types'
+import { Err, Order, Pack, PackPrice, State, Store } from '../data/types'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const OrderRequestDetails = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [order] = useState(() => state.orders.find(o => o.id === params.id)!)
+  const stateOrders = useSelector<State, Order[]>(state => state.orders)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
+  const [order] = useState(() => stateOrders.find(o => o.id === params.id)!)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
@@ -44,7 +47,7 @@ const OrderRequestDetails = () => {
       }
     })
     return result.map(p => {
-      const storeName = p.storeId ? (p.storeId === 'm' ? labels.multipleStores : state.stores.find(s => s.id === p.storeId)?.name) : ''
+      const storeName = p.storeId ? (p.storeId === 'm' ? labels.multipleStores : stateStores.find(s => s.id === p.storeId)?.name) : ''
       const statusNote = `${orderPackStatus.find(s => s.id === p.status)?.name} ${p.overPriced ? labels.overPricedNote : ''}`
       const changeQuantityNote = p.change === 0 ? '' : p.change > 0 ? `${labels.increase} ${p.change}` : `${labels.decrease} ${-1 * p.change}`
       return {
@@ -60,7 +63,7 @@ const OrderRequestDetails = () => {
   const [fraction] = useState(() => (total + fixedFees) - Math.floor((total + fixedFees) / 5) * 5)
   const handleApprove = () => {
     try{
-      approveOrderRequest(order, state.orders, state.packPrices, state.packs)
+      approveOrderRequest(order, stateOrders, statePackPrices, statePacks)
       message(labels.approveSuccess, 3000)
       history.goBack()
     } catch(error) {

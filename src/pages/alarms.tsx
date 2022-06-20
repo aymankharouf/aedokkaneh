@@ -1,13 +1,13 @@
-import { useContext, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { alarmTypes, colors } from '../data/config'
-import { Alarm, CustomerInfo, Pack, UserInfo } from '../data/types'
+import { Alarm, CustomerInfo, Pack, State, UserInfo } from '../data/types'
 import { IonContent, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
+import { useSelector } from 'react-redux'
 
 type ExtendedAlarm = Alarm & {
   userInfo: UserInfo,
@@ -15,15 +15,18 @@ type ExtendedAlarm = Alarm & {
   customerInfo: CustomerInfo
 }
 const Alarms = () => {
-  const { state } = useContext(StateContext)
+  const stateAlarms = useSelector<State, Alarm[]>(state => state.alarms)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
+  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
   const [alarms, setAlarms] = useState<ExtendedAlarm[]>([])
   useEffect(() => {
     setAlarms(() => {
-      const alarms = state.alarms.filter(a => a.status === 'n')
+      const alarms = stateAlarms.filter(a => a.status === 'n')
       const result = alarms.map(a => {
-        const userInfo = state.users.find(u => u.id === a.userId)!
-        const packInfo = state.packs.find(p => p.id === a.packId)!
-        const customerInfo = state.customers.find(c => c.id === a.userId)!
+        const userInfo = stateUsers.find(u => u.id === a.userId)!
+        const packInfo = statePacks.find(p => p.id === a.packId)!
+        const customerInfo = stateCustomers.find(c => c.id === a.userId)!
         return {
           ...a,
           userInfo,
@@ -33,7 +36,7 @@ const Alarms = () => {
       })
       return result.sort((a1, a2) => a1.time > a2.time ? 1 : -1)
     })
-  }, [state.alarms, state.packs, state.users, state.customers])
+  }, [stateAlarms, statePacks, stateUsers, stateCustomers])
   return(
     <IonPage>
       <Header title={labels.alarms} />

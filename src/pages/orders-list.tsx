@@ -1,14 +1,14 @@
-import { useContext, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { colors, orderStatus } from '../data/config'
-import { CustomerInfo, Order, UserInfo } from '../data/types'
+import { CustomerInfo, Order, State, UserInfo } from '../data/types'
 import { IonContent, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useParams } from 'react-router'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string,
@@ -19,15 +19,17 @@ type ExtendedOrder = Order & {
   customerInfo: CustomerInfo
 }
 const OrdersList = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
+  const stateOrders = useSelector<State, Order[]>(state => state.orders)
+  const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
+  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
   const [orders, setOrders] = useState<ExtendedOrder[]>([])
   useEffect(() => {
     setOrders(() => {
-      const orders = state.orders.filter(o => (params.type === 's' && o.status === params.id) || (params.type === 'u' && o.userId === params.id))
+      const orders = stateOrders.filter(o => (params.type === 's' && o.status === params.id) || (params.type === 'u' && o.userId === params.id))
       const result = orders.map(o => {
-        const userInfo = state.users.find(u => u.id === o.userId)!
-        const customerInfo = state.customers.find(c => c.id === o.userId)!
+        const userInfo = stateUsers.find(u => u.id === o.userId)!
+        const customerInfo = stateCustomers.find(c => c.id === o.userId)!
         return {
           ...o,
           userInfo,
@@ -36,11 +38,11 @@ const OrdersList = () => {
       })
       return result.sort((o1, o2) => o2.time > o1.time ? 1 : -1)
     })
-  }, [state.orders, state.users, state.customers, params.id, params.type])
+  }, [stateOrders, stateUsers, stateCustomers, params.id, params.type])
 
   return(
     <IonPage>
-      <Header title={`${labels.orders} ${params.type === 's' ? orderStatus.find(s => s.id === params.id)?.name : state.customers.find(c => c.id === params.id)?.name}`} />
+      <Header title={`${labels.orders} ${params.type === 's' ? orderStatus.find(s => s.id === params.id)?.name : stateCustomers.find(c => c.id === params.id)?.name}`} />
       <IonContent fullscreen>
         <IonList>
           {orders.length === 0 ? 

@@ -1,25 +1,28 @@
-import { useContext, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { Purchase, Store } from '../data/types'
+import { Purchase, State, Store } from '../data/types'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { colors } from '../data/config'
 import { cloudUploadOutline } from 'ionicons/icons'
+import { useSelector } from 'react-redux'
+import firebase from '../data/firebase'
 
 type ExtendedPurchase = Purchase & {
   storeInfo: Store
 }
 const Purchases = () => {
-  const { state } = useContext(StateContext)
+  const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
+  const statePurchases = useSelector<State, Purchase[]>(state => state.purchases)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
   const [purchases, setPurchases] = useState<ExtendedPurchase[]>([])
   useEffect(() => {
     setPurchases(() => {
-      const purchases = state.purchases.map(p => {
-        const storeInfo = state.stores.find(s => s.id === p.storeId)!
+      const purchases = statePurchases.map(p => {
+        const storeInfo = stateStores.find(s => s.id === p.storeId)!
         return {
           ...p,
           storeInfo
@@ -27,9 +30,9 @@ const Purchases = () => {
       })
       return purchases.sort((p1, p2) => p2.time > p1.time ? 1 : -1)
     })
-  }, [state.purchases, state.stores])
+  }, [statePurchases, stateStores])
 
-  if (!state.user) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
+  if (!stateUser) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
   return(
     <IonPage>
  			<Header title={labels.purchases} />

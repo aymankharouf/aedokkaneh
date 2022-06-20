@@ -1,31 +1,33 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import moment from 'moment'
 import labels from '../data/labels'
 import { changeStorePackStatus, getMessage } from '../data/actions'
-import { Err, Pack, PackPrice } from '../data/types'
+import { Err, Pack, PackPrice, State, Store } from '../data/types'
 import { IonBadge, IonButton, IonContent, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useLocation } from 'react-router'
 import { colors } from '../data/config'
+import { useSelector } from 'react-redux'
 
 type ExtendedPackPrice = PackPrice & {
   packInfo: Pack,
   storeName: string
 }
 const Offers = () => {
-  const { state } = useContext(StateContext)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
   const [offers, setOffers] = useState<ExtendedPackPrice[]>([])
   const [message] = useIonToast()
   const location = useLocation()
   const [alert] = useIonAlert()
   useEffect(() => {
     setOffers(() => {
-      const offers = state.packPrices.filter(p => p.offerEnd)
+      const offers = statePackPrices.filter(p => p.offerEnd)
       const result = offers.map(o => {
-        const packInfo = state.packs.find(p => p.id === o.packId)!
-        const storeName = o.storeId ? (o.storeId === 'm' ? labels.multipleStores : state.stores.find(s => s.id === o.storeId)?.name || '') : ''
+        const packInfo = statePacks.find(p => p.id === o.packId)!
+        const storeName = o.storeId ? (o.storeId === 'm' ? labels.multipleStores : stateStores.find(s => s.id === o.storeId)?.name || '') : ''
         return {
           ...o,
           packInfo,
@@ -34,7 +36,7 @@ const Offers = () => {
       })
       return result.sort((o1, o2) => (o1.offerEnd || new Date()) > (o2.offerEnd || new Date()) ? 1 : -1)
     })
-  }, [state.packPrices, state.packs, state.stores])
+  }, [statePackPrices, statePacks, stateStores])
   const handleHaltOffer = (storePack: ExtendedPackPrice) => {
     try{
       const offerEndDate = storePack.offerEnd?.setHours(0, 0, 0, 0)
@@ -47,7 +49,7 @@ const Offers = () => {
             {text: labels.cancel},
             {text: labels.yes, handler: () => {
               try{
-                changeStorePackStatus(storePack, state.packPrices, state.packs)
+                changeStorePackStatus(storePack, statePackPrices, statePacks)
                 message(labels.haltSuccess, 3000)
               } catch(error) {
                 const err = error as Err
@@ -57,7 +59,7 @@ const Offers = () => {
           ],
         })
       } else {
-        changeStorePackStatus(storePack, state.packPrices, state.packs)
+        changeStorePackStatus(storePack, statePackPrices, statePacks)
         message(labels.haltSuccess, 3000)
       }
     } catch(error) {

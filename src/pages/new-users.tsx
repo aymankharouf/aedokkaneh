@@ -1,24 +1,25 @@
-import { useContext, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { UserInfo } from '../data/types'
+import { CustomerInfo, State, UserInfo } from '../data/types'
 import { IonContent, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { colors } from '../data/config'
+import { useSelector } from 'react-redux'
 
 
 const NewUsers = () => {
-  const { state } = useContext(StateContext)
+  const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
+  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
   const [newUsers, setNewUsers] = useState<UserInfo[]>([])
   useEffect(() => {
     setNewUsers(() => {
-      const newUsers = state.users.filter(u => !state.customers.find(c => c.id === u.id))
+      const newUsers = stateUsers.filter(u => !stateCustomers.find(c => c.id === u.id))
       return newUsers.sort((u1, u2) => u2.time > u1.time ? 1 : -1)
     })
-  }, [state.users, state.customers])
+  }, [stateUsers, stateCustomers])
   return(
     <IonPage>
       <Header title={labels.newUsers} />

@@ -1,15 +1,15 @@
-import { useContext, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { quantityText } from '../data/actions'
-import { StockPack, Store } from '../data/types'
+import { Pack, Purchase, State, StockPack, Store } from '../data/types'
 import { IonContent, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useParams } from 'react-router'
 import { colors } from '../data/config'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
@@ -20,16 +20,18 @@ type ExtendedStockPack = StockPack & {
   time: Date
 }
 const PackOperations = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [pack] = useState(() => state.packs.find(p => p.id === params.id)!)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const statePurchases = useSelector<State, Purchase[]>(state => state.purchases)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const [pack] = useState(() => statePacks.find(p => p.id === params.id)!)
   const [packOperations, setPackOperations] = useState<ExtendedStockPack[]>([])
   useEffect(() => {
     setPackOperations(() => {
-      const purchases = state.purchases.filter(p => p.basket.find(p => p.packId === pack.id))
+      const purchases = statePurchases.filter(p => p.basket.find(p => p.packId === pack.id))
       const packOperations = purchases.map(p => {
         const operationPack = p.basket.find(pa => pa.packId === pack.id)!
-        const storeInfo = state.stores.find(s => s.id === p.storeId)!
+        const storeInfo = stateStores.find(s => s.id === p.storeId)!
         return {
           ...operationPack,
           id: p.id!,
@@ -39,7 +41,7 @@ const PackOperations = () => {
       })
       return packOperations.sort((t1, t2) => t2.time > t1.time ? 1 : -1)
     })
-  }, [state.purchases, state.stores, pack])
+  }, [statePurchases, stateStores, pack])
   return(
     <IonPage>
       <Header title={`${pack.productName} ${pack.name}`} />

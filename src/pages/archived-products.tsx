@@ -1,28 +1,32 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
 import { getCategoryName, getArchivedProducts, getArchivedPacks, getMessage } from '../data/actions'
-import { Category, Err, Product } from '../data/types'
+import { Category, Err, Product, State } from '../data/types'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonLoading, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useLocation } from 'react-router'
 import { repeatOutline } from 'ionicons/icons'
 import { colors } from '../data/config'
+import { useSelector, useDispatch } from 'react-redux'
+import firebase from '../data/firebase'
 
 type ExtendedProduct = Product & {
   categoryInfo: Category
 }
 const ArchivedProducts = () => {
-  const { state, dispatch } = useContext(StateContext)
+  const dispatch = useDispatch()
+  const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
+  const stateArchivedProducts = useSelector<State, Product[]>(state => state.archivedProducts)
+  const stateCategories = useSelector<State, Category[]>(state => state.categories)
   const [products, setProducts] = useState<ExtendedProduct[]>([])
   const location = useLocation()
   const [message] = useIonToast()
   const [loading, dismiss] = useIonLoading()
   useEffect(() => {
     setProducts(() => {
-      const products = state.archivedProducts.map(p => {
-        const categoryInfo = state.categories.find(c => c.id === p.categoryId)!
+      const products = stateArchivedProducts.map(p => {
+        const categoryInfo = stateCategories.find(c => c.id === p.categoryId)!
         return {
           ...p,
           categoryInfo
@@ -30,7 +34,7 @@ const ArchivedProducts = () => {
       })
       return products.sort((p1, p2) => p1.sales - p2.sales)
     })
-  }, [state.archivedProducts, state.categories])
+  }, [stateArchivedProducts, stateCategories])
   const handleRetreive = async () => {
     try{
       loading()
@@ -49,7 +53,7 @@ const ArchivedProducts = () => {
       message(getMessage(location.pathname, err), 3000)
     }
   }
-  if (!state.user) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
+  if (!stateUser) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
   return(
     <IonPage>
       <Header title={labels.archivedProducts} />
@@ -66,7 +70,7 @@ const ArchivedProducts = () => {
                 </IonThumbnail>
                 <IonLabel>
                   <IonText style={{color: colors[0].name}}>{p.name}</IonText>
-                  <IonText style={{color: colors[1].name}}>{getCategoryName(p.categoryInfo, state.categories)}</IonText>
+                  <IonText style={{color: colors[1].name}}>{getCategoryName(p.categoryInfo, stateCategories)}</IonText>
                   <IonText style={{color: colors[2].name}}>{`${labels.productOf} ${p.trademarkId ? labels.company + ' ' + p.trademarkId + '-' : ''}${p.countryId}`}</IonText>
                 </IonLabel>
               </IonItem>   

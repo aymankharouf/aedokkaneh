@@ -1,5 +1,4 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import { addMonthlyOperation, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
@@ -7,13 +6,21 @@ import Header from './header'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { checkmarkOutline } from 'ionicons/icons'
 import Footer from './footer'
-import { Err } from '../data/types'
+import { Err, MonthlyOperation, Order, PackPrice, Purchase, Spending, State, StockOperation, Store, StorePayment } from '../data/types'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const MonthlyOperations = () => {
-  const { state } = useContext(StateContext)
+  const stateMonthlyOperations = useSelector<State, MonthlyOperation[]>(state => state.monthlyOperations)
+  const stateOrders = useSelector<State, Order[]>(state => state.orders)
+  const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const stateStorePayments = useSelector<State, StorePayment[]>(state => state.storePayments)
+  const stateSpendings = useSelector<State, Spending[]>(state => state.spendings)
+  const stateStockOperations = useSelector<State, StockOperation[]>(state => state.stockOperations)
+  const statePurchases = useSelector<State, Purchase[]>(state => state.purchases)
   const params = useParams<Params>()
   const [buttonVisisble, setButtonVisible] = useState(false)
   const month = (Number(params.id) % 100) - 1
@@ -21,8 +28,8 @@ const MonthlyOperations = () => {
   const history = useHistory()
   const location = useLocation()
   const [message] = useIonToast()
-  const [monthlyOperation] = useState(() => state.monthlyOperations.find(t => t.id === Number(params.id))!)
-  const [orders] = useState(() => state.orders.filter(o => ['a', 'e', 'f', 'p', 'd'].includes(o.status) && (o.time).getFullYear() === year && (o.time).getMonth() === month))
+  const [monthlyOperation] = useState(() => stateMonthlyOperations.find(t => t.id === Number(params.id))!)
+  const [orders] = useState(() => stateOrders.filter(o => ['a', 'e', 'f', 'p', 'd'].includes(o.status) && (o.time).getFullYear() === year && (o.time).getMonth() === month))
   const [finishedOrders] = useState(() => orders.filter(o => ['f', 'p'].includes(o.status)))
   const [deliveredOrders] = useState(() => orders.filter(o => o.status === 'd'))
   const [ordersCount] = useState(() => monthlyOperation.ordersCount ?? orders.length)
@@ -30,7 +37,7 @@ const MonthlyOperations = () => {
   const [finishedOrdersCount] = useState(() => monthlyOperation.finishedOrdersCount ?? finishedOrders.length)
   const [stock] = useState(() => {
     if (monthlyOperation) return monthlyOperation.stock
-    const stockPacks = state.packPrices.filter(p => p.storeId === 's' && p.quantity > 0)
+    const stockPacks = statePackPrices.filter(p => p.storeId === 's' && p.quantity > 0)
     return stockPacks.reduce((sum, p) => sum + Math.round(p.cost * p.quantity), 0)
   })
   const [sales] = useState(() => monthlyOperation.sales ?? deliveredOrders.reduce((sum, o) => sum + o.total, 0))
@@ -42,14 +49,14 @@ const MonthlyOperations = () => {
   const [specialDiscounts] = useState(() => monthlyOperation.specialDiscounts ?? deliveredOrders.reduce((sum, o) => sum + (o.discount.type === 's' ? o.discount.value : 0), 0))
   const [storesBalance] = useState(() => {
     let sum = 0
-    state.stores.forEach(s => {
+    stateStores.forEach(s => {
       sum += s.balances?.filter(b => b.month === year * 100 + month)?.reduce((sum, b) => sum + b.balance, 0) || 0
     })
     return monthlyOperation.storesBalance ?? sum
   })
-  const [storePayments] = useState(() => state.storePayments.filter(p => (p.paymentDate).getFullYear() === year && (p.paymentDate).getMonth() === month))
-  const [spendings] = useState(() => state.spendings.filter(s => (s.spendingDate).getFullYear() === year && (s.spendingDate).getMonth() === month))
-  const [stockOperations] = useState(() => state.stockOperations.filter(t => (t.time).getFullYear() === year && (t.time).getMonth() === month))
+  const [storePayments] = useState(() => stateStorePayments.filter(p => (p.paymentDate).getFullYear() === year && (p.paymentDate).getMonth() === month))
+  const [spendings] = useState(() => stateSpendings.filter(s => (s.spendingDate).getFullYear() === year && (s.spendingDate).getMonth() === month))
+  const [stockOperations] = useState(() => stateStockOperations.filter(t => (t.time).getFullYear() === year && (t.time).getMonth() === month))
   const [donations] = useState(() => monthlyOperation.donations ?? stockOperations.reduce((sum, t) => sum + (t.type === 'g' ? t.total : 0), 0))
   const [damages] = useState(() => monthlyOperation.damages ?? stockOperations.reduce((sum, t) => sum + (t.type === 'd' ? t.total : 0), 0))
   const [storesProfit] = useState(() => monthlyOperation.storesProfit ?? storePayments.reduce((sum, p) => sum + (p.type === 'c' ? p.amount : 0), 0))
@@ -97,7 +104,7 @@ const MonthlyOperations = () => {
         specialDiscounts,
         netProfit
       }
-      addMonthlyOperation(operation, state.orders, state.purchases, state.stockOperations)
+      addMonthlyOperation(operation, stateOrders, statePurchases, stateStockOperations)
       message(labels.addSuccess, 3000)
       history.goBack()
     } catch(error) {

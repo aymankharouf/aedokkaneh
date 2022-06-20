@@ -1,20 +1,20 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
 import moment from 'moment'
 import 'moment/locale/ar'
 import { updateAdvertStatus, getMessage, deleteAdvert } from '../data/actions'
 import { advertType } from '../data/config'
-import { Advert, Err } from '../data/types'
+import { Advert, Err, State } from '../data/types'
 import { IonActionSheet, IonButtons, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { colors } from '../data/config'
 import { addOutline, ellipsisVerticalOutline } from 'ionicons/icons'
 import { useHistory, useLocation } from 'react-router'
+import { useSelector } from 'react-redux'
 
 const Adverts = () => {
-  const { state } = useContext(StateContext)
+  const stateAdverts = useSelector<State, Advert[]>(state => state.adverts)
   const [currentAdvert, setCurrentAdvert] = useState<Advert>()
   const [adverts, setAdverts] = useState<Advert[]>([])
   const [actionsOpened, setActionsOpened] = useState(false)
@@ -23,8 +23,8 @@ const Adverts = () => {
   const history = useHistory()
   const [alert] = useIonAlert()
   useEffect(() => {
-    setAdverts(() => [...state.adverts].sort((a1, a2) => a2.time > a1.time ? 1 : -1))
-  }, [state.adverts])
+    setAdverts(() => [...stateAdverts].sort((a1, a2) => a2.time > a1.time ? 1 : -1))
+  }, [stateAdverts])
   const handleAction = (advert: Advert) => {
     setCurrentAdvert(advert)
     setActionsOpened(true)
@@ -38,7 +38,7 @@ const Adverts = () => {
         {text: labels.yes, handler: () => {
           try{
             if (!currentAdvert) return
-            updateAdvertStatus(currentAdvert, state.adverts)
+            updateAdvertStatus(currentAdvert, stateAdverts)
             message(labels.editSuccess, 3000)
           } catch(error) {
             const err = error as Err

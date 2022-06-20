@@ -1,21 +1,21 @@
-import { useContext, useState } from 'react'
+import { useState } from 'react'
 import { sendNotification, getMessage } from '../data/actions'
 import labels from '../data/labels'
-import { StateContext } from '../data/state-provider'
 import { useHistory, useLocation } from 'react-router'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { checkmarkOutline } from 'ionicons/icons'
-import { Err } from '../data/types'
+import { CustomerInfo, Err, State } from '../data/types'
+import { useSelector } from 'react-redux'
 
 
 const AddNotification = () => {
-  const { state } = useContext(StateContext)
+  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
   const [userId, setUserId] = useState('')
   const [title, setTitle] = useState('')
   const [text, setText] = useState('')
-  const [customers] = useState(() => [...state.customers].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
+  const [customers] = useState(() => [...stateCustomers].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()

@@ -1,23 +1,24 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
-import { CustomerInfo } from '../data/types'
+import { CustomerInfo, State, Store } from '../data/types'
 import { IonContent, IonItem, IonLabel, IonList, IonPage } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useParams } from 'react-router'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const StoreOwners = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [store] = useState(() => state.stores.find(s => s.id === params.id)!)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
+  const [store] = useState(() => stateStores.find(s => s.id === params.id)!)
   const [storeOwners, setStoreOwners] = useState<CustomerInfo[]>([])
   useEffect(() => {
-    setStoreOwners(() => state.customers.filter(c => c.storeId === params.id))
-  }, [state.customers, params.id])
+    setStoreOwners(() => stateCustomers.filter(c => c.storeId === params.id))
+  }, [stateCustomers, params.id])
   return (
     <IonPage>
       <Header title={`${labels.storeOwners} ${store.name}`} />

@@ -1,12 +1,12 @@
-import { useContext, useEffect, useState } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useEffect, useState } from 'react'
 import { getRequestedPacks, getPackStores } from '../data/actions'
 import labels from '../data/labels'
-import { Store } from '../data/types'
+import { Basket, CustomerInfo, Order, Pack, PackPrice, Purchase, State, Store } from '../data/types'
 import { IonContent, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { colors } from '../data/config'
+import { useSelector } from 'react-redux'
 
 type ExtendedStore = Store & {
 	sales: number,
@@ -14,17 +14,23 @@ type ExtendedStore = Store & {
 	packsCount: number
 }
 const PurchasePlan = () => {
-	const { state } = useContext(StateContext)
+	const stateOrders = useSelector<State, Order[]>(state => state.orders)
+  const stateBasket = useSelector<State, Basket | undefined>(state => state.basket)
+  const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
+	const statePacks = useSelector<State, Pack[]>(state => state.packs)
+	const stateStores = useSelector<State, Store[]>(state => state.stores)
+	const statePurchases = useSelector<State, Purchase[]>(state => state.purchases)
+	const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
 	const [stores, setStores] = useState<ExtendedStore[]>([])
-	const [approvedOrders] = useState(() => state.orders.filter(o => ['a', 'e'].includes(o.status)))
+	const [approvedOrders] = useState(() => stateOrders.filter(o => ['a', 'e'].includes(o.status)))
 	useEffect(() => {
 		const storesArray: ExtendedStore[] = []
 		const today = new Date()
     today.setDate(today.getDate() - 30)
-		const packs = getRequestedPacks(approvedOrders, state.basket!, state.packs)
+		const packs = getRequestedPacks(approvedOrders, stateBasket!, statePacks)
 		packs.forEach(p => {
-			const basketStock = state.basket?.storeId === 's' ? state.basket.packs.find(bp => bp.packId === p.packId) : undefined
-			const packStores = getPackStores(p.packInfo, state.packPrices, state.packs, (basketStock?.quantity || 0))
+			const basketStock = stateBasket?.storeId === 's' ? stateBasket.packs.find(bp => bp.packId === p.packId) : undefined
+			const packStores = getPackStores(p.packInfo, statePackPrices, statePacks, (basketStock?.quantity || 0))
 			packStores.forEach(ps => {
 				const found = storesArray.findIndex(s => s.id === ps.storeId)
 				if (found > -1) {
@@ -36,8 +42,8 @@ const PurchasePlan = () => {
 						})
 					}
 				} else {
-					const storeInfo = state.stores.find(s => s.id === ps.storeId)!
-					const storePurchases = state.purchases.filter(pu => pu.storeId === ps.storeId && pu.time >= today)
+					const storeInfo = stateStores.find(s => s.id === ps.storeId)!
+					const storePurchases = statePurchases.filter(pu => pu.storeId === ps.storeId && pu.time >= today)
 					storesArray.push({
 						...storeInfo,
 						sales: storePurchases.reduce((sum, pu) => sum + pu.total, 0),
@@ -59,7 +65,7 @@ const PurchasePlan = () => {
 			}
 		})
 		setStores(storesArray)
-	}, [state.basket, approvedOrders, state.stores, state.packs, state.customers, state.packPrices, state.purchases])
+	}, [stateBasket, approvedOrders, stateStores, statePacks, stateCustomers, statePackPrices, statePurchases])
 	let i = 0
 	return(
     <IonPage>

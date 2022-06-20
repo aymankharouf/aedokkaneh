@@ -1,25 +1,29 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
 import { IonToggle, IonList, IonItem, IonContent, IonFab, IonFabButton, IonFabList, IonLabel, IonIcon, IonInput, IonPage } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useParams } from 'react-router'
 import { chevronDownOutline, pencilOutline, swapVerticalOutline } from 'ionicons/icons'
+import { useSelector } from 'react-redux'
+import { CustomerInfo, Region, State, Store, UserInfo } from '../data/types'
 
 type Params = {
   id: string
 }
 const CustomerDetails = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [customer, setCustomer] = useState(() => state.customers.find(c => c.id === params.id)!)
-  const [userInfo, setUserInfo] = useState(() => state.users.find(u => u.id === params.id)!)
-  const [storeName] = useState(() => state.stores.find(s => s.id === customer.storeId)?.name || '')
+  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
+  const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const stateRegions = useSelector<State, Region[]>(state => state.regions)
+  const [customer, setCustomer] = useState(() => stateCustomers.find(c => c.id === params.id)!)
+  const [userInfo, setUserInfo] = useState(() => stateUsers.find(u => u.id === params.id)!)
+  const [storeName] = useState(() => stateStores.find(s => s.id === customer.storeId)?.name || '')
   useEffect(() => {
-    setCustomer(() => state.customers.find(c => c.id === params.id)!)
-    setUserInfo(() => state.users.find(u => u.id === params.id)!)
-  }, [state.customers, state.users, params.id])
+    setCustomer(() => stateCustomers.find(c => c.id === params.id)!)
+    setUserInfo(() => stateUsers.find(u => u.id === params.id)!)
+  }, [stateCustomers, stateUsers, params.id])
   return (
     <IonPage>
       <Header title={labels.customerDetails} />
@@ -48,7 +52,7 @@ const CustomerDetails = () => {
               {labels.region}
             </IonLabel>
             <IonInput 
-              value={state.regions.find(r => r.id === userInfo.regionId)?.name} 
+              value={stateRegions.find(r => r.id === userInfo.regionId)?.name} 
               readonly
             />
           </IonItem>

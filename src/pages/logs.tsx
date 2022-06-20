@@ -1,29 +1,30 @@
-import { useContext, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { deleteLog, getMessage } from '../data/actions'
-import { Err, Log, UserInfo } from '../data/types'
+import { Err, Log, State, UserInfo } from '../data/types'
 import { IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import { useLocation } from 'react-router'
 import Header from './header'
 import { trashOutline } from 'ionicons/icons'
 import { colors } from '../data/config'
+import { useSelector } from 'react-redux'
 
 type ExtendedLog = Log & {
   userInfo: UserInfo
 }
 const Logs = () => {
-  const {state} = useContext(StateContext)
+  const stateLogs = useSelector<State, Log[]>(state => state.logs)
+  const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
   const [message] = useIonToast()
   const location = useLocation()
   const [alert] = useIonAlert()
   const [logs, setLogs] = useState<ExtendedLog[]>([])
   useEffect(() => {
     setLogs(() => {
-      const logs = state.logs.map(l => {
-        const userInfo = state.users.find(u => u.id === l.userId)!
+      const logs = stateLogs.map(l => {
+        const userInfo = stateUsers.find(u => u.id === l.userId)!
         return {
           ...l,
           userInfo
@@ -31,7 +32,7 @@ const Logs = () => {
       })
       return logs
     })
-  }, [state.logs, state.users])
+  }, [stateLogs, stateUsers])
   const handleDelete = (log: Log) => {
     alert({
       header: labels.confirmationTitle,

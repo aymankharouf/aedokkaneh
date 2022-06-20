@@ -1,33 +1,34 @@
-import { useState, useContext, useEffect, ChangeEvent, useRef } from 'react'
+import { useState, useEffect, ChangeEvent, useRef } from 'react'
 import { addPack, getMessage } from '../data/actions'
-import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, IonToggle, useIonToast } from '@ionic/react'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
-import { Err } from '../data/types'
+import { Err, Pack, Product, State } from '../data/types'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const AddBulk = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
+  const stateProducts = useSelector<State, Product[]>(state => state.products)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const [name, setName] = useState('')
   const [subPackId, setSubPackId] = useState('')
   const [subQuantity, setSubQuantity] = useState('')
   const [specialImage, setSpecialImage] = useState(false)
   const [forSale, setForSale] = useState(true)
   const [image, setImage] = useState<File>()
-  const [product] = useState(() => state.products.find(p => p.id === params.id)!)
+  const [product] = useState(() => stateProducts.find(p => p.id === params.id)!)
   const [imageUrl, setImageUrl] = useState(product.imageUrl)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
   const inputEl = useRef<HTMLInputElement | null>(null)
   const [packs] = useState(() => {
-    const packs = state.packs.filter(p => p.productId === params.id && !p.isOffer && !p.byWeight && p.forSale)
+    const packs = statePacks.filter(p => p.productId === params.id && !p.isOffer && !p.byWeight && p.forSale)
     return packs.map(p => {
       return {
         id: p.id,
@@ -41,7 +42,7 @@ const AddBulk = () => {
   const generateName = () => {
     let suggestedName
     if (subPackId && subQuantity) {
-      suggestedName = `${+subQuantity > 1 ? subQuantity + '×' : ''}${state.packs.find(p => p.id === subPackId)?.name}`
+      suggestedName = `${+subQuantity > 1 ? subQuantity + '×' : ''}${statePacks.find(p => p.id === subPackId)?.name}`
       if (!name) setName(suggestedName)
     }
   }
@@ -64,8 +65,8 @@ const AddBulk = () => {
   }
   const handleSubmit = () => {
     try{
-      const subPackInfo = state.packs.find(p => p.id === subPackId)!
-      if (state.packs.find(p => p.productId === params.id && p.name === name && p.closeExpired === subPackInfo.closeExpired)) {
+      const subPackInfo = statePacks.find(p => p.id === subPackId)!
+      if (statePacks.find(p => p.productId === params.id && p.name === name && p.closeExpired === subPackInfo.closeExpired)) {
         throw new Error('duplicateName')
       }
       if (Number(subQuantity) <= 1) {

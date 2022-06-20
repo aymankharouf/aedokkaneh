@@ -1,14 +1,14 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
 import { getMessage, quantityText } from '../data/actions'
-import { Pack, Purchase, StockPack } from '../data/types'
+import { Err, Order, Pack, Purchase, ReturnBasket, State, StockPack } from '../data/types'
 import { IonBadge, IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useLocation, useParams } from 'react-router'
 import { colors } from '../data/config'
 import { refreshOutline } from 'ionicons/icons'
+import { useSelector, useDispatch } from 'react-redux'
 
 type Params = {
   id: string,
@@ -18,34 +18,39 @@ type ExtendedStockPack = StockPack & {
   packInfo: Pack
 }
 const PurchaseDetails = () => {
-  const { state, dispatch } = useContext(StateContext)
   const params = useParams<Params>()
+  const dispatch = useDispatch()
+  const stateArchivedPurchases = useSelector<State, Purchase[]>(state => state.archivedPurchases)
+  const statePurchases = useSelector<State, Purchase[]>(state => state.purchases)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const stateOrders = useSelector<State, Order[]>(state => state.orders)
+  const stateReturnBasket = useSelector<State, ReturnBasket | undefined>(state => state.returnBasket)
   const [purchase, setPurchase] = useState<Purchase>()
   const [purchaseBasket, setPurchaseBasket] = useState<ExtendedStockPack[]>([])
   const [message] = useIonToast()
   const location = useLocation()
   useEffect(() => {
-    setPurchase(() => params.type === 'a' ? state.archivedPurchases.find(p => p.id === params.id)! : state.purchases.find(p => p.id === params.id)!)
-  }, [state.purchases, state.archivedPurchases, params.id, params.type])
+    setPurchase(() => params.type === 'a' ? stateArchivedPurchases.find(p => p.id === params.id)! : statePurchases.find(p => p.id === params.id)!)
+  }, [statePurchases, stateArchivedPurchases, params.id, params.type])
   useEffect(() => {
     setPurchaseBasket(() => {
-      const purchaseBasket =  purchase ? purchase.basket.filter(p => !(state.returnBasket?.purchaseId === purchase.id && state.returnBasket?.packs?.find(bp => bp.packId === p.packId && (!bp.weight || bp.weight === p.weight)))) : []
+      const purchaseBasket =  purchase ? purchase.basket.filter(p => !(stateReturnBasket?.purchaseId === purchase.id && stateReturnBasket?.packs?.find(bp => bp.packId === p.packId && (!bp.weight || bp.weight === p.weight)))) : []
       return purchaseBasket.map(p => {
-        const packInfo = state.packs.find(pa => pa.id === p.packId)!
+        const packInfo = statePacks.find(pa => pa.id === p.packId)!
         return {
           ...p,
           packInfo,
         }
       })
     })
-  }, [state.packs, state.returnBasket, purchase])
+  }, [statePacks, stateReturnBasket, purchase])
   const handleReturn = (pack: ExtendedStockPack) => {
     try{
-      const affectedOrders = state.orders.filter(o => o.basket.find(p => p.packId === pack.packId && p.lastPurchaseId === purchase?.id) && ['p', 'd'].includes(o.status))
+      const affectedOrders = stateOrders.filter(o => o.basket.find(p => p.packId === pack.packId && p.lastPurchaseId === purchase?.id) && ['p', 'd'].includes(o.status))
       if (affectedOrders.length > 0) {
         throw new Error('finishedOrdersAffected')
       }
-      if (state.returnBasket && state.returnBasket.purchaseId !== purchase?.id) {
+      if (stateReturnBasket && stateReturnBasket.purchaseId !== purchase?.id) {
         throw new Error('diffPurchaseInReturnBasket')
       }
       const params = {
@@ -60,7 +65,8 @@ const PurchaseDetails = () => {
       }
       dispatch({type: 'ADD_TO_RETURN_BASKET', payload: params})
       message(labels.addToBasketSuccess, 3000)
-    } catch(err) {
+    } catch(error) {
+      const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }

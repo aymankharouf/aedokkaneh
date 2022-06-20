@@ -1,25 +1,26 @@
-import { useContext, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { orderStatus, orderRequestTypes, colors } from '../data/config'
-import { CustomerInfo, Order } from '../data/types'
+import { CustomerInfo, Order, State } from '../data/types'
 import { IonContent, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
+import { useSelector } from 'react-redux'
 
 type ExtendedOrder = Order & {
   customerInfo: CustomerInfo
 } 
 const OrderRequests = () => {
-  const { state } = useContext(StateContext)
+  const stateOrders = useSelector<State, Order[]>(state => state.orders)
+  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
   const [orderRequests, setOrderRequests] = useState<ExtendedOrder[]>([])
   useEffect(() => {
     setOrderRequests(() => {
-      const requests = state.orders.filter(r => r.requestType)
+      const requests = stateOrders.filter(r => r.requestType)
       const result = requests.map(r => {
-        const customerInfo = state.customers.find(c => c.id === r.userId)!
+        const customerInfo = stateCustomers.find(c => c.id === r.userId)!
         return {
           ...r,
           customerInfo
@@ -27,7 +28,7 @@ const OrderRequests = () => {
       })
       return result.sort((r1, r2) => (r2.requestTime || new Date()) > (r1.requestTime || new Date()) ? 1 : -1)
     })
-  }, [state.orders, state.customers])
+  }, [stateOrders, stateCustomers])
   return(
     <IonPage>
       <Header title={labels.orderRequests} />

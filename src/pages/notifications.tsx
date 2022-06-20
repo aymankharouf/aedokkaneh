@@ -1,30 +1,33 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
 import moment from 'moment'
 import 'moment/locale/ar'
 import { deleteNotification, getMessage } from '../data/actions'
-import { Err, Notification, UserInfo } from '../data/types'
+import { Err, Notification, State, UserInfo } from '../data/types'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useLocation } from 'react-router'
 import { colors } from '../data/config'
 import { addOutline, trashOutline } from 'ionicons/icons'
+import { useSelector } from 'react-redux'
+import firebase from '../data/firebase'
 
 type ExtendedNotification = Notification & {
   userInfo: UserInfo
 }
 const Notifications = () => {
-  const { state } = useContext(StateContext)
+  const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
+  const stateNotifications = useSelector<State, Notification[]>(state => state.notifications)
+  const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
   const [notifications, setNotifications] = useState<ExtendedNotification[]>([])
   const location = useLocation()
   const [message] = useIonToast()
   const [alert] = useIonAlert()
   useEffect(() => {
     setNotifications(() => {
-      const notifications = state.notifications.map(n => {
-        const userInfo = state.users.find(u => u.id === n.userId)!
+      const notifications = stateNotifications.map(n => {
+        const userInfo = stateUsers.find(u => u.id === n.userId)!
         return {
           ...n,
           userInfo
@@ -32,7 +35,7 @@ const Notifications = () => {
       })
       return notifications.sort((n1, n2) => n2.time > n1.time ? 1 : -1)
     })
-  }, [state.users, state.notifications])
+  }, [stateUsers, stateNotifications])
   const handleDelete = (notificationId: string) => {
     alert({
       header: labels.confirmationTitle,
@@ -41,8 +44,8 @@ const Notifications = () => {
         {text: labels.cancel},
         {text: labels.yes, handler: () => {
           try{
-            const notification = state.notifications.find(n => n.id === notificationId)!
-            deleteNotification(notification, state.notifications)
+            const notification = stateNotifications.find(n => n.id === notificationId)!
+            deleteNotification(notification, stateNotifications)
             message(labels.deleteSuccess, 3000)
           } catch(error) {
             const err = error as Err
@@ -53,7 +56,7 @@ const Notifications = () => {
     })
   }
 
-  if (!state.user) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
+  if (!stateUser) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
   return (
     <IonPage>
       <Header title={labels.notifications} />

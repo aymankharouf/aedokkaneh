@@ -1,7 +1,42 @@
 import { State, Action } from './types'
 
-const Reducer = (state: State, action: Action) => {
-    let pack, packIndex, packs, nextQuantity, i
+const localData = localStorage.getItem('basket')
+const basket = localData ? JSON.parse(localData) : ''
+const initState = {
+  categories: [], 
+  regions: [], 
+  countries: [],
+  stores: [], 
+  basket, 
+  users: [],
+  purchases: [],
+  orders: [],
+  stockOperations: [],
+  products: [],
+  packs: [],
+  passwordRequests: [],
+  customers: [],
+  spendings: [],
+  monthlyOperations: [],
+  packPrices: [],
+  logs: [],
+  archivedOrders: [],
+  adverts: [],
+  archivedPurchases: [],
+  archivedStockOperations: [],
+  archivedProducts: [],
+  archivedPacks: [],
+  notifications: [],
+  alarms: [],
+  ratings: [],
+  invitations: [],
+  storePayments: [],
+  searchText: '',
+  trademarks: []
+}
+
+const reducer = (state: State = initState, action: Action) => {
+  let pack, packIndex, packs, nextQuantity, i
     const increment = [0.125, 0.25, 0.5, 0.75, 1]
     switch (action.type){
       case 'ADD_TO_BASKET':
@@ -223,4 +258,4 @@ const Reducer = (state: State, action: Action) => {
     }
   }
   
-  export default Reducer
+  export default reducer

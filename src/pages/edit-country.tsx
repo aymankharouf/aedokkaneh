@@ -1,5 +1,4 @@
-import { useState, useContext, useEffect, useRef } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect, useRef } from 'react'
 import { editCountry, getMessage, deleteCountry } from '../data/actions'
 import labels from '../data/labels'
 import { IonContent, IonFab, IonFabButton, IonFabList, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonAlert, useIonToast } from '@ionic/react'
@@ -7,15 +6,16 @@ import { useHistory, useLocation, useParams } from 'react-router'
 import Header from './header'
 import Footer from './footer'
 import { checkmarkOutline, chevronDownOutline, trashOutline } from 'ionicons/icons'
-import { Err } from '../data/types'
+import { Country, Err, State } from '../data/types'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const EditCountry = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [country] = useState(() => state.countries.find(c => c.id === params.id)!)
+  const stateCountries = useSelector<State, Country[]>(state => state.countries)
+  const [country] = useState(() => stateCountries.find(c => c.id === params.id)!)
   const [name, setName] = useState(country.name)
   const [message] = useIonToast()
   const location = useLocation()
@@ -37,7 +37,7 @@ const EditCountry = () => {
         ...country,
         name
       }
-      editCountry(newCountry, state.countries)
+      editCountry(newCountry, stateCountries)
       message(labels.editSuccess, 3000)
       history.goBack()
     } catch(error) {
@@ -53,7 +53,7 @@ const EditCountry = () => {
         {text: labels.cancel},
         {text: labels.yes, handler: () => {
           try{
-            deleteCountry(country.id, state.countries)
+            deleteCountry(country.id, stateCountries)
             message(labels.deleteSuccess, 3000)
             history.goBack()
           } catch(error) {

@@ -1,5 +1,4 @@
-import { useState, useContext, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
 import { editCategory, getMessage, getCategoryName } from '../data/actions'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonToggle, IonPage, IonSelect, IonSelectOption, useIonToast } from '@ionic/react'
@@ -7,15 +6,16 @@ import { useHistory, useLocation, useParams } from 'react-router'
 import Header from './header'
 import Footer from './footer'
 import { checkmarkOutline } from 'ionicons/icons'
-import { Err } from '../data/types'
+import { Category, Err, State } from '../data/types'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const EditCategory = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [category] = useState(() => state.categories.find(c => c.id === params.id)!)
+  const stateCategories = useSelector<State, Category[]>(state => state.categories)
+  const [category] = useState(() => stateCategories.find(c => c.id === params.id)!)
   const [name, setName] = useState(category.name)
   const [ordering, setOrdering] = useState(category.ordering.toString())
   const [parentId, setParentId] = useState(category.parentId)
@@ -25,11 +25,11 @@ const EditCategory = () => {
   const location = useLocation()
   const history = useHistory()
   const [categories] = useState(() => {
-    const categories = state.categories.filter(c => c.id !== params.id)
+    const categories = stateCategories.filter(c => c.id !== params.id)
     const result = categories.map(c => {
       return {
         id: c.id,
-        name: getCategoryName(c, state.categories)
+        name: getCategoryName(c, stateCategories)
       }
     })
     return result.sort((c1, c2) => c1.name > c2.name ? 1 : -1)
@@ -50,7 +50,7 @@ const EditCategory = () => {
         ordering: +ordering,
         isActive
       }
-      editCategory(newCategory, category, state.categories)
+      editCategory(newCategory, category, stateCategories)
       message(labels.editSuccess, 3000)
       history.goBack()
     } catch(error) {

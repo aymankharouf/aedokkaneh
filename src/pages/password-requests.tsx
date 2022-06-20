@@ -1,20 +1,20 @@
-import { useContext, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { PasswordRequest } from '../data/types'
+import { PasswordRequest, State } from '../data/types'
 import { IonContent, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { colors } from '../data/config'
+import { useSelector } from 'react-redux'
 
 const PasswordRequests = () => {
-  const { state } = useContext(StateContext)
+  const statePasswordRequests = useSelector<State, PasswordRequest[]>(state => state.passwordRequests)
   const [passwordRequests, setPasswordRequests] = useState<PasswordRequest[]>([])
   useEffect(() => {
-    setPasswordRequests(() => state.passwordRequests.sort((r1, r2) => r1.time > r2.time ? 1 : -1))
-  }, [state.passwordRequests])
+    setPasswordRequests(() => statePasswordRequests.sort((r1, r2) => r1.time > r2.time ? 1 : -1))
+  }, [statePasswordRequests])
 
   return(
     <IonPage>

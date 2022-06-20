@@ -1,34 +1,35 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import { addStock, getMessage } from '../data/actions'
 import labels from '../data/labels'
-import { Err, Store } from '../data/types'
+import { Err, Purchase, State, Store } from '../data/types'
 import { IonBadge, IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
 import Header from './header'
 import { useHistory, useLocation } from 'react-router'
 import { addOutline } from 'ionicons/icons'
 import Footer from './footer'
+import { useSelector } from 'react-redux'
 
 type ExtendedStore = Store & {
   sales: number
 }
 const Stores = () => {
-  const { state } = useContext(StateContext)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const statePurchases = useSelector<State, Purchase[]>(state => state.purchases)
   const [stores, setStores] = useState<ExtendedStore[]>([])
   const [stock, setStock] = useState<Store>()
   const history = useHistory()
   const location = useLocation()
   const [message] = useIonToast()
   useEffect(() => {
-    setStock(() => state.stores.find(s => s.id === 's'))
-  }, [state.stores])
+    setStock(() => stateStores.find(s => s.id === 's'))
+  }, [stateStores])
   useEffect(() => {
     setStores(() => {
       const today = new Date()
       today.setDate(today.getDate() - 30)
-      const stores = state.stores.filter(s => s.id !== 's')
+      const stores = stateStores.filter(s => s.id !== 's')
       const result = stores.map(s => {
-        const storePurchases = state.purchases.filter(p => p.storeId === s.id && p.time >= today)
+        const storePurchases = statePurchases.filter(p => p.storeId === s.id && p.time >= today)
         const sales = storePurchases.reduce((sum, p) => sum + p.total, 0)
         return {
           ...s,
@@ -37,7 +38,7 @@ const Stores = () => {
       })
       return result.sort((s1, s2) => s1.sales - s2.sales)
     })
-  }, [state.stores, state.purchases])
+  }, [stateStores, statePurchases])
   const handleAddStock = () => {
     try{
       addStock()

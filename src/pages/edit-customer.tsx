@@ -1,5 +1,4 @@
-import { useState, useContext, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import { editCustomer, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { IonToggle, IonContent, IonSelect, IonSelectOption, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
@@ -7,16 +6,20 @@ import { useHistory, useLocation, useParams } from 'react-router'
 import Header from './header'
 import Footer from './footer'
 import { checkmarkOutline } from 'ionicons/icons'
-import { Err } from '../data/types'
+import { CustomerInfo, Err, Region, State, Store, UserInfo } from '../data/types'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const EditCustomer = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [customer] = useState(() => state.customers.find(c => c.id === params.id)!)
-  const [userInfo] = useState(() => state.users.find(u => u.id === params.id)!)
+  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
+  const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
+  const stateRegions = useSelector<State, Region[]>(state => state.regions)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const [customer] = useState(() => stateCustomers.find(c => c.id === params.id)!)
+  const [userInfo] = useState(() => stateUsers.find(u => u.id === params.id)!)
   const [name, setName] = useState(userInfo.name)
   const [address, setAddress] = useState(customer.address)
   const [regionId, setRegionId] = useState(userInfo.regionId)
@@ -26,7 +29,7 @@ const EditCustomer = () => {
   const [orderLimit, setOrderLimit] = useState((customer.orderLimit / 100).toFixed(2))
   const [specialDiscount, setSpecialDiscount] = useState((customer.specialDiscount / 100).toFixed(2))
   const [hasChanged, setHasChanged] = useState(false)
-  const [regions] = useState(() => [...state.regions].sort((l1, l2) => l1.name > l2.name ? 1 : -1))
+  const [regions] = useState(() => [...stateRegions].sort((l1, l2) => l1.name > l2.name ? 1 : -1))
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
@@ -61,7 +64,7 @@ const EditCustomer = () => {
         orderLimit: +orderLimit * 100,
         specialDiscount: +specialDiscount * 100
       }
-      editCustomer(newCustomer, name, regionId, userInfo.mobile, customer.storeId, state.stores)
+      editCustomer(newCustomer, name, regionId, userInfo.mobile, customer.storeId, stateStores)
       message(labels.editSuccess, 3000)
       history.goBack()    
     } catch(error) {

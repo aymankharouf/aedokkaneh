@@ -1,13 +1,13 @@
-import { useContext, useEffect, useState } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useEffect, useState } from 'react'
 import { updateOrderStatus, editOrder, getMessage, quantityDetails, returnOrder } from '../data/actions'
 import labels from '../data/labels'
-import { Err, OrderBasketPack, Pack } from '../data/types'
+import { Err, Order, OrderBasketPack, Pack, PackPrice, Region, State, UserInfo } from '../data/types'
 import { IonButton, IonButtons, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import { addOutline, removeOutline, trashOutline } from 'ionicons/icons'
 import { useHistory, useLocation } from 'react-router'
 import { colors } from '../data/config'
+import { useSelector, useDispatch } from 'react-redux'
 
 type Props = {
   id: string,
@@ -17,8 +17,14 @@ type ExtendedOrderBasketPack = OrderBasketPack & {
   packInfo: Pack
 }
 const EditOrder = (props: Props) => {
-  const { state, dispatch } = useContext(StateContext)
-  const [order] = useState(() => state.orders.find(o => o.id === props.id)!)
+  const dispatch = useDispatch()
+  const stateOrders = useSelector<State, Order[]>(state => state.orders)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
+  const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
+  const stateRegions = useSelector<State, Region[]>(state => state.regions)
+  const stateOrderBasket = useSelector<State, OrderBasketPack[] | undefined>(state => state.orderBasket)
+  const [order] = useState(() => stateOrders.find(o => o.id === props.id)!)
   const [orderBasket, setOrderBasket] = useState<ExtendedOrderBasketPack[]>([])
   const [total, setTotal] = useState(0)
   const [hasChanged, setHasChanged] = useState(false)
@@ -39,19 +45,19 @@ const EditOrder = (props: Props) => {
   }, [dispatch, order, props.type])
   useEffect(() => {
     setOrderBasket(() => {
-      const orderBasket = state.orderBasket?.filter(p => p.quantity > 0) || []
+      const orderBasket = stateOrderBasket?.filter(p => p.quantity > 0) || []
       return orderBasket.map(p => {
-        const packInfo = state.packs.find(pa => pa.id === p.packId)!
+        const packInfo = statePacks.find(pa => pa.id === p.packId)!
         return {
           ...p,
           packInfo
         }
       })
     })
-  }, [state.orderBasket, state.packs])
+  }, [stateOrderBasket, statePacks])
   useEffect(() => {
-    setHasChanged(() => state.orderBasket?.find(p => p.oldQuantity !== p.quantity) ? true : false)
-  }, [state.orderBasket])
+    setHasChanged(() => stateOrderBasket?.find(p => p.oldQuantity !== p.quantity) ? true : false)
+  }, [stateOrderBasket])
   useEffect(() => {
     setTotal(() => orderBasket.reduce((sum, p) => sum + p.gross, 0))
   }, [orderBasket])
@@ -64,7 +70,7 @@ const EditOrder = (props: Props) => {
         {text: labels.yes, handler: () => {
           try{
             const type = ['f', 'p', 'e'].includes(order.status) ? 'i' : 'c'
-            updateOrderStatus(order, type, state.packPrices, state.packs, false)
+            updateOrderStatus(order, type, statePackPrices, statePacks, false)
             message(labels.deleteSuccess, 3000)
             dispatch({type: 'CLEAR_ORDER_BASKET'})
             history.goBack()
@@ -79,11 +85,11 @@ const EditOrder = (props: Props) => {
   const handleSubmit = () => {
     try{
       if (props.type === 'e') {
-        editOrder(order, state.orderBasket!, state.packPrices, state.packs)
+        editOrder(order, stateOrderBasket!, statePackPrices, statePacks)
       } else {
-        const userRegion = state.users.find(c => c.id === order.userId)?.regionId
-        const regionFees = state.regions.find(r => r.id === userRegion)?.fees || 0
-        returnOrder(order, state.orderBasket!, regionFees, state.packPrices, state.packs)
+        const userRegion = stateUsers.find(c => c.id === order.userId)?.regionId
+        const regionFees = stateRegions.find(r => r.id === userRegion)?.fees || 0
+        returnOrder(order, stateOrderBasket!, regionFees, statePackPrices, statePacks)
       }
       message(labels.editSuccess, 3000)
       dispatch({type: 'CLEAR_ORDER_BASKET'})

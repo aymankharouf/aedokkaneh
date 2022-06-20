@@ -1,25 +1,28 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import { quantityText } from '../data/actions'
 import labels from '../data/labels'
-import { Pack, PackPrice } from '../data/types'
+import { Pack, PackPrice, State } from '../data/types'
 import { IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { colors } from '../data/config'
 import { constructOutline } from 'ionicons/icons'
+import { useSelector } from 'react-redux'
+import firebase from '../data/firebase'
 
 type ExtendedPackPrice = PackPrice & {
   packInfo: Pack
 }
 const Stock = () => {
-  const { state } = useContext(StateContext)
+  const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const [stockPacks, setStockPacks] = useState<ExtendedPackPrice[]>([])
   useEffect(() => {
     setStockPacks(() => {
-      const stockPacks = state.packPrices.filter(p => p.storeId === 's')
+      const stockPacks = statePackPrices.filter(p => p.storeId === 's')
       const result = stockPacks.map(p => {
-        const packInfo = state.packs.find(pa => pa.id === p.packId)!
+        const packInfo = statePacks.find(pa => pa.id === p.packId)!
         return {
           ...p,
           packInfo
@@ -27,9 +30,9 @@ const Stock = () => {
       })
       return result.sort((p1, p2) => p1.time > p2.time ? 1 : -1)
     })
-  }, [state.packPrices, state.packs])
+  }, [statePackPrices, statePacks])
 
-  if (!state.user) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
+  if (!stateUser) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
   let i = 0
   return(
     <IonPage>

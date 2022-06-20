@@ -1,5 +1,4 @@
-import { useState, useContext, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
 import { storeTypes, patterns } from '../data/config'
 import { editStore, getMessage } from '../data/actions'
@@ -8,15 +7,16 @@ import { useHistory, useLocation, useParams } from 'react-router'
 import Header from './header'
 import Footer from './footer'
 import { checkmarkOutline } from 'ionicons/icons'
-import { Err } from '../data/types'
+import { Err, State, Store } from '../data/types'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const EditStore = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [store] = useState(() => state.stores.find(s => s.id === params.id)!)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const [store] = useState(() => stateStores.find(s => s.id === params.id)!)
   const [type, setType] = useState(store.type)
   const [name, setName] = useState(store.name)
   const [mobile, setMobile] = useState(store.mobile)

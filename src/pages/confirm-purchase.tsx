@@ -1,5 +1,4 @@
-import { useContext, useState } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState } from 'react'
 import { confirmPurchase, stockOut, getMessage, quantityText } from '../data/actions'
 import labels from '../data/labels'
 import { IonBadge, IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
@@ -7,32 +6,38 @@ import Header from './header'
 import { useHistory, useLocation } from 'react-router'
 import { trashOutline } from 'ionicons/icons'
 import { colors } from '../data/config'
-import { Err } from '../data/types'
+import { Basket, Err, Order, Pack, PackPrice, State, Store } from '../data/types'
+import { useSelector, useDispatch } from 'react-redux'
 
 
 const ConfirmPurchase = () => {
-  const { state, dispatch } = useContext(StateContext)
-  const [store] = useState(() => state.stores.find(s => s.id === state.basket?.storeId)!)
+  const dispatch = useDispatch()
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const stateBasket = useSelector<State, Basket | undefined>(state => state.basket)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
+  const stateOrders = useSelector<State, Order[]>(state => state.orders)
+  const [store] = useState(() => stateStores.find(s => s.id === stateBasket?.storeId)!)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-  const [basket] = useState(() => state.basket?.packs.map(p => {
-    const packInfo = state.packs.find(pa => pa.id === p.packId)!
+  const [basket] = useState(() => stateBasket?.packs.map(p => {
+    const packInfo = statePacks.find(pa => pa.id === p.packId)!
     return {
       ...p,
       packInfo,
     }
   }))
-  const [total] = useState(() => state.basket?.packs.reduce((sum, p) => sum + Math.round(p.cost * (p.weight || p.quantity)), 0) || 0)
+  const [total] = useState(() => stateBasket?.packs.reduce((sum, p) => sum + Math.round(p.cost * (p.weight || p.quantity)), 0) || 0)
   const handlePurchase = () => {
     try{
       if (store.id === 's') {
-        stockOut(state.basket?.packs!, state.orders, state.packPrices, state.packs)
+        stockOut(stateBasket?.packs!, stateOrders, statePackPrices, statePacks)
         message(labels.purchaseSuccess, 3000)
         history.push('/')
         dispatch({type: 'CLEAR_BASKET'})    
       } else {
-        confirmPurchase(state.basket?.packs!, state.orders, store.id!, state.packPrices, state.packs, state.stores, total)
+        confirmPurchase(stateBasket?.packs!, stateOrders, store.id!, statePackPrices, statePacks, stateStores, total)
         message(labels.purchaseSuccess, 3000)
         history.push('/')
         dispatch({type: 'CLEAR_BASKET'})    

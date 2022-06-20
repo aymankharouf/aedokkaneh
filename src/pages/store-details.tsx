@@ -1,5 +1,4 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
 import { storeTypes } from '../data/config'
 import { IonToggle, IonList, IonItem, IonContent, IonFab, IonFabButton, IonFabList, IonLabel, IonIcon, IonInput, IonPage } from '@ionic/react'
@@ -7,17 +6,19 @@ import Header from './header'
 import Footer from './footer'
 import { useParams } from 'react-router'
 import { cartOutline, chevronDownOutline, pencilOutline, personOutline, swapVerticalOutline, walletOutline } from 'ionicons/icons'
+import { useSelector } from 'react-redux'
+import { State, Store } from '../data/types'
 
 type Params = {
   id: string
 }
 const StoreDetails = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [store, setStore] = useState(() => state.stores.find(s => s.id === params.id)!)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const [store, setStore] = useState(() => stateStores.find(s => s.id === params.id)!)
   useEffect(() => {
-    setStore(() => state.stores.find(s => s.id === params.id)!)
-  }, [state.stores, params.id])
+    setStore(() => stateStores.find(s => s.id === params.id)!)
+  }, [stateStores, params.id])
 
   return (
     <IonPage>

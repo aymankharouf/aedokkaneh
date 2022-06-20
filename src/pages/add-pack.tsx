@@ -1,19 +1,20 @@
-import { useState, useContext, useEffect, ChangeEvent, useRef } from 'react'
+import { useState, useEffect, ChangeEvent, useRef } from 'react'
 import { addPack, getMessage } from '../data/actions'
-import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage, IonToggle, useIonToast } from '@ionic/react'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
-import { Err } from '../data/types'
+import { Err, Pack, Product, State } from '../data/types'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const AddPack = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
+  const stateProducts = useSelector<State, Product[]>(state => state.products)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const [name, setName] = useState('')
   const [unitsCount, setUnitsCount] = useState('')
   const [isDivided, setIsDivided] = useState(false)
@@ -21,7 +22,7 @@ const AddPack = () => {
   const [closeExpired, setCloseExpired] = useState(false)
   const [specialImage, setSpecialImage] = useState(false)
   const [image, setImage] = useState<File>()
-  const [product] = useState(() => state.products.find(p => p.id === params.id)!)
+  const [product] = useState(() => stateProducts.find(p => p.id === params.id)!)
   const [imageUrl, setImageUrl] = useState(product.imageUrl)
   const [message] = useIonToast()
   const location = useLocation()
@@ -51,7 +52,7 @@ const AddPack = () => {
   }
   const handleSubmit = () => {
     try{
-      if (state.packs.find(p => p.productId === params.id && p.name === name && p.closeExpired === closeExpired)) {
+      if (statePacks.find(p => p.productId === params.id && p.name === name && p.closeExpired === closeExpired)) {
         throw new Error('duplicateName')
       }
       const pack = {

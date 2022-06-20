@@ -1,11 +1,13 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
 import { orderStatus, colors } from '../data/config'
 import { IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { cloudUploadOutline } from 'ionicons/icons'
+import { useSelector } from 'react-redux'
+import { Order, State } from '../data/types'
+import firebase from '../data/firebase'
 
 type OrderStatus = {
   id: string,
@@ -13,23 +15,24 @@ type OrderStatus = {
   count: number
 }
 const Orders = () => {
-  const { state } = useContext(StateContext)
+  const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
+  const stateOrders = useSelector<State, Order[]>(state => state.orders)
   const [orderStatuses, setOrderStatuses] = useState<OrderStatus[]>([])
   const [orderRequests, setOrderRequests] = useState(0)
   const [finishedOrders, setFinishedOrders] = useState(0)
   useEffect(() => {
     setOrderStatuses(() => orderStatus.map(s => {
-      const orders = state.orders.filter(o => o.status === s.id).length
+      const orders = stateOrders.filter(o => o.status === s.id).length
       return {
         ...s,
         count: orders
       }
     }))
-    setOrderRequests(() => state.orders.filter(o => o.requestType).length)
-    setFinishedOrders(() => state.orders.filter(o => o.status === 'f').length)
-  }, [state.orders])
+    setOrderRequests(() => stateOrders.filter(o => o.requestType).length)
+    setFinishedOrders(() => stateOrders.filter(o => o.status === 'f').length)
+  }, [stateOrders])
   let i = 0
-  if (!state.user) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
+  if (!stateUser) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
   return(
     <IonPage>
       <Header title={labels.orders} />

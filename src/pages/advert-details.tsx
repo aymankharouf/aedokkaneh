@@ -1,19 +1,20 @@
-import { useContext, useState } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState } from 'react'
 import labels from '../data/labels'
 import { IonCard, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonIcon, IonImg, IonPage, IonRow } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useParams } from 'react-router'
 import { personCircleOutline } from 'ionicons/icons'
+import { useSelector } from 'react-redux'
+import { Advert, State } from '../data/types'
 
 type Params = {
   id: string
 }
 const AdvertDetails = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [advert] = useState(() => state.adverts.find(a => a.id === params.id)!)
+  const stateAdverts = useSelector<State, Advert[]>(state => state.adverts)
+  const [advert] = useState(() => stateAdverts.find(a => a.id === params.id)!)
   return (
     <IonPage>
       <Header title={labels.advertDetails} />

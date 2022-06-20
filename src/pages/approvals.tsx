@@ -1,10 +1,11 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
 import { colors } from '../data/config'
 import { IonButton, IonContent, IonPage } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
+import { useSelector } from 'react-redux'
+import { Alarm, CustomerInfo, Friend, Order, PasswordRequest, Rating, State, UserInfo } from '../data/types'
 
 type Section = {
   id: string,
@@ -13,7 +14,13 @@ type Section = {
   count: number
 }
 const Approvals = () => {
-  const { state } = useContext(StateContext)
+  const stateOrders = useSelector<State, Order[]>(state => state.orders)
+  const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
+  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
+  const stateAlarms = useSelector<State, Alarm[]>(state => state.alarms)
+  const stateRatings = useSelector<State, Rating[]>(state => state.ratings)
+  const stateInvitations = useSelector<State, Friend[]>(state => state.invitations)
+  const statePasswordRequests = useSelector<State, PasswordRequest[]>(state => state.passwordRequests)
   const [newOrders, setNewOrders] = useState(0)
   const [orderRequests, setOrderRequests] = useState(0)
   const [newUsers, setNewUsers] = useState(0)
@@ -24,19 +31,19 @@ const Approvals = () => {
   const [sections, setSections] = useState<Section[]>([])
   const [newOwners, setNewOwners] = useState(0)
   useEffect(() => {
-    setNewOrders(() => state.orders.filter(o => o.status === 'n').length)
-    setOrderRequests(() => state.orders.filter(r => r.requestType).length)
-  }, [state.orders])
+    setNewOrders(() => stateOrders.filter(o => o.status === 'n').length)
+    setOrderRequests(() => stateOrders.filter(r => r.requestType).length)
+  }, [stateOrders])
   useEffect(() => {
-    setNewUsers(() => state.users.filter(u => !state.customers.find(c => c.id === u.id)).length)
-    setAlarms(() => state.alarms.filter(a => a.status === 'n').length)
-    setRatings(() => state.ratings.filter(r => r.status === 'n').length)
-    setInvitations(() => state.invitations.filter(i => i.status === 'n').length)
-    setNewOwners(() => state.customers.filter(c => c.storeName && !c.storeId).length)
-  }, [state.users, state.customers, state.alarms, state.ratings, state.invitations])
+    setNewUsers(() => stateUsers.filter(u => !stateCustomers.find(c => c.id === u.id)).length)
+    setAlarms(() => stateAlarms.filter(a => a.status === 'n').length)
+    setRatings(() => stateRatings.filter(r => r.status === 'n').length)
+    setInvitations(() => stateInvitations.filter(i => i.status === 'n').length)
+    setNewOwners(() => stateCustomers.filter(c => c.storeName && !c.storeId).length)
+  }, [stateUsers, stateCustomers, stateAlarms, stateRatings, stateInvitations])
   useEffect(() => {
-    setPasswordRequests(() => state.passwordRequests.length)
-  }, [state.passwordRequests]) 
+    setPasswordRequests(() => statePasswordRequests.length)
+  }, [statePasswordRequests]) 
   useEffect(() => {
     setSections(() => [
       {id: '1', name: labels.orders, path: '/orders-list/n/s', count: newOrders},

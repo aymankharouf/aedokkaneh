@@ -1,21 +1,23 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage } from '@ionic/react'
 import { useParams } from 'react-router'
 import Header from './header'
 import { pencilOutline } from 'ionicons/icons'
+import { useSelector } from 'react-redux'
+import { Category, Product, State } from '../data/types'
 
 type Params = {
   id: string
 }
 const ProductDetails = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [product, setProduct] = useState(() => state.products.find(p => p.id === params.id)!)
+  const stateProducts = useSelector<State, Product[]>(state => state.products)
+  const stateCategories = useSelector<State, Category[]>(state => state.categories)
+  const [product, setProduct] = useState(() => stateProducts.find(p => p.id === params.id)!)
   useEffect(() => {
-    setProduct(() => state.products.find(p => p.id === params.id)!)
-  }, [state.products, params.id])
+    setProduct(() => stateProducts.find(p => p.id === params.id)!)
+  }, [stateProducts, params.id])
   return (
     <IonPage>
       <Header title={labels.productDetails} />
@@ -56,7 +58,7 @@ const ProductDetails = () => {
               {labels.category}
             </IonLabel>
             <IonInput 
-              value={state.categories.find(c => c.id === product.categoryId)?.name} 
+              value={stateCategories.find(c => c.id === product.categoryId)?.name} 
               type="text"
               readonly
             />

@@ -1,20 +1,20 @@
-import { useState, useContext, useEffect, ChangeEvent, useRef } from 'react'
+import { useState, useEffect, ChangeEvent, useRef } from 'react'
 import { editPack, getMessage } from '../data/actions'
-import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonListHeader, IonPage, IonSelect, IonSelectOption, IonToggle, useIonToast } from '@ionic/react'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
-import { Err } from '../data/types'
+import { Err, Pack, State } from '../data/types'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const EditOffer = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [pack] = useState(() => state.packs.find(p => p.id === params.id)!)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const [pack] = useState(() => statePacks.find(p => p.id === params.id)!)
   const [name, setName] = useState(pack.name)
   const [subPackId, setSubPackId] = useState(pack.subPackId)
   const [subQuantity, setSubQuantity] = useState(pack.subQuantity.toString())
@@ -31,7 +31,7 @@ const EditOffer = () => {
   const history = useHistory()
   const inputEl = useRef<HTMLInputElement | null>(null)
   const [packs] = useState(() => {
-    const packs = state.packs.filter(p => p.productId === pack.productId && !p.isOffer && !p.byWeight && p.forSale)
+    const packs = statePacks.filter(p => p.productId === pack.productId && !p.isOffer && !p.byWeight && p.forSale)
     return packs.map(p => {
       return {
         id: p.id,
@@ -40,7 +40,7 @@ const EditOffer = () => {
     })
   })
   const [bonusPacks] = useState(() => {
-    const packs = state.packs.filter(p => p.productId !== pack.productId && !p.subPackId && !p.byWeight)
+    const packs = statePacks.filter(p => p.productId !== pack.productId && !p.subPackId && !p.byWeight)
     const result = packs.map(p => {
       return {
         id: p.id,
@@ -81,9 +81,9 @@ const EditOffer = () => {
 
   const handleSubmit = () => {
     try{
-      const subPackInfo = state.packs.find(p => p.id === subPackId)!
-      const bonusPackInfo = state.packs.find(p => p.id === bonusPackId)
-      if (state.packs.find(p => p.id !== pack.id && p.productId === params.id && p.name === name && p.closeExpired === subPackInfo.closeExpired)) {
+      const subPackInfo = statePacks.find(p => p.id === subPackId)!
+      const bonusPackInfo = statePacks.find(p => p.id === bonusPackId)
+      if (statePacks.find(p => p.id !== pack.id && p.productId === params.id && p.name === name && p.closeExpired === subPackInfo.closeExpired)) {
         throw new Error('duplicateName')
       }
       if (Number(subPercent) + Number(bonusPercent) !== 100) {
@@ -115,7 +115,7 @@ const EditOffer = () => {
         bonusQuantity: +bonusQuantity,
         bonusPercent: +bonusPercent / 100
       }
-      editPack(newPack, pack, state.packs, image)
+      editPack(newPack, pack, statePacks, image)
       message(labels.editSuccess, 3000)
       history.goBack()
     } catch(error) {

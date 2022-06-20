@@ -1,30 +1,31 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
-import { Friend, UserInfo } from '../data/types'
+import { Friend, State, UserInfo } from '../data/types'
 import { IonContent, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { colors } from '../data/config'
+import { useSelector } from 'react-redux'
 
 type ExtendedFriend = Friend & {
   userInfo: UserInfo
 }
 const Invitations = () => {
-  const { state } = useContext(StateContext)
+  const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
+  const stateInvitations = useSelector<State, Friend[]>(state => state.invitations)
   const [invitations, setInvitations] = useState<ExtendedFriend[]>([])
   useEffect(() => {
     setInvitations(() => {
-      const invitations = state.invitations.filter(i => i.status === 'n')
+      const invitations = stateInvitations.filter(i => i.status === 'n')
       return invitations.map(i => {
-        const userInfo = state.users.find(u => u.id === i.userId)!
+        const userInfo = stateUsers.find(u => u.id === i.userId)!
         return {
           ...i,
           userInfo
         }
       })
     })
-  }, [state.users, state.invitations])
+  }, [stateUsers, stateInvitations])
   let j = 0
   return(
     <IonPage>

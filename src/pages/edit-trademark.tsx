@@ -1,23 +1,24 @@
-import { useState, useContext, useRef, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useRef, useEffect } from 'react'
 import { deleteTrademark, editTrademark, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { IonContent, IonFab, IonFabButton, IonFabList, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
 import Header from './header'
 import { checkmarkOutline, chevronDownOutline, trashOutline } from 'ionicons/icons'
-import { Err } from '../data/types'
+import { Err, Product, State, Trademark } from '../data/types'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const EditCountry = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
+  const stateTrademarks = useSelector<State, Trademark[]>(state => state.trademarks)
+  const stateProducts = useSelector<State, Product[]>(state => state.products)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-  const [trademark] = useState(() => state.trademarks.find(t => t.id === params.id)!)
+  const [trademark] = useState(() => stateTrademarks.find(t => t.id === params.id)!)
   const [name, setName] = useState(trademark.name)
   const [hasChanged, setHasChanged] = useState(false)
   const fabList = useRef<HTMLIonFabElement | null>(null)
@@ -34,7 +35,7 @@ const EditCountry = () => {
         ...trademark,
         name
       }
-      editTrademark(newTrademark, state.trademarks)
+      editTrademark(newTrademark, stateTrademarks)
       message(labels.editSuccess, 3000)
       history.goBack()
     } catch(error) {
@@ -50,9 +51,9 @@ const EditCountry = () => {
         {text: labels.cancel},
         {text: labels.ok, handler: async () => {
           try{
-            const trademarkProducts = state.products.filter(p => p.trademarkId === params.id)
+            const trademarkProducts = stateProducts.filter(p => p.trademarkId === params.id)
             if (trademarkProducts.length > 0) throw new Error('trademarkProductsFound') 
-            deleteTrademark(params.id, state.trademarks)
+            deleteTrademark(params.id, stateTrademarks)
             message(labels.deleteSuccess, 3000)
             history.goBack()
           } catch(error) {
@@ -92,7 +93,7 @@ const EditCountry = () => {
               <IonIcon ios={checkmarkOutline} />
             </IonFabButton>
           }
-          {state.products.filter(p => p.trademarkId === params.id).length === 0 &&
+          {stateProducts.filter(p => p.trademarkId === params.id).length === 0 &&
             <IonFabButton color="danger" onClick={handleDelete}>
               <IonIcon ios={trashOutline} />
             </IonFabButton>

@@ -1,8 +1,7 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
 import { productOfText, getCategoryName } from '../data/actions'
-import { Product } from '../data/types'
+import { Category, Country, Pack, Product, State, Trademark } from '../data/types'
 import { useParams } from 'react-router'
 import { IonContent, IonFab, IonFabButton, IonFabList, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
 import Header from './header'
@@ -10,6 +9,8 @@ import Footer from './footer'
 import Fuse from "fuse.js"
 import { colors } from '../data/config'
 import { addOutline, chevronDownOutline, cloudDownloadOutline, trashBinOutline } from 'ionicons/icons'
+import { useSelector, useDispatch } from 'react-redux'
+import firebase from '../data/firebase'
 
 type Params = {
   id: string
@@ -20,9 +21,16 @@ type ExtendedProduct = Product & {
   countryName: string
 }
 const Products = () => {
-  const { state, dispatch } = useContext(StateContext)
+  const dispatch = useDispatch()
   const params = useParams<Params>()
-  const [category] = useState(() => state.categories.find(c => c.id === params.id))
+  const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
+  const stateCategories = useSelector<State, Category[]>(state => state.categories)
+  const stateProducts = useSelector<State, Product[]>(state => state.products)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const stateTrademarks = useSelector<State, Trademark[]>(state => state.trademarks)
+  const stateCountries = useSelector<State, Country[]>(state => state.countries)
+  const stateSearchText = useSelector<State, string>(state => state.searchText)
+  const [category] = useState(() => stateCategories.find(c => c.id === params.id))
   const [products, setProducts] = useState<ExtendedProduct[]>([])
   const [data, setData] = useState<ExtendedProduct[]>([])
   useEffect(() => {
@@ -32,23 +40,23 @@ const Products = () => {
   }, [dispatch])
   useEffect(() => {
     setProducts(() => {
-      const products = state.products.filter(p => params.id === '-1' ? !state.packs.find(pa => pa.productId === p.id) || state.packs.filter(pa => pa.productId === p.id).length === state.packs.filter(pa => pa.productId === p.id && pa.price === 0).length : params.id === '0' || p.categoryId === params.id)
+      const products = stateProducts.filter(p => params.id === '-1' ? !statePacks.find(pa => pa.productId === p.id) || statePacks.filter(pa => pa.productId === p.id).length === statePacks.filter(pa => pa.productId === p.id && pa.price === 0).length : params.id === '0' || p.categoryId === params.id)
       const result = products.map(p => {
-        const categoryInfo = state.categories.find(c => c.id === p.categoryId)!
-        const trademarkInfo = state.trademarks.find(t => t.id === p.trademarkId)
-        const countryInfo = state.countries.find(c => c.id === p.countryId)!
+        const categoryInfo = stateCategories.find(c => c.id === p.categoryId)!
+        const trademarkInfo = stateTrademarks.find(t => t.id === p.trademarkId)
+        const countryInfo = stateCountries.find(c => c.id === p.countryId)!
         return {
           ...p,
-          categoryName: getCategoryName(categoryInfo, state.categories),
+          categoryName: getCategoryName(categoryInfo, stateCategories),
           trademarkName: trademarkInfo?.name || '',
           countryName: countryInfo.name
         }
       })
       return result.sort((p1, p2) => p1.categoryId === p2.categoryId ? (p1.name > p2.name ? 1 : -1) : (p1.categoryName > p2.categoryName ? 1 : -1))
     })
-  }, [state.products, state.categories, state.packs, state.trademarks, state.countries, params.id])
+  }, [stateProducts, stateCategories, statePacks, stateTrademarks, stateCountries, params.id])
   useEffect(() => {
-    if (!state.searchText) {
+    if (!stateSearchText) {
       setData(products)
       return
     }
@@ -59,10 +67,10 @@ const Products = () => {
       keys: ['name', 'alias', 'description', 'categoryName', 'trademarkName', 'countryName']
     }
     const fuse = new Fuse(products, options)
-    const result = fuse.search(state.searchText)
+    const result = fuse.search(stateSearchText)
     setData(result.map(p => p.item))
-  }, [state.searchText, products])
-  if (!state.user) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
+  }, [stateSearchText, products])
+  if (!stateUser) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
   return(
     <IonPage>
       <Header title={params.id === '-1' ? labels.notUsedProducts : (params.id === '0' ? labels.products : category?.name || '')} withSearch/>

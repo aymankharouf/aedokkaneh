@@ -1,16 +1,18 @@
 import { IonButtons, IonHeader, IonIcon, IonSearchbar, IonTitle, IonToolbar } from '@ionic/react'
 import { chevronForwardOutline } from 'ionicons/icons'
-import { useContext, useState } from 'react'
+import { useState } from 'react'
 import { useHistory } from 'react-router'
 import labels from '../data/labels'
-import { StateContext } from '../data/state-provider'
+import { useSelector, useDispatch } from 'react-redux'
+import { State } from '../data/types'
 
 type Props = {
   title?: string,
   withSearch?: boolean
 }
 const Header = (props: Props) => {
-  const {state, dispatch} = useContext(StateContext)
+  const dispatch = useDispatch()
+  const stateSearchText = useSelector<State, string>(state => state.searchText)
   const [visible, setVisible] = useState(false)
   const history = useHistory()
   const handleVisible = () => {
@@ -43,7 +45,7 @@ const Header = (props: Props) => {
         <IonToolbar>
           <IonSearchbar
             placeholder={labels.search} 
-            value={state.searchText} 
+            value={stateSearchText} 
             onIonChange={e => dispatch({type: 'SET_SEARCH', payload: e.detail.value})}
           />
         </IonToolbar>

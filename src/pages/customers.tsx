@@ -1,22 +1,24 @@
-import { useContext, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
-import { CustomerInfo } from '../data/types'
+import { CustomerInfo, State } from '../data/types'
 import { IonBadge, IonContent, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { colors } from '../data/config'
+import { useSelector } from 'react-redux'
+import firebase from '../data/firebase'
 
 const Customers = () => {
-  const { state } = useContext(StateContext)
+  const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
+  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
   const [customers, setCustomers] = useState<CustomerInfo[]>([])
   useEffect(() => {
-    setCustomers(() => [...state.customers].sort((c1, c2) => c2.time > c1.time ? 1 : -1))
-  }, [state.customers])
+    setCustomers(() => [...stateCustomers].sort((c1, c2) => c2.time > c1.time ? 1 : -1))
+  }, [stateCustomers])
 
-  if (!state.user) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
+  if (!stateUser) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
   return(
     <IonPage>
       <Header title={labels.customers} />

@@ -1,5 +1,4 @@
-import { useContext, useEffect, useState } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useEffect, useState } from 'react'
 import { approveInvitation, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { IonList, IonItem, IonContent, IonFab, IonFabButton, IonLabel, IonIcon, IonInput, IonPage, useIonToast } from '@ionic/react'
@@ -7,39 +6,42 @@ import Header from './header'
 import Footer from './footer'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { checkmarkOutline } from 'ionicons/icons'
-import { Err } from '../data/types'
+import { CustomerInfo, Err, Friend, State, UserInfo } from '../data/types'
+import { useSelector } from 'react-redux'
 
 type Params = {
   userId: string,
   mobile: string
 }
 const InvitationDetails = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [userInfo] = useState(() => state.users.find(u => u.id === params.userId)!)
-  const [invitation] = useState(() => state.invitations.find(i => i.userId === params.userId && i.mobile === params.mobile)!)
+  const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
+  const stateInvitations = useSelector<State, Friend[]>(state => state.invitations)
+  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
+  const [userInfo] = useState(() => stateUsers.find(u => u.id === params.userId)!)
+  const [invitation] = useState(() => stateInvitations.find(i => i.userId === params.userId && i.mobile === params.mobile)!)
   const [mobileCheck, setMobileCheck] = useState('')
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
   useEffect(() => {
     setMobileCheck(() => {
-      if (state.users.find(u => u.mobile === params.mobile)) {
+      if (stateUsers.find(u => u.mobile === params.mobile)) {
         return 'r'
       }
-      if (state.invitations.find(i => i.userId !== params.userId && i.mobile === params.mobile)) {
+      if (stateInvitations.find(i => i.userId !== params.userId && i.mobile === params.mobile)) {
         return 'o'
       }
       return 's'
     })
-  }, [state.users, state.customers, state.invitations, params.mobile, params.userId])
+  }, [stateUsers, stateCustomers, stateInvitations, params.mobile, params.userId])
   const handleApprove = () => {
     try{
       const newInvitation = {
         ...invitation,
         status: mobileCheck
       }
-      approveInvitation(newInvitation, state.invitations)
+      approveInvitation(newInvitation, stateInvitations)
       message(labels.approveSuccess, 3000)
       history.goBack()
     } catch(error) {

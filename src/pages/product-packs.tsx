@@ -1,26 +1,31 @@
-import { useContext, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import RatingStars from './rating-stars'
-import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { archiveProduct, deleteProduct, getMessage, productOfText } from '../data/actions'
-import { Err, Pack } from '../data/types'
+import { Country, Err, Pack, Product, State, Trademark } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { IonActionSheet, IonBadge, IonCard, IonCol, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonRow, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { colors } from '../data/config'
 import { settingsOutline } from 'ionicons/icons'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string,
   type: string
 }
 const ProductPacks = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [product] = useState(() => params.type === 'a' ? state.archivedProducts.find(p => p.id === params.id)! : state.products.find(p => p.id === params.id)!)
-  const [trademark] = useState(() => state.trademarks.find(t => t.id === product.trademarkId))
-  const [country] = useState(() => state.countries.find(c => c.id === product.countryId))
+  const stateProducts = useSelector<State, Product[]>(state => state.products)
+  const stateArchivedProducts = useSelector<State, Product[]>(state => state.archivedProducts)
+  const stateTrademarks = useSelector<State, Trademark[]>(state => state.trademarks)
+  const stateCountries = useSelector<State, Country[]>(state => state.countries)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const stateArchivedPacks = useSelector<State, Pack[]>(state => state.archivedPacks)
+  const [product] = useState(() => params.type === 'a' ? stateArchivedProducts.find(p => p.id === params.id)! : stateProducts.find(p => p.id === params.id)!)
+  const [trademark] = useState(() => stateTrademarks.find(t => t.id === product.trademarkId))
+  const [country] = useState(() => stateCountries.find(c => c.id === product.countryId))
   const [packs, setPacks] = useState<Pack[]>([])
   const [activePacks, setActivePacks] = useState<Pack[]>([])
   const [actionOpened, setActionOpened] = useState(false)
@@ -30,16 +35,16 @@ const ProductPacks = () => {
   const [alert] = useIonAlert()
   useEffect(() => {
     setPacks(() => {
-      const packs = params.type === 'a' ? state.archivedPacks.filter(p => p.productId === params.id) : state.packs.filter(p => p.productId === params.id)
+      const packs = params.type === 'a' ? stateArchivedPacks.filter(p => p.productId === params.id) : statePacks.filter(p => p.productId === params.id)
       return packs.sort((p1, p2) => p2.price - p1.price)
     })
-  }, [state.packs, state.archivedPacks, params.id, params.type])
+  }, [statePacks, stateArchivedPacks, params.id, params.type])
   useEffect(() => {
     setActivePacks(() => packs.filter(p => p.price > 0))
   }, [packs])
   const handleArchive = () => {
     try{
-      archiveProduct(product, state.packs)
+      archiveProduct(product, statePacks)
       message(labels.editSuccess, 3000)
       history.goBack()
     } catch(error) {

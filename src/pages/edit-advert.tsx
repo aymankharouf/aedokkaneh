@@ -1,20 +1,20 @@
-import { useState, useContext, useEffect, ChangeEvent, useRef } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect, ChangeEvent, useRef } from 'react'
 import { editAdvert, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage, IonTextarea, useIonToast } from '@ionic/react'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
-import { Err } from '../data/types'
+import { Advert, Err, State } from '../data/types'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const EditAdvert = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [advert] = useState(() => state.adverts.find(a => a.id === params.id)!)
+  const stateAdverts = useSelector<State, Advert[]>(state => state.adverts)
+  const [advert] = useState(() => stateAdverts.find(a => a.id === params.id)!)
   const [title, setTitle] = useState(advert.title)
   const [text, setText] = useState(advert.text)
   const [imageUrl, setImageUrl] = useState(advert.imageUrl)

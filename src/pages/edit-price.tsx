@@ -1,23 +1,25 @@
-import { useState, useContext, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import { editPrice, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
-import { Err } from '../data/types'
+import { Err, Pack, PackPrice, State, Store } from '../data/types'
+import { useSelector } from 'react-redux'
 
 type Params = {
   packId: string,
   storeId: string
 }
 const EditPrice = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [pack] = useState(() => state.packs.find(p => p.id === params.packId)!)
-  const [store] = useState(() => state.stores.find(s => s.id === params.storeId)!)
-  const [storePack] = useState(() => state.packPrices.find(p => p.packId === params.packId && p.storeId === params.storeId)!)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
+  const [pack] = useState(() => statePacks.find(p => p.id === params.packId)!)
+  const [store] = useState(() => stateStores.find(s => s.id === params.storeId)!)
+  const [storePack] = useState(() => statePackPrices.find(p => p.packId === params.packId && p.storeId === params.storeId)!)
   const [cost, setCost] = useState(params.storeId === 's' ? (storePack.cost / 100).toFixed(2) : '')
   const [price, setPrice] = useState('')
   const [offerDays, setOfferDays] = useState('')
@@ -57,7 +59,7 @@ const EditPrice = () => {
         offerEnd,
         time: new Date()
       }
-      editPrice(newStorePack, storePack.price, state.packPrices, state.packs)
+      editPrice(newStorePack, storePack.price, statePackPrices, statePacks)
       message(labels.editSuccess, 3000)
       history.goBack()
     } catch(error) {

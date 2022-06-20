@@ -1,20 +1,20 @@
-import { useState, useContext, useEffect, ChangeEvent, useRef } from 'react'
+import { useState, useEffect, ChangeEvent, useRef } from 'react'
 import { editPack, getMessage } from '../data/actions'
-import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage, IonToggle, useIonToast } from '@ionic/react'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
-import { Err } from '../data/types'
+import { Err, Pack, State } from '../data/types'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const EditPack = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [pack] = useState(() => state.packs.find(p => p.id === params.id)!)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const [pack] = useState(() => statePacks.find(p => p.id === params.id)!)
   const [name, setName] = useState(pack.name)
   const [unitsCount, setUnitsCount] = useState(pack.unitsCount.toString())
   const [isDivided, setIsDivided] = useState(pack.isDivided)
@@ -62,7 +62,7 @@ const EditPack = () => {
   }
   const handleSubmit = () => {
     try{
-      if (state.packs.find(p => p.id !== pack.id && p.productId === params.id && p.name === name && p.closeExpired === closeExpired)) {
+      if (statePacks.find(p => p.id !== pack.id && p.productId === params.id && p.name === name && p.closeExpired === closeExpired)) {
         throw new Error('duplicateName')
       }
       const newPack = {
@@ -73,7 +73,7 @@ const EditPack = () => {
         byWeight,
         closeExpired
       }
-      editPack(newPack, pack, state.packs, image)
+      editPack(newPack, pack, statePacks, image)
       message(labels.editSuccess, 3000)
       history.goBack()
     } catch(error) {

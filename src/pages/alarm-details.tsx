@@ -1,16 +1,16 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
 import { approveAlarm, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { alarmTypes, colors } from '../data/config'
-import { Err, Pack, PackPrice, Store } from '../data/types'
+import { Alarm, CustomerInfo, Err, Pack, PackPrice, State, Store } from '../data/types'
 import { IonList, IonItem, IonContent, IonFab, IonFabButton, IonLabel, IonIcon, IonInput, IonPage, useIonToast, IonSelect, IonSelectOption, IonListHeader, IonText } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { checkmarkOutline } from 'ionicons/icons'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string,
@@ -20,19 +20,23 @@ type ExtendedPackPrice = PackPrice & {
   storeInfo: Store
 }
 const AlarmDetails = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
+  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
+  const stateAlarms = useSelector<State, Alarm[]>(state => state.alarms)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const [newPackId, setNewPackId] = useState('')
-  const [customerInfo] = useState(() => state.customers.find(c => c.id === params.userId)!)
-  const [alarm] = useState(() => state.alarms.find(a => a.id === params.id)!)
-  const [pack] = useState(() => state.packs.find(p => p.id === alarm.packId)!)
-  const [storeName] = useState(() => state.stores.find(s => s.id === customerInfo.storeId)?.name)
+  const [customerInfo] = useState(() => stateCustomers.find(c => c.id === params.userId)!)
+  const [alarm] = useState(() => stateAlarms.find(a => a.id === params.id)!)
+  const [pack] = useState(() => statePacks.find(p => p.id === alarm.packId)!)
+  const [storeName] = useState(() => stateStores.find(s => s.id === customerInfo.storeId)?.name)
   const [prices, setPrices] = useState<ExtendedPackPrice[]>([])
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
   const [packs] = useState(() => {
-    const packs = state.packs.filter(p => p.id !== pack.id)
+    const packs = statePacks.filter(p => p.id !== pack.id)
     let result: Pack[] = []
     if (alarm.type === 'go') {
       result = packs.filter(p => p.productId === pack.productId && p.isOffer)
@@ -49,9 +53,9 @@ const AlarmDetails = () => {
   })
   useEffect(() => {
     setPrices(() => {
-      const prices = state.packPrices.filter(p => p.storeId !== customerInfo.storeId && p.packId === (newPackId || pack.id))
+      const prices = statePackPrices.filter(p => p.storeId !== customerInfo.storeId && p.packId === (newPackId || pack.id))
       const result = prices.map(p => {
-        const storeInfo = state.stores.find(s => s.id === p.storeId)!
+        const storeInfo = stateStores.find(s => s.id === p.storeId)!
         return {
           ...p,
           storeInfo
@@ -59,10 +63,10 @@ const AlarmDetails = () => {
       })
       return result.sort((p1, p2) => p1.price - p2.price)
     })
-  }, [state.packPrices, state.stores, customerInfo, pack, newPackId])
+  }, [statePackPrices, stateStores, customerInfo, pack, newPackId])
   const handleApprove = () => {
     try{
-      approveAlarm(alarm, state.alarms, newPackId, customerInfo, state.packPrices, state.packs)
+      approveAlarm(alarm, stateAlarms, newPackId, customerInfo, statePackPrices, statePacks)
       message(labels.approveSuccess, 3000)
 			history.goBack()
     } catch(error) {

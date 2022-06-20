@@ -1,15 +1,15 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import { packUnavailable, getMessage, addQuantity, getPackStores } from '../data/actions'
 import labels from '../data/labels'
 import moment from 'moment'
-import { Err, Pack, PackPrice, Store } from '../data/types'
+import { Basket, Err, Order, Pack, PackPrice, Purchase, State, Store } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { IonBadge, IonCard, IonCol, IonContent, IonGrid, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonRow, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { colors } from '../data/config'
 import { checkmarkOutline } from 'ionicons/icons'
+import { useSelector, useDispatch } from 'react-redux'
 
 type Params = {
   packId: string,
@@ -26,9 +26,15 @@ type ExtendedPackPrice = PackPrice & {
   storeInfo: Store
 }
 const RequestedPackDetails = () => {
-	const { state, dispatch } = useContext(StateContext)
+  const dispatch = useDispatch()
   const params = useParams<Params>()
-  const [pack] = useState(() => state.packs.find(p => p.id === params.packId)!)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const stateBasket = useSelector<State, Basket | undefined>(state => state.basket)
+  const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const statePurchases = useSelector<State, Purchase[]>(state => state.purchases)
+  const stateOrders = useSelector<State, Order[]>(state => state.orders)
+  const [pack] = useState(() => statePacks.find(p => p.id === params.packId)!)
   const [basketStockQuantity, setBasketStockQuantity] = useState(0)
   const [packStores, setPackStores] = useState<ExtendedPackPrice[]>([])
   const [message] = useIonToast()
@@ -37,18 +43,18 @@ const RequestedPackDetails = () => {
   const [alert] = useIonAlert()
   useEffect(() => {
     setBasketStockQuantity(() => {
-      const basketStock = state.basket?.storeId === 's' ? state.basket?.packs.find(p => p.packId === params.packId || state.packs.find(pa => pa.id === p.packId && (pa.subPackId === params.packId || pa.bonusPackId === params.packId))) : undefined
+      const basketStock = stateBasket?.storeId === 's' ? stateBasket?.packs.find(p => p.packId === params.packId || statePacks.find(pa => pa.id === p.packId && (pa.subPackId === params.packId || pa.bonusPackId === params.packId))) : undefined
       return ((basketStock?.quantity || 0) * (basketStock?.refQuantity || 0)) || 0
     })
-  }, [state.basket, state.packs, params.packId])
+  }, [stateBasket, statePacks, params.packId])
   useEffect(() => {
     setPackStores(() => {
-      const packStores = getPackStores(pack, state.packPrices, state.packs, basketStockQuantity)
+      const packStores = getPackStores(pack, statePackPrices, statePacks, basketStockQuantity)
       const today = new Date()
       today.setDate(today.getDate() - 30)
       const result = packStores.map(p => {
-        const storeInfo = state.stores.find(s => s.id === p.storeId)!
-        const packInfo = state.packs.find(pp => pp.id === p.packId)!
+        const storeInfo = stateStores.find(s => s.id === p.storeId)!
+        const packInfo = statePacks.find(pp => pp.id === p.packId)!
         return {
           ...p,
           storeInfo,
@@ -60,8 +66,8 @@ const RequestedPackDetails = () => {
         if (s1.unitPrice === s2.unitPrice) {
           if (s1.storeInfo.type === s2.storeInfo.type){
             if (s2.storeInfo.discount === s1.storeInfo.discount) {
-              const store1Purchases = state.purchases.filter(p => p.storeId === s1.storeId && p.time >= today)
-              const store2Purchases = state.purchases.filter(p => p.storeId === s2.storeId && p.time >= today)
+              const store1Purchases = statePurchases.filter(p => p.storeId === s1.storeId && p.time >= today)
+              const store2Purchases = statePurchases.filter(p => p.storeId === s2.storeId && p.time >= today)
               const store1Sales = store1Purchases.reduce((sum, p) => sum + p.total, 0)
               const store2Sales = store2Purchases.reduce((sum, p) => sum + p.total, 0)
               return store1Sales - store2Sales
@@ -76,7 +82,7 @@ const RequestedPackDetails = () => {
         }
       })
     })
-  }, [pack, state.stores, state.packPrices, state.purchases, basketStockQuantity, state.packs])
+  }, [pack, stateStores, statePackPrices, statePurchases, basketStockQuantity, statePacks])
   const handleAddWithWeight = (packStore: ExtendedPackPrice, exceedPriceType: string, weight: number) => {
     try{
       if (packStore.packInfo.isDivided && packStore.storeId === 's' && packStore.quantity < Number(weight)) {
@@ -115,8 +121,8 @@ const RequestedPackDetails = () => {
           ],
         })
       } else if (packStore.isAuto) {
-        const mainPackInfo = state.packs.find(p => p.subPackId === packStore.packId && !p.forSale)!
-        const mainPackStore = state.packPrices.find(p => p.storeId === packStore.storeId && p.packId === mainPackInfo.id)
+        const mainPackInfo = statePacks.find(p => p.subPackId === packStore.packId && !p.forSale)!
+        const mainPackStore = statePackPrices.find(p => p.storeId === packStore.storeId && p.packId === mainPackInfo.id)
         quantity = Math.ceil(Number(params.quantity) / (packStore.quantity * mainPackInfo.subQuantity))
         basketItem = {
           pack: mainPackInfo,
@@ -159,16 +165,16 @@ const RequestedPackDetails = () => {
   }
 	const handlePurchase = (packStore: ExtendedPackPrice) => {
     try{
-      if (state.basket?.storeId && state.basket.storeId !== packStore.storeId){
+      if (stateBasket?.storeId && stateBasket.storeId !== packStore.storeId){
         throw new Error('twoDiffStores')
       }
-      const packInfo = state.packs.find(p => p.id === packStore.packId)!
+      const packInfo = statePacks.find(p => p.id === packStore.packId)!
       if (packInfo.byWeight){
-        if (state.basket?.packs?.find(p => p.packId === packInfo.id && p.orderId === params.orderId)) {
+        if (stateBasket?.packs?.find(p => p.packId === packInfo.id && p.orderId === params.orderId)) {
           throw new Error('alreadyInBasket')
         }
       } else {
-        if (state.basket?.packs?.find(p => p.packId === packInfo.id)) {
+        if (stateBasket?.packs?.find(p => p.packId === packInfo.id)) {
           throw new Error('alreadyInBasket')
         }
       }
@@ -208,7 +214,7 @@ const RequestedPackDetails = () => {
         {text: labels.cancel},
         {text: labels.yes, handler: () => {
           try{
-            const approvedOrders = state.orders.filter(o => ['a', 'e'].includes(o.status))
+            const approvedOrders = stateOrders.filter(o => ['a', 'e'].includes(o.status))
             packUnavailable(pack, Number(params.price), approvedOrders, overPriced)
             message(labels.executeSuccess, 3000)
             history.goBack()

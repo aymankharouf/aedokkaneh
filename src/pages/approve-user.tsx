@@ -1,5 +1,4 @@
-import { useState, useContext } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState } from 'react'
 import { approveUser, deleteUser, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, useIonToast, useIonLoading, useIonAlert, IonFabList } from '@ionic/react'
@@ -7,19 +6,23 @@ import { useHistory, useLocation, useParams } from 'react-router'
 import Header from './header'
 import Footer from './footer'
 import { checkmarkOutline, chevronDownOutline, trashOutline } from 'ionicons/icons'
-import { Err } from '../data/types'
+import { Err, Friend, Order, Region, State, UserInfo } from '../data/types'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const ApproveUser = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [userInfo] = useState(() => state.users.find(u => u.id === params.id)!)
+  const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
+  const stateRegions = useSelector<State, Region[]>(state => state.regions)
+  const stateInvitations = useSelector<State, Friend[]>(state => state.invitations)
+  const stateOrders = useSelector<State, Order[]>(state => state.orders)
+  const [userInfo] = useState(() => stateUsers.find(u => u.id === params.id)!)
   const [name, setName] = useState(userInfo.name)
   const [regionId, setRegionId] = useState(userInfo.regionId)
   const [address, setAddress] = useState('')
-  const [regions] = useState(() => [...state.regions].sort((l1, l2) => l1.ordering - l2.ordering))
+  const [regions] = useState(() => [...stateRegions].sort((l1, l2) => l1.ordering - l2.ordering))
   const history = useHistory()
   const location = useLocation()
   const [message] = useIonToast()
@@ -27,7 +30,7 @@ const ApproveUser = () => {
   const [alert] = useIonAlert()
   const handleSubmit = () => {
     try {
-      approveUser(params.id, name, userInfo.mobile, regionId, userInfo.storeName, address, state.users, state.invitations)
+      approveUser(params.id, name, userInfo.mobile, regionId, userInfo.storeName, address, stateUsers, stateInvitations)
       message(labels.approveSuccess)
       history.goBack()  
     } catch(error) {
@@ -44,7 +47,7 @@ const ApproveUser = () => {
         {text: labels.yes, handler: async () => {
           try{
             loading()
-            await deleteUser(userInfo, state.orders)
+            await deleteUser(userInfo, stateOrders)
             dismiss()
             message(labels.deleteSuccess, 3000)
             history.goBack()

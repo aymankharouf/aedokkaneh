@@ -1,24 +1,25 @@
-import { useContext, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { spendingTypes } from '../data/config'
-import { Spending } from '../data/types'
+import { Spending, State } from '../data/types'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { colors } from '../data/config'
 import { checkmarkOutline } from 'ionicons/icons'
+import firebase from '../data/firebase'
+import { useSelector } from 'react-redux'
 
 const Spendings = () => {
-  const { state } = useContext(StateContext)
+  const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
+  const stateSpendings = useSelector<State, Spending[]>(state => state.spendings)
   const [spendings, setSpendings] = useState<Spending[]>([])
   useEffect(() => {
-    setSpendings(() => [...state.spendings].sort((s1, s2) => s2.time > s1.time ? 1 : -1))
-  }, [state.spendings])
-
-  if (!state.user) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
+    setSpendings(() => [...stateSpendings].sort((s1, s2) => s2.time > s1.time ? 1 : -1))
+  }, [stateSpendings])
+  if (!stateUser) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
   return(
     <IonPage>
       <Header title={labels.spendings} />

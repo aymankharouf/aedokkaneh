@@ -1,6 +1,5 @@
-import { useState, useContext, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { editSpending, getMessage } from '../data/actions'
-import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { spendingTypes } from '../data/config'
 import { IonContent, IonDatetime, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, useIonToast } from '@ionic/react'
@@ -8,15 +7,16 @@ import { useHistory, useLocation, useParams } from 'react-router'
 import Header from './header'
 import Footer from './footer'
 import { checkmarkOutline } from 'ionicons/icons'
-import { Err } from '../data/types'
+import { Err, Spending, State } from '../data/types'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const EditSpending = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [spending] = useState(() => state.spendings.find(s => s.id === params.id)!)
+  const stateSpendings = useSelector<State, Spending[]>(state => state.spendings)
+  const [spending] = useState(() => stateSpendings.find(s => s.id === params.id)!)
   const [type, setType] = useState(spending.type)
   const [amount, setAmount] = useState((spending.amount / 100).toFixed(2))
   const [spendingDate, setSpendingDate] = useState(spending.spendingDate.toString())

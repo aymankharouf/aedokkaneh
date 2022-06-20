@@ -1,5 +1,4 @@
-import { useContext, useState } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState } from 'react'
 import { resolvePasswordRequest, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { randomColors } from '../data/config'
@@ -8,19 +7,21 @@ import Header from './header'
 import Footer from './footer'
 import { checkmarkOutline } from 'ionicons/icons'
 import { useHistory, useLocation, useParams } from 'react-router'
-import { Err } from '../data/types'
+import { Err, PasswordRequest, State, UserInfo } from '../data/types'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const RetreivePassword = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
+  const statePasswordRequests = useSelector<State, PasswordRequest[]>(state => state.passwordRequests)
+  const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-  const [passwordRequest] = useState(() => state.passwordRequests.find(r => r.id === params.id)!)
-  const [userInfo] = useState(() => state.users.find(u => u.mobile === passwordRequest.mobile))
+  const [passwordRequest] = useState(() => statePasswordRequests.find(r => r.id === params.id)!)
+  const [userInfo] = useState(() => stateUsers.find(u => u.mobile === passwordRequest.mobile))
   const [password] = useState(() => {
     const password = userInfo?.colors.map(c => randomColors.find(rc => rc.name === c)!.id)
     return password?.join('')

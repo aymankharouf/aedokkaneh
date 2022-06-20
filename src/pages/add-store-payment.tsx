@@ -1,5 +1,4 @@
-import { useState, useContext } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState } from 'react'
 import { addStorePayment, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { paymentTypes } from '../data/config'
@@ -7,15 +6,16 @@ import { IonContent, IonDatetime, IonFab, IonFabButton, IonIcon, IonInput, IonIt
 import { useHistory, useLocation, useParams } from 'react-router'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
-import { Err } from '../data/types'
+import { Err, State, Store } from '../data/types'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const AddStorePayment = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [store] = useState(() => state.stores.find(s => s.id === params.id)!)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const [store] = useState(() => stateStores.find(s => s.id === params.id)!)
   const [amount, setAmount] = useState('')
   const [type, setType] = useState('')
   const [description, setDescription] = useState('')
@@ -36,7 +36,7 @@ const AddStorePayment = () => {
         paymentDate: new Date(paymentDate),
         time: new Date()
       }
-      addStorePayment( payment, state.stores)
+      addStorePayment( payment, stateStores)
       message(labels.addSuccess, 3000)
       history.goBack()
     } catch(error) {

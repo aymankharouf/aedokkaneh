@@ -1,21 +1,21 @@
-import { useState, useContext, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { editRegion, getMessage } from '../data/actions'
-import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
 import { useHistory, useLocation, useParams } from 'react-router'
 import Header from './header'
 import Footer from './footer'
 import { checkmarkOutline } from 'ionicons/icons'
-import { Err } from '../data/types'
+import { Err, Region, State } from '../data/types'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const EditRegion = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [region] = useState(() => state.regions.find(r => r.id === params.id)!)
+  const stateRegions = useSelector<State, Region[]>(state => state.regions)
+  const [region] = useState(() => stateRegions.find(r => r.id === params.id)!)
   const [name, setName] = useState(region.name)
   const [fees, setFees] = useState((region.fees / 100).toFixed(2))
   const [ordering, setOrdering] = useState(region.ordering.toString())
@@ -40,7 +40,7 @@ const EditRegion = () => {
         fees: +fees * 100,
         ordering: +ordering
       }
-      editRegion(newRegion, state.regions)
+      editRegion(newRegion, stateRegions)
       message(labels.editSuccess, 3000)
       history.goBack()
     } catch(error) {

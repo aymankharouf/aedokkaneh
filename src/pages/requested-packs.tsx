@@ -1,40 +1,45 @@
-import { useContext, useEffect, useState } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useEffect, useState } from 'react'
 import { quantityText, getRequestedPacks, getPackStores } from '../data/actions'
 import labels from '../data/labels'
-import { RequestedPack } from '../data/types'
+import { Basket, CustomerInfo, Order, Pack, PackPrice, RequestedPack, State, Store } from '../data/types'
 import { useParams } from 'react-router'
 import { IonBadge, IonContent, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { colors } from '../data/config'
+import { useSelector } from 'react-redux'
 
 type Params = {
 	id: string
 }
 const RequestedPacks = () => {
-	const { state } = useContext(StateContext)
 	const params = useParams<Params>()
+	const stateBasket = useSelector<State, Basket | undefined>(state => state.basket)
+	const statePacks = useSelector<State, Pack[]>(state => state.packs)
+	const stateOrders = useSelector<State, Order[]>(state => state.orders)
+	const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
+	const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
+	const stateStores = useSelector<State, Store[]>(state => state.stores)
 	const [requestedPacks, setRequestedPacks] = useState<RequestedPack[]>([])
 	useEffect(() => {
 		setRequestedPacks(() => {
-			const packs = getRequestedPacks(state.orders, state.basket!, state.packs)
+			const packs = getRequestedPacks(stateOrders, stateBasket!, statePacks)
 			if (params.id){
 				const result = packs.filter(p => {
-					const basketStock = state.basket?.storeId === 's' ? state.basket.packs.find(bp => bp.packId === p.packId || state.packs.find(pa => pa.id === bp.packId && (pa.subPackId === p.packId || pa.bonusPackId === p.packId))) : undefined
+					const basketStock = stateBasket?.storeId === 's' ? stateBasket.packs.find(bp => bp.packId === p.packId || statePacks.find(pa => pa.id === bp.packId && (pa.subPackId === p.packId || pa.bonusPackId === p.packId))) : undefined
 					const basketStockQuantity = ((basketStock?.quantity || 0) * (basketStock?.refQuantity || 0)) || 0
-					const packStores = getPackStores(p.packInfo, state.packPrices, state.packs, basketStockQuantity)
+					const packStores = getPackStores(p.packInfo, statePackPrices, statePacks, basketStockQuantity)
 					return packStores.find(ps => ps.storeId === params.id)
 				})	
 				return result
 			}
 			return packs
 		})
-	}, [params.id, state.basket, state.orders, state.packs, state.customers, state.stores, state.packPrices])
+	}, [params.id, stateBasket, stateOrders, statePacks, stateCustomers, stateStores, statePackPrices])
 	let i = 0
 	return(
     <IonPage>
-			<Header title={`${labels.requestedPacks} ${params.id ? '-' + state.stores.find(s => s.id === params.id)?.name : ''}`} />
+			<Header title={`${labels.requestedPacks} ${params.id ? '-' + stateStores.find(s => s.id === params.id)?.name : ''}`} />
       <IonContent fullscreen className="ion-padding">
 				<IonList>
 					{requestedPacks.length === 0 ? 

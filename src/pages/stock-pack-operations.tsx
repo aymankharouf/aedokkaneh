@@ -1,17 +1,17 @@
-import { useContext, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StateContext } from '../data/state-provider'
 import { getMessage, quantityText, unfoldStockPack } from '../data/actions'
 import labels from '../data/labels'
 import { stockOperationTypes } from '../data/config'
-import { Err, StockPack, Store } from '../data/types'
+import { Err, Pack, PackPrice, Purchase, ReturnBasket, State, StockOperation, StockPack, Store } from '../data/types'
 import { IonActionSheet, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { colors } from '../data/config'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { constructOutline } from 'ionicons/icons'
+import { useSelector, useDispatch } from 'react-redux'
 
 type Params = {
   id: string
@@ -24,10 +24,16 @@ type ExtendedStockPack = StockPack & {
   time: Date
 }
 const StockPackOperations = () => {
-  const { state, dispatch } = useContext(StateContext)
+  const dispatch = useDispatch()
   const params = useParams<Params>()
-  const [pack] = useState(() => state.packs.find(p => p.id === params.id)!)
-  const [stockPackInfo] = useState(() => state.packPrices.find(p => p.storeId === 's' && p.packId === params.id)!)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
+  const statePurchases = useSelector<State, Purchase[]>(state => state.purchases)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const stateStockOperations = useSelector<State, StockOperation[]>(state => state.stockOperations)
+  const stateReturnBasket = useSelector<State, ReturnBasket | undefined>(state => state.returnBasket)
+  const [pack] = useState(() => statePacks.find(p => p.id === params.id)!)
+  const [stockPackInfo] = useState(() => statePackPrices.find(p => p.storeId === 's' && p.packId === params.id)!)
   const [actionOpened, setActionOpened] = useState(false)
   const [packOperations, setPackOperations] = useState<ExtendedStockPack[]>([])
   const [message] = useIonToast()
@@ -35,10 +41,10 @@ const StockPackOperations = () => {
   const history = useHistory()
   const [alert] = useIonAlert()
   const [lastPurchase] = useState<ExtendedStockPack>(() => {
-    const purchases = state.purchases.filter(p => p.basket.find(bp => bp.packId === pack.id))
+    const purchases = statePurchases.filter(p => p.basket.find(bp => bp.packId === pack.id))
     const result = purchases.map(p => {
       const operationPack = p.basket.find(bp => bp.packId === pack.id)!
-      const storeInfo = state.stores.find(s => s.id === p.storeId)!
+      const storeInfo = stateStores.find(s => s.id === p.storeId)!
       return {
         ...operationPack,
         storeInfo,
@@ -53,10 +59,10 @@ const StockPackOperations = () => {
   })
   useEffect(() => {
     setPackOperations(() => {
-      const packOperations = state.stockOperations.filter(t => t.basket.find(p => p.packId === pack.id))
+      const packOperations = stateStockOperations.filter(t => t.basket.find(p => p.packId === pack.id))
       const result = packOperations.map(t => {
         const operationPack = t.basket.find(p => p.packId === pack.id)!
-        const storeInfo = state.stores.find(s => s.id === t.storeId)!
+        const storeInfo = stateStores.find(s => s.id === t.storeId)!
         return {
           ...operationPack,
           id: t.id!,
@@ -68,19 +74,19 @@ const StockPackOperations = () => {
       })
       return result.sort((t1, t2) => t2.time > t1.time ? 1 : -1)
     })
-  }, [state.stockOperations, state.stores, pack])
+  }, [stateStockOperations, stateStores, pack])
   const handleQuantity = (type: string, quantity: number) => {
     try{
-      if (state.returnBasket?.packs?.find(p => p.packId === pack.id)) {
+      if (stateReturnBasket?.packs?.find(p => p.packId === pack.id)) {
         throw new Error('alreadyInBasket')
       }
       if (Number(quantity) > stockPackInfo.quantity) {
         throw new Error('invalidValue')
       }
-      if (state.returnBasket && state.returnBasket.type !== type) {
+      if (stateReturnBasket && stateReturnBasket.type !== type) {
         throw new Error('diffTypeInReturnBasket')
       }
-      if (type === 'r' && state.returnBasket && state.returnBasket.purchaseId !== lastPurchase?.purchaseId) {
+      if (type === 'r' && stateReturnBasket && stateReturnBasket.purchaseId !== lastPurchase?.purchaseId) {
         throw new Error('diffPurchaseInReturnBasket')
       }
       const params = {
@@ -112,7 +118,7 @@ const StockPackOperations = () => {
   }
   const handleOpen = () => {
     try{
-      unfoldStockPack(stockPackInfo, state.packPrices, state.packs, state.stores)
+      unfoldStockPack(stockPackInfo, statePackPrices, statePacks, stateStores)
       message(labels.executeSuccess, 3000)
       history.goBack()
     } catch(error) {

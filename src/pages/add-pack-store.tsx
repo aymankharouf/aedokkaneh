@@ -1,35 +1,37 @@
-import { useState, useContext, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
 import { addPackPrice, getMessage } from '../data/actions'
-import { Err, Store } from '../data/types'
+import { Err, Pack, PackPrice, State, Store } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, IonToggle, useIonToast } from '@ionic/react'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const AddPackStore = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const [cost, setCost] = useState('')
   const [price, setPrice] = useState('')
   const [offerDays, setOfferDays] = useState('')
   const [isActive, setIsActive] = useState(false)
   const [storeId, setStoreId] = useState('')
   const [store, setStore] = useState<Store>()
-  const [stores] = useState(() => state.stores.filter(s => s.id !== 's'))
-  const [pack] = useState(() => state.packs.find(p => p.id === params.id)!)
+  const [stores] = useState(() => stateStores.filter(s => s.id !== 's'))
+  const [pack] = useState(() => statePacks.find(p => p.id === params.id)!)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
   useEffect(() => {
     if (storeId) {
-      setStore(state.stores.find(s => s.id === storeId)!)
+      setStore(stateStores.find(s => s.id === storeId)!)
     }
-  }, [state.stores, storeId])
+  }, [stateStores, storeId])
   useEffect(() => {
     setIsActive(store?.isActive || false)
   }, [store])
@@ -42,7 +44,7 @@ const AddPackStore = () => {
   }, [cost, store])
   const handleSubmit = () => {
     try{
-      if (state.packPrices.find(p => p.packId === pack.id && p.storeId === storeId)) {
+      if (statePackPrices.find(p => p.packId === pack.id && p.storeId === storeId)) {
         throw new Error('duplicatePackInStore')
       }
       if (Number(cost) <= 0 || Number(cost) !== Number(Number(cost).toFixed(2))) {
@@ -74,7 +76,7 @@ const AddPackStore = () => {
         weight: 0,
         isAuto: false
       }
-      addPackPrice(storePack, state.packPrices, state.packs)
+      addPackPrice(storePack, statePackPrices, statePacks)
       message(labels.addSuccess, 3000)
       history.goBack()
     } catch(error) {

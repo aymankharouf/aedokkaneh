@@ -1,31 +1,34 @@
-import { useContext, useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { getArchivedPurchases, getMessage } from '../data/actions'
-import { Err, Purchase, Store } from '../data/types'
+import { Err, MonthlyOperation, Purchase, State, Store } from '../data/types'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useLocation } from 'react-router'
 import { repeatOutline } from 'ionicons/icons'
 import { colors } from '../data/config'
+import { useSelector, useDispatch } from 'react-redux'
 
 type ExtendedPurchase = Purchase & {
   storeInfo: Store
 }
 const ArchivedPurchases = () => {
-  const { state, dispatch } = useContext(StateContext)
+  const dispatch = useDispatch()
+  const stateMonthlyOperations = useSelector<State, MonthlyOperation[]>(state => state.monthlyOperations)
+  const stateArchivedPurchases = useSelector<State, Purchase[]>(state => state.archivedPurchases)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
   const [purchases, setPurchases] = useState<ExtendedPurchase[]>([])
-  const [monthlyOperations] = useState(() => [...state.monthlyOperations.sort((t1, t2) => t2.id - t1.id)])
+  const [monthlyOperations] = useState(() => [...stateMonthlyOperations.sort((t1, t2) => t2.id - t1.id)])
   const lastMonth = useRef(0)
   const [message] = useIonToast()
   const location = useLocation()
   useEffect(() => {
     setPurchases(() => {
-      const purchases = state.archivedPurchases.map(p => {
-        const storeInfo = state.stores.find(s => s.id === p.storeId)!
+      const purchases = stateArchivedPurchases.map(p => {
+        const storeInfo = stateStores.find(s => s.id === p.storeId)!
         return {
           ...p,
           storeInfo
@@ -33,7 +36,7 @@ const ArchivedPurchases = () => {
       })
       return purchases.sort((p1, p2) => p2.time > p1.time ? 1 : -1)
     })
-  }, [state.archivedPurchases, state.stores])
+  }, [stateArchivedPurchases, stateStores])
   const handleRetreive = () => {
     try{
       const id = monthlyOperations[lastMonth.current]?.id

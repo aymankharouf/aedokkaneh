@@ -1,5 +1,4 @@
-import { useState, useContext, ChangeEvent, useRef } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, ChangeEvent, useRef } from 'react'
 import { addProduct, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
@@ -7,14 +6,18 @@ import { useHistory, useLocation, useParams } from 'react-router'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
 import SmartSelect from './smart-select'
-import { Err } from '../data/types'
+import { Category, Country, Err, Product, State, Trademark } from '../data/types'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const AddProduct = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
+  const stateCategories = useSelector<State, Category[]>(state => state.categories)
+  const stateCountries = useSelector<State, Country[]>(state => state.countries)
+  const stateTrademarks = useSelector<State, Trademark[]>(state => state.trademarks)
+  const stateProducts = useSelector<State, Product[]>(state => state.products)
   const [name, setName] = useState('')
   const [alias, setAlias] = useState('')
   const [description, setDescription] = useState('')
@@ -31,11 +34,11 @@ const AddProduct = () => {
     if (inputEl.current) inputEl.current.click()
   }
   const [categories] = useState(() => {
-    const categories = state.categories.filter(c => c.isLeaf)
+    const categories = stateCategories.filter(c => c.isLeaf)
     return categories.sort((c1, c2) => c1.name > c2.name ? 1 : -1)
   })
-  const [countries] = useState(() => [...state.countries].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
-  const [trademarks] = useState(() => [...state.trademarks].sort((t1, t2) => t1.name > t2.name ? 1 : -1))
+  const [countries] = useState(() => [...stateCountries].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
+  const [trademarks] = useState(() => [...stateTrademarks].sort((t1, t2) => t1.name > t2.name ? 1 : -1))
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return
@@ -52,7 +55,7 @@ const AddProduct = () => {
   }
   const handleSubmit = () => {
     try{
-      if (state.products.find(p => p.categoryId === categoryId && p.countryId === countryId && p.name === name && p.alias === alias)) {
+      if (stateProducts.find(p => p.categoryId === categoryId && p.countryId === countryId && p.name === name && p.alias === alias)) {
         throw new Error('duplicateProduct')
       }
       const product = {

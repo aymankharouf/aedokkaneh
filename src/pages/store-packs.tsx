@@ -1,15 +1,15 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
 import labels from '../data/labels'
-import { Category, Pack, PackPrice } from '../data/types'
+import { Category, Pack, PackPrice, State, Store } from '../data/types'
 import { useParams } from 'react-router'
 import { IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { addOutline } from 'ionicons/icons'
 import { colors } from '../data/config'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
@@ -19,16 +19,19 @@ type ExtendedPackPrice = PackPrice & {
   categoryInfo: Category
 }
 const StorePacks = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [store] = useState(() => state.stores.find(s => s.id === params.id)!)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
+  const stateCategories = useSelector<State, Category[]>(state => state.categories)
+  const [store] = useState(() => stateStores.find(s => s.id === params.id)!)
   const [storePacks, setStorePacks] = useState<ExtendedPackPrice[]>([])
   useEffect(() => {
     setStorePacks(() => {
-      const storePacks = state.packPrices.filter(p => p.storeId === params.id && !p.isAuto)
+      const storePacks = statePackPrices.filter(p => p.storeId === params.id && !p.isAuto)
       const result = storePacks.map(p => {
-        const packInfo = state.packs.find(pa => pa.id === p.packId)!
-        const categoryInfo = state.categories.find(c => c.id === packInfo.categoryId)!
+        const packInfo = statePacks.find(pa => pa.id === p.packId)!
+        const categoryInfo = stateCategories.find(c => c.id === packInfo.categoryId)!
         return {
           ...p,
           packInfo,
@@ -37,7 +40,7 @@ const StorePacks = () => {
       })
       return result.sort((p1, p2) => p1.packInfo.categoryId === p2.packInfo.categoryId ? (p2.time > p1.time ? 1 : -1) : (p1.categoryInfo.name > p2.categoryInfo.name ? 1 : -1))
     })
-  }, [state.packPrices, state.packs, state.categories, params.id])
+  }, [statePackPrices, statePacks, stateCategories, params.id])
   let i = 0
   return(
     <IonPage>

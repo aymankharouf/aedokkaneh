@@ -1,27 +1,29 @@
-import { useContext, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { permitUser, getMessage } from '../data/actions'
 import labels from '../data/labels'
-import { StateContext } from '../data/state-provider'
 import { IonContent, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, useIonToast, useIonLoading, IonButton } from '@ionic/react'
 import { useHistory, useLocation, useParams } from 'react-router'
 import Header from './header'
-import { Err } from '../data/types'
+import { CustomerInfo, Err, State, Store, UserInfo } from '../data/types'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const PermitUser = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
+  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
+  const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
   const [userId, setUserId] = useState(params.id === '0' ? '' : params.id)
-  const [customerInfo] = useState(() => state.customers.find(c => c.id === params.id)!)
+  const [customerInfo] = useState(() => stateCustomers.find(c => c.id === params.id)!)
   const [storeId, setStoreId] = useState('')
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
   const [loading, dismiss] = useIonLoading()
   const [users] = useState(() => {
-    const users = state.users.map(u => {
+    const users = stateUsers.map(u => {
       return {
         ...u,
         name: `${u.name}${u.storeName ? '-' + u.storeName : ''}:${u.mobile}`
@@ -30,7 +32,7 @@ const PermitUser = () => {
     return users.sort((u1, u2) => u1.name > u2.name ? 1 : -1)
   })
   const [stores] = useState(() => {
-    const stores = state.stores.filter(s => s.id !== 's')
+    const stores = stateStores.filter(s => s.id !== 's')
     return stores.sort((s1, s2) => s1.name > s2.name ? 1 : -1)
   }) 
   useEffect(() => {
@@ -38,15 +40,15 @@ const PermitUser = () => {
   }, [customerInfo, params.id])
   useEffect(() => {
     if (userId) {
-      setStoreId(state.customers.find(c => c.id === userId)?.storeId || '')
+      setStoreId(stateCustomers.find(c => c.id === userId)?.storeId || '')
     } else {
       setStoreId('')
     }
-  }, [userId, state.customers])
+  }, [userId, stateCustomers])
   const handlePermit = async () => {
     try{
       loading()
-      await permitUser(userId, storeId, state.users, state.stores)
+      await permitUser(userId, storeId, stateUsers, stateStores)
       dismiss()
       message(labels.permitSuccess, 3000)
       history.goBack()

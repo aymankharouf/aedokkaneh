@@ -1,27 +1,29 @@
-import { useContext, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { colors, stockOperationTypes } from '../data/config'
-import { StockOperation } from '../data/types'
+import { Purchase, State, StockOperation, Store } from '../data/types'
 import { IonContent, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useParams } from 'react-router'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const StoreOperations = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [store] = useState(() => state.stores.find(s => s.id === params.id)!)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const stateStockOperations = useSelector<State, StockOperation[]>(state => state.stockOperations)
+  const statePurchases = useSelector<State, Purchase[]>(state => state.purchases)
+  const [store] = useState(() => stateStores.find(s => s.id === params.id)!)
   const [operations, seOperations] = useState<StockOperation[]>([])
   useEffect(() => {
     seOperations(() => {
-      const stockOperations = state.stockOperations.filter(t => t.storeId === params.id && t.type !== 'p')
-      const purchases = state.purchases.filter(p => p.storeId === params.id)
+      const stockOperations = stateStockOperations.filter(t => t.storeId === params.id && t.type !== 'p')
+      const purchases = statePurchases.filter(p => p.storeId === params.id)
       const result = purchases.map(p => {
         return {
           purchaseId: p.id!,
@@ -35,7 +37,7 @@ const StoreOperations = () => {
       const operations = [...result, ...stockOperations]
       return operations.sort((t1, t2) => t2.time > t1.time ? 1 : -1)
     })
-  }, [state.stockOperations, state.purchases, params.id])
+  }, [stateStockOperations, statePurchases, params.id])
 
   return(
     <IonPage>

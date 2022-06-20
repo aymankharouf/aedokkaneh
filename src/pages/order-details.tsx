@@ -1,14 +1,14 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import { updateOrderStatus, getMessage, quantityDetails, mergeOrder, setDeliveryTime } from '../data/actions'
 import labels from '../data/labels'
 import { colors, orderPackStatus } from '../data/config'
-import { Err, Order, OrderBasketPack } from '../data/types'
+import { CustomerInfo, Err, Order, OrderBasketPack, Pack, PackPrice, State, Store } from '../data/types'
 import { IonActionSheet, IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { constructOutline } from 'ionicons/icons'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string,
@@ -20,9 +20,14 @@ type ExtendedOrderBasketPack = OrderBasketPack & {
   statusNote: string
 }
 const OrderDetails = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [order, setOrder] = useState(() => params.type === 'a' ? state.archivedOrders.find(o => o.id === params.id)! : state.orders.find(o => o.id === params.id)!)
+  const stateArchivedOrders = useSelector<State, Order[]>(state => state.archivedOrders)
+  const stateOrders = useSelector<State, Order[]>(state => state.orders)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
+  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
+  const [order, setOrder] = useState(() => params.type === 'a' ? stateArchivedOrders.find(o => o.id === params.id)! : stateOrders.find(o => o.id === params.id)!)
   const [orderBasket, setOrderBasket] = useState<ExtendedOrderBasketPack[]>([])
   const [lastOrder, setLastOrder] = useState<Order>()
   const [actionsOpened, setActionsOpened] = useState(false)
@@ -31,11 +36,11 @@ const OrderDetails = () => {
   const history = useHistory()
   const [alert] = useIonAlert()
   useEffect(() => {
-    setOrder(() => state.orders.find(o => o.id === params.id)!)
-  }, [state.orders, params.id])
+    setOrder(() => stateOrders.find(o => o.id === params.id)!)
+  }, [stateOrders, params.id])
   useEffect(() => {
     setOrderBasket(() => order.basket.map(p => {
-      const storeName = p.storeId ? (p.storeId === 'm' ? labels.multipleStores : state.stores.find(s => s.id === p.storeId)?.name || '') : ''
+      const storeName = p.storeId ? (p.storeId === 'm' ? labels.multipleStores : stateStores.find(s => s.id === p.storeId)?.name || '') : ''
       const priceNote = p.actual && p.actual !== p.price ? `${labels.orderPrice}: ${(p.price / 100).toFixed(2)}, ${labels.currentPrice}: ${(p.actual / 100).toFixed(2)}` : `${labels.unitPrice}: ${(p.price / 100).toFixed(2)}`
       const statusNote = `${orderPackStatus.find(s => s.id === p.status)?.name} ${p.overPriced ? labels.overPricedNote : ''}`
       return {
@@ -45,14 +50,14 @@ const OrderDetails = () => {
         statusNote
       }
     }))
-  }, [order, state.stores])
+  }, [order, stateStores])
   useEffect(() => {
     setLastOrder(() => {
-      const userOrders = state.orders.filter(o => o.id !== order.id && o.userId === order.userId && !['c', 'm', 'r'].includes(o.status))
+      const userOrders = stateOrders.filter(o => o.id !== order.id && o.userId === order.userId && !['c', 'm', 'r'].includes(o.status))
       userOrders.sort((o1, o2) => o2.time > o1.time ? 1 : -1)
       return ['a', 'e'].includes(userOrders[0]?.status) ? userOrders[0] : undefined
     })
-  }, [state.orders, order])
+  }, [stateOrders, order])
   const confirmMerge = () => {
     try{
       let found
@@ -61,7 +66,7 @@ const OrderDetails = () => {
         if (found && found.price !== p.price) {
           throw new Error('samePackWithDiffPrice')
         }
-        if (found && found.weight > 0 && state.packs.find(pa => pa.id === p.packId)?.isDivided) {
+        if (found && found.weight > 0 && statePacks.find(pa => pa.id === p.packId)?.isDivided) {
           throw new Error('samePackPurchasedByWeight')
         }
       }
@@ -75,7 +80,7 @@ const OrderDetails = () => {
   }
   const rejectMerge = (actionId: string) => {
     try{
-      updateOrderStatus(order, actionId, state.packPrices, state.packs, false)
+      updateOrderStatus(order, actionId, statePackPrices, statePacks, false)
       message(labels.editSuccess, 3000)
       history.goBack()
     } catch(error) {
@@ -85,7 +90,7 @@ const OrderDetails = () => {
   }
   const handleAction = (actionId: string) => {
     try{
-    if (actionId === 'a' && !state.customers.find(c => c.id === order.userId)){
+    if (actionId === 'a' && !stateCustomers.find(c => c.id === order.userId)){
         throw new Error('notApprovedUser')
       } else if (actionId === 'a' && lastOrder) {
         alert({
@@ -104,7 +109,7 @@ const OrderDetails = () => {
             {text: labels.cancel},
             {text: labels.yes, handler: () => {
               try{
-                updateOrderStatus(order, actionId, state.packPrices, state.packs, false)
+                updateOrderStatus(order, actionId, statePackPrices, statePacks, false)
                 message(labels.editSuccess, 3000)
                 history.goBack()
               } catch(error) {
@@ -115,7 +120,7 @@ const OrderDetails = () => {
           ],
         })
       } else if (actionId === 'd') {
-        updateOrderStatus(order, 'd', state.packPrices, state.packs, false)
+        updateOrderStatus(order, 'd', statePackPrices, statePacks, false)
         message(labels.editSuccess, 3000)
         history.goBack()
       } else if (actionId === 't') {
@@ -137,7 +142,7 @@ const OrderDetails = () => {
           ],
         })
       } else {
-        updateOrderStatus(order, actionId, state.packPrices, state.packs, false)
+        updateOrderStatus(order, actionId, statePackPrices, statePacks, false)
         message(labels.editSuccess, 3000)
         history.goBack()
       }  

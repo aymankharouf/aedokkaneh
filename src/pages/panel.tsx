@@ -1,31 +1,42 @@
-import { useContext, useState, useEffect, useRef } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect, useRef } from 'react'
 import { logout } from '../data/actions'
 import labels from '../data/labels'
 import { IonBadge, IonContent, IonItem, IonLabel, IonList, IonMenu, IonMenuToggle } from '@ionic/react'
 import { useHistory } from 'react-router'
+import { useSelector, useDispatch } from 'react-redux'
+import { Alarm, CustomerInfo, Friend, Order, PackPrice, PasswordRequest, Rating, State, UserInfo } from '../data/types'
+import firebase from '../data/firebase'
 
 const Panel = () => {
-  const { state, dispatch } = useContext(StateContext)
+  const dispatch = useDispatch()
+  const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
+  const stateOrders = useSelector<State, Order[]>(state => state.orders)
+  const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
+  const stateAlarms = useSelector<State, Alarm[]>(state => state.alarms)
+  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
+  const stateRatings = useSelector<State, Rating[]>(state => state.ratings)
+  const stateInvitations = useSelector<State, Friend[]>(state => state.invitations)
+  const statePasswordRequests = useSelector<State, PasswordRequest[]>(state => state.passwordRequests)
+  const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const [approvalsCount, setApprovalsAcount] = useState(0)
   const [offersCount, setOffersAcount] = useState(0)
   const menuEl = useRef<HTMLIonMenuElement | null>(null)
   const history = useHistory()
   useEffect(() => {
-    const newOrders = state.orders.filter(o => o.status === 'n').length
-    const orderRequests = state.orders.filter(r => r.requestType).length
-    const newUsers = state.users.filter(u => !state.customers.find(c => c.id === u.id)).length
-    const alarms = state.alarms.filter(a => a.status === 'n').length
-    const ratings = state.ratings.filter(r => r.status === 'n').length
-    const invitations = state.invitations.filter(i => i.status === 'n').length
-    const passwordRequests = state.passwordRequests.length
-    const newStoresOwners = state.customers.filter(c => c.storeName && !c.storeId).length
+    const newOrders = stateOrders.filter(o => o.status === 'n').length
+    const orderRequests = stateOrders.filter(r => r.requestType).length
+    const newUsers = stateUsers.filter(u => !stateCustomers.find(c => c.id === u.id)).length
+    const alarms = stateAlarms.filter(a => a.status === 'n').length
+    const ratings = stateRatings.filter(r => r.status === 'n').length
+    const invitations = stateInvitations.filter(i => i.status === 'n').length
+    const passwordRequests = statePasswordRequests.length
+    const newStoresOwners = stateCustomers.filter(c => c.storeName && !c.storeId).length
     setApprovalsAcount(newOrders + orderRequests + newUsers + alarms + ratings + invitations + passwordRequests + newStoresOwners)
-  }, [state.orders, state.users, state.customers, state.passwordRequests, state.alarms, state.ratings, state.invitations])
+  }, [stateOrders, stateUsers, stateCustomers, statePasswordRequests, stateAlarms, stateRatings, stateInvitations])
   useEffect(() => {
     const today = (new Date()).setHours(0, 0, 0, 0)
-    setOffersAcount(() => state.packPrices.filter(p => p.offerEnd && p.offerEnd.setHours(0, 0, 0, 0) <= today).length)
-  }, [state.packPrices])
+    setOffersAcount(() => statePackPrices.filter(p => p.offerEnd && p.offerEnd.setHours(0, 0, 0, 0) <= today).length)
+  }, [statePackPrices])
 
   const handleLogout = () => {
     logout()
@@ -39,7 +50,7 @@ const Panel = () => {
       <IonContent>
         <IonList>
           <IonMenuToggle autoHide={false}>
-          {state.user ? <>
+          {stateUser ? <>
             <IonItem href="#" onClick={handleLogout}>
               <IonLabel style={{marginBottom: '5px'}}>{labels.logout}</IonLabel>
             </IonItem>

@@ -1,23 +1,23 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
-import { Balance } from '../data/types'
+import { Balance, State, Store } from '../data/types'
 import { IonContent, IonItem, IonLabel, IonList, IonPage } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useParams } from 'react-router'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const StoreBalance = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [store, setStore] = useState(() => state.stores.find(s => s.id === params.id)!)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const [store, setStore] = useState(() => stateStores.find(s => s.id === params.id)!)
   const [balances, setBalances] = useState<Balance[]>([])
   useEffect(() => {
-    setStore(() => state.stores.find(s => s.id === params.id)!)
-  }, [state.stores, params.id])
+    setStore(() => stateStores.find(s => s.id === params.id)!)
+  }, [stateStores, params.id])
   useEffect(() => {
     setBalances(() => {
       const balances = store.balances?.slice() || []

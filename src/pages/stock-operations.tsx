@@ -1,26 +1,27 @@
-import { useContext, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
-import { StateContext } from '../data/state-provider'
 import labels from '../data/labels'
 import { stockOperationTypes } from '../data/config'
-import { StockOperation, Store } from '../data/types'
+import { State, StockOperation, Store } from '../data/types'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { colors } from '../data/config'
 import { cloudUploadOutline } from 'ionicons/icons'
+import { useSelector } from 'react-redux'
 
 type ExtendedStockOperation = StockOperation & {
   storeInfo: Store
 }
 const StockOperations = () => {
-  const { state } = useContext(StateContext)
+  const stateStockOperations = useSelector<State, StockOperation[]>(state => state.stockOperations)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
   const [stockOperations, setStockOperations] = useState<ExtendedStockOperation[]>([])
   useEffect(() => {
     setStockOperations(() => {
-      const stockOperations = state.stockOperations.map(t => {
-        const storeInfo = state.stores.find(s => s.id === t.storeId)!
+      const stockOperations = stateStockOperations.map(t => {
+        const storeInfo = stateStores.find(s => s.id === t.storeId)!
         return {
           ...t,
           storeInfo
@@ -28,7 +29,7 @@ const StockOperations = () => {
       })
       return stockOperations.sort((t1, t2) => t2.time > t1.time ? 1 : -1)
     })
-  }, [state.stockOperations, state.stores])
+  }, [stateStockOperations, stateStores])
   return(
     <IonPage>
       <Header title={labels.stockOperations} />

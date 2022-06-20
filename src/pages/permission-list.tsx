@@ -1,21 +1,23 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
 import { permitUser, getMessage } from '../data/actions'
-import { CustomerInfo, Err } from '../data/types'
+import { CustomerInfo, Err, State, Store, UserInfo } from '../data/types'
 import { IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonLoading, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { addOutline } from 'ionicons/icons'
 import { colors } from '../data/config'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const PermissionList = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
+  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
   const [customers, setCustomers] = useState<CustomerInfo[]>([])
   const [message] = useIonToast()
   const location = useLocation()
@@ -24,16 +26,16 @@ const PermissionList = () => {
   const [loading, dismiss] = useIonLoading()
   useEffect(() => {
     setCustomers(() => {
-      const customers = state.customers.filter(c => (params.id === 's' && c.storeId) || (params.id === 'n' && c.storeName && !c.storeId))
+      const customers = stateCustomers.filter(c => (params.id === 's' && c.storeId) || (params.id === 'n' && c.storeName && !c.storeId))
       return customers.map(c => {
-        const storeName = state.stores.find(s => s.id === c.storeId)?.name || c.storeName
+        const storeName = stateStores.find(s => s.id === c.storeId)?.name || c.storeName
         return {
           ...c,
           storeName
         }
       })
     })
-  }, [state.customers, state.stores, state.users, params.id])
+  }, [stateCustomers, stateStores, stateUsers, params.id])
   const handleUnPermit = (customer: CustomerInfo) => {
     alert({
       header: labels.confirmationTitle,
@@ -43,7 +45,7 @@ const PermissionList = () => {
         {text: labels.yes, handler: async () => {
           try{
             loading()
-            await permitUser(customer.id, '', state.users, state.stores)
+            await permitUser(customer.id, '', stateUsers, stateStores)
             dismiss()
             message(labels.unPermitSuccess, 3000)
             history.goBack()

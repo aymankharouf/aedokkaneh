@@ -1,16 +1,18 @@
-import {useContext, useEffect, useState} from 'react'
-import {StateContext} from '../data/state-provider'
+import { useEffect, useState } from 'react'
 import { IonBadge, IonButtons, IonFooter, IonIcon, IonToolbar } from '@ionic/react'
 import { cartOutline, homeOutline } from 'ionicons/icons'
 import { useHistory } from 'react-router'
+import { useSelector } from 'react-redux'
+import { Basket, ReturnBasket, State } from '../data/types'
 
 const Footer = () => {
-  const {state} = useContext(StateContext)
+  const stateBasket = useSelector<State, Basket | undefined>(state => state.basket)
+  const stateReturnBasket = useSelector<State, ReturnBasket | undefined>(state => state.returnBasket)
   const [basketLink, setBasketLink] = useState('')
   const [basketCount, setBasketCount] = useState(0)
   useEffect(() => {
-    const basketCount = state.basket?.packs?.length || 0
-    const returnBasketCount = state.returnBasket?.packs?.length || 0
+    const basketCount = stateBasket?.packs?.length || 0
+    const returnBasketCount = stateReturnBasket?.packs?.length || 0
     setBasketLink(() => {
       if (basketCount > 0) return '/basket/'
       if (returnBasketCount > 0 ) return '/return-basket'
@@ -21,7 +23,7 @@ const Footer = () => {
       if (returnBasketCount > 0 ) return returnBasketCount
       return 0
     })
-  }, [state.basket, state.returnBasket])
+  }, [stateBasket, stateReturnBasket])
   const history = useHistory()
   return (
     <IonFooter>

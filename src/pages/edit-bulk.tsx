@@ -1,20 +1,20 @@
-import { useState, useContext, useEffect, ChangeEvent, useRef } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect, ChangeEvent, useRef } from 'react'
 import labels from '../data/labels'
 import { editPack, getMessage } from '../data/actions'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, IonToggle, useIonToast } from '@ionic/react'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
-import { Err } from '../data/types'
+import { Err, Pack, State } from '../data/types'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const EditBulk = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [pack] = useState(() => state.packs.find(p => p.id === params.id)!)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const [pack] = useState(() => statePacks.find(p => p.id === params.id)!)
   const [name, setName] = useState(pack.name)
   const [subPackId, setSubPackId] = useState(pack.subPackId)
   const [subQuantity, setSubQuantity] = useState(pack.subQuantity.toString())
@@ -28,7 +28,7 @@ const EditBulk = () => {
   const history = useHistory()
   const inputEl = useRef<HTMLInputElement | null>(null);
   const [packs] = useState(() => {
-    const packs = state.packs.filter(p => p.productId === pack.productId && !p.isOffer && !p.byWeight && p.forSale)
+    const packs = statePacks.filter(p => p.productId === pack.productId && !p.isOffer && !p.byWeight && p.forSale)
     return packs.map(p => {
       return {
         id: p.id,
@@ -68,8 +68,8 @@ const EditBulk = () => {
 
   const handleSubmit = () => {
     try{
-      const subPackInfo = state.packs.find(p => p.id === subPackId)!
-      if (state.packs.find(p => p.id !== pack.id && p.productId === pack.productId && p.name === name && p.closeExpired === subPackInfo.closeExpired)) {
+      const subPackInfo = statePacks.find(p => p.id === subPackId)!
+      if (statePacks.find(p => p.id !== pack.id && p.productId === pack.productId && p.name === name && p.closeExpired === subPackInfo.closeExpired)) {
         throw new Error('duplicateName')
       }
       if (Number(subQuantity) <= 1) {
@@ -87,7 +87,7 @@ const EditBulk = () => {
         unitsCount: +subQuantity * subPackInfo.unitsCount,
         forSale
       }
-      editPack(newPack, pack, state.packs, image)
+      editPack(newPack, pack, statePacks, image)
       message(labels.addSuccess, 3000)
       history.goBack()
     } catch(error) {

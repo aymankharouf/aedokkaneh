@@ -1,19 +1,21 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import { quantityText } from '../data/actions'
 import labels from '../data/labels'
-import { RequestedPack } from '../data/types'
+import { Order, Pack, Product, RequestedPack, State } from '../data/types'
 import { IonBadge, IonContent, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { colors } from '../data/config'
+import { useSelector } from 'react-redux'
 
 const PrepareOrders = () => {
-  const { state } = useContext(StateContext)
+	const stateOrders = useSelector<State, Order[]>(state => state.orders)
+	const statePacks = useSelector<State, Pack[]>(state => state.packs)
+	const stateProducts = useSelector<State, Product[]>(state => state.products)
 	const [packs, setPacks] = useState<RequestedPack[]>([])
 	useEffect(() => {
 		setPacks(() => {
-			const finishedOrders = state.orders.filter(o => o.status === 'f')
+			const finishedOrders = stateOrders.filter(o => o.status === 'f')
 			const packsArray: RequestedPack[] = []
 			finishedOrders.forEach(o => {
 				o.basket.forEach(p => {
@@ -27,7 +29,7 @@ const PrepareOrders = () => {
 								price: 0,
 								orderId: '',
 								offerId: '',
-								packInfo: state.packs.find(pa => pa.id === p.packId)!
+								packInfo: statePacks.find(pa => pa.id === p.packId)!
 							})
 						} else {
 							packsArray.push({
@@ -37,7 +39,7 @@ const PrepareOrders = () => {
 								weight: p.weight,
 								orderId: o.id!,
 								offerId: '',
-								packInfo: state.packs.find(pa => pa.id === p.packId)!
+								packInfo: statePacks.find(pa => pa.id === p.packId)!
 							})
 						}
 					}
@@ -45,7 +47,7 @@ const PrepareOrders = () => {
 			})
 			return packsArray
 		})
-	}, [state.orders, state.packs, state.products])
+	}, [stateOrders, statePacks, stateProducts])
 	let i = 0
   return(
     <IonPage>

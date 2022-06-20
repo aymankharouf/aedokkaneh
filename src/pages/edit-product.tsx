@@ -1,20 +1,24 @@
-import { useState, useContext, useEffect, ChangeEvent, useRef } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect, ChangeEvent, useRef } from 'react'
 import { editProduct, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { IonButton, IonContent, IonSelect, IonSelectOption, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
 import { useHistory, useLocation, useParams } from 'react-router'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
-import { Err } from '../data/types'
+import { Category, Country, Err, Pack, Product, State, Trademark } from '../data/types'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string
 }
 const EditProduct = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [product] = useState(() => state.products.find(p => p.id === params.id)!)
+  const stateProducts = useSelector<State, Product[]>(state => state.products)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const stateCountries = useSelector<State, Country[]>(state => state.countries)
+  const stateCategories = useSelector<State, Category[]>(state => state.categories)
+  const stateTrademarks = useSelector<State, Trademark[]>(state => state.trademarks)
+  const [product] = useState(() => stateProducts.find(p => p.id === params.id)!)
   const [name, setName] = useState(product.name)
   const [alias, setAlias] = useState(product.alias)
   const [description, setDescription] = useState(product.description)
@@ -24,9 +28,9 @@ const EditProduct = () => {
   const [imageUrl, setImageUrl] = useState(product.imageUrl)
   const [image, setImage] = useState<File>()
   const [hasChanged, setHasChanged] = useState(false)
-  const [categories] = useState(() => [...state.categories].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
-  const [countries] = useState(() => [...state.countries].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
-  const [trademarks] = useState(() => [...state.trademarks].sort((t1, t2) => t1.name > t2.name ? 1 : -1))
+  const [categories] = useState(() => [...stateCategories].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
+  const [countries] = useState(() => [...stateCountries].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
+  const [trademarks] = useState(() => [...stateTrademarks].sort((t1, t2) => t1.name > t2.name ? 1 : -1))
   const inputEl = useRef<HTMLInputElement | null>(null)
   const [message] = useIonToast()
   const location = useLocation()
@@ -60,7 +64,7 @@ const EditProduct = () => {
   }, [product, name, alias, description, countryId, categoryId, trademarkId, imageUrl])
   const handleSubmit = () => {
     try{
-      if (state.products.find(p => p.id !== product.id && p.categoryId === categoryId && p.countryId === countryId && p.name === name && p.alias === alias)) {
+      if (stateProducts.find(p => p.id !== product.id && p.categoryId === categoryId && p.countryId === countryId && p.name === name && p.alias === alias)) {
         throw new Error('duplicateProduct')
       }
       const newProduct = {
@@ -72,7 +76,7 @@ const EditProduct = () => {
         trademarkId,
         countryId,
       }
-      editProduct(newProduct, product.name, state.packs, image)
+      editProduct(newProduct, product.name, statePacks, image)
       message(labels.editSuccess, 3000)
       history.goBack()
     } catch(error) {

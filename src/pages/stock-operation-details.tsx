@@ -1,12 +1,12 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import { quantityText } from '../data/actions'
 import labels from '../data/labels'
 import { colors, stockOperationTypes } from '../data/config'
-import { Pack, StockPack } from '../data/types'
+import { Pack, State, StockOperation, StockPack, Store } from '../data/types'
 import { IonBadge, IonContent, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
+import { useSelector } from 'react-redux'
 
 type Props = {
   id: string,
@@ -16,21 +16,24 @@ type ExtendedStockPack = StockPack & {
   packInfo: Pack
 }
 const StockOperationDetails = (props: Props) => {
-  const { state } = useContext(StateContext)
-  const [stockOperation] = useState(() => props.type === 'a' ? state.archivedStockOperations.find(t => t.id === props.id)! : state.stockOperations.find(t => t.id === props.id)!)
+  const stateArchivedStockOperations = useSelector<State, StockOperation[]>(state => state.archivedStockOperations)
+  const stateStockOperations = useSelector<State, StockOperation[]>(state => state.stockOperations)
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const [stockOperation] = useState(() => props.type === 'a' ? stateArchivedStockOperations.find(t => t.id === props.id)! : stateStockOperations.find(t => t.id === props.id)!)
   const [stockOperationBasket, setStockOperationBasket] = useState<ExtendedStockPack[]>([])
   useEffect(() => {
     setStockOperationBasket(() => stockOperation.basket.map(p => {
-      const packInfo = state.packs.find(pa => pa.id === p.packId)!
+      const packInfo = statePacks.find(pa => pa.id === p.packId)!
       return {
         ...p,
         packInfo
       }
     }))
-  }, [stockOperation, state.packs])
+  }, [stockOperation, statePacks])
   return(
     <IonPage>
-      <Header title={`${stockOperationTypes.find(ty => ty.id === stockOperation.type)?.name} ${stockOperation.storeId ? state.stores.find(s => s.id === stockOperation.storeId)?.name : ''}`}/>
+      <Header title={`${stockOperationTypes.find(ty => ty.id === stockOperation.type)?.name} ${stockOperation.storeId ? stateStores.find(s => s.id === stockOperation.storeId)?.name : ''}`}/>
       <IonContent fullscreen className="ion-padding">
         <IonList>
           {stockOperationBasket.map(p => 

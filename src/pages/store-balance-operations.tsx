@@ -1,5 +1,4 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
 import moment from 'moment'
 import 'moment/locale/ar'
@@ -10,6 +9,8 @@ import Footer from './footer'
 import { colors } from '../data/config'
 import { useParams } from 'react-router'
 import { addOutline } from 'ionicons/icons'
+import { useSelector } from 'react-redux'
+import { Purchase, State, StockOperation, Store, StorePayment } from '../data/types'
 
 type Params = {
   id: string,
@@ -22,15 +23,18 @@ type Operation = {
   time: Date
 }
 const StoreBalanceOperations = () => {
-  const { state } = useContext(StateContext)
   const params = useParams<Params>()
-  const [store] = useState(() => state.stores.find(s => s.id === params.storeId)!)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const stateStorePayments = useSelector<State, StorePayment[]>(state => state.storePayments)
+  const statePurchases = useSelector<State, Purchase[]>(state => state.purchases)
+  const stateStockOperations = useSelector<State, StockOperation[]>(state => state.stockOperations)
+  const [store] = useState(() => stateStores.find(s => s.id === params.storeId)!)
   const [operations, setOperations] = useState<Operation[]>([])
   const month = (Number(params.month) % 100) - 1
   const year = Math.trunc(Number(params.month) / 100)
   useEffect(() => {
     setOperations(() => {
-      const storePayments = state.storePayments.filter(p => p.storeId === params.storeId && p.paymentDate.getFullYear() === year && p.paymentDate.getMonth() === month)
+      const storePayments = stateStorePayments.filter(p => p.storeId === params.storeId && p.paymentDate.getFullYear() === year && p.paymentDate.getMonth() === month)
       const result1 = storePayments.map(p => {
         const paymentTypeInfo = paymentTypes.find(t => t.id === p.type)!
         return {
@@ -39,7 +43,7 @@ const StoreBalanceOperations = () => {
           name: paymentTypeInfo.name
         }
       })
-      const purchases = state.purchases.filter(p => p.storeId === params.storeId && (p.time).getFullYear() === year && (p.time).getMonth() === month)
+      const purchases = statePurchases.filter(p => p.storeId === params.storeId && (p.time).getFullYear() === year && (p.time).getMonth() === month)
       const result2 = purchases.map(p => {
         return {
           amount: p.total,
@@ -47,7 +51,7 @@ const StoreBalanceOperations = () => {
           name: labels.purchase
         }
       })
-      const stockOperations = state.stockOperations.filter(t => t.storeId === params.id && t.type === 's' && (t.time).getFullYear() === year && (t.time).getMonth() === month)
+      const stockOperations = stateStockOperations.filter(t => t.storeId === params.id && t.type === 's' && (t.time).getFullYear() === year && (t.time).getMonth() === month)
       const result3 = stockOperations.map(t => {
         return {
           amount: t.total,
@@ -58,7 +62,7 @@ const StoreBalanceOperations = () => {
       const result = [...result1, ...result2, ...result3]
       return result.sort((t1, t2) => t2.time > t1.time ? 1 : -1)
     })
-  }, [store, state.purchases, state.stockOperations, state.storePayments, params.id, month, year, params.storeId])
+  }, [store, statePurchases, stateStockOperations, stateStorePayments, params.id, month, year, params.storeId])
   let i = 0
   return(
     <IonPage>

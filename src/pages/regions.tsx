@@ -1,19 +1,20 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
 import Header from './header'
 import { colors } from '../data/config'
 import { addOutline } from 'ionicons/icons'
 import Footer from './footer'
+import { useSelector } from 'react-redux'
+import { Region, State } from '../data/types'
 
 
 const Regions = () => {
-  const { state } = useContext(StateContext)
-  const [regions, setRegions] = useState(() => [...state.regions].sort((l1, l2) => l1.ordering - l2.ordering))
+  const stateRegions = useSelector<State, Region[]>(state => state.regions)
+  const [regions, setRegions] = useState(() => [...stateRegions].sort((l1, l2) => l1.ordering - l2.ordering))
   useEffect(() => {
-    setRegions(() => [...state.regions].sort((l1, l2) => l1.ordering - l2.ordering))
-  }, [state.regions])
+    setRegions(() => [...stateRegions].sort((l1, l2) => l1.ordering - l2.ordering))
+  }, [stateRegions])
   return (
     <IonPage>
       <Header title={labels.regions} />

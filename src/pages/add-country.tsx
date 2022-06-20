@@ -1,5 +1,4 @@
-import { useContext, useState } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState } from 'react'
 import labels from '../data/labels'
 import { addCountry, getMessage } from '../data/actions'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
@@ -7,10 +6,12 @@ import { useHistory, useLocation } from 'react-router'
 import Header from './header'
 import Footer from './footer'
 import { checkmarkOutline } from 'ionicons/icons'
-import { Err } from '../data/types'
+import { Country, Err, State } from '../data/types'
+import { useSelector } from 'react-redux'
 
 const AddCountry = () => {
-  const { state } = useContext(StateContext)
+  const stateCountries = useSelector<State, Country[]>(state => state.countries)
+
   const [name, setName] = useState('')
   const [message] = useIonToast()
   const location = useLocation()
@@ -18,7 +19,7 @@ const AddCountry = () => {
 
   const handleSubmit = () => {
     try{
-      if (state.countries.find(c => c.name === name)) {
+      if (stateCountries.find(c => c.name === name)) {
         throw new Error('duplicateName')
       }
       addCountry({

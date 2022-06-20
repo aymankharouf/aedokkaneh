@@ -1,16 +1,17 @@
-import { useContext, useState, useEffect } from 'react'
-import { StateContext } from '../data/state-provider'
+import { useState, useEffect } from 'react'
 import labels from '../data/labels'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage } from '@ionic/react'
 import Header from './header'
 import { addOutline } from 'ionicons/icons'
+import { useSelector } from 'react-redux'
+import { State, Trademark } from '../data/types'
 
 const Trademarks = () => {
-  const { state } = useContext(StateContext)
-  const [trademarks, setTrademarks] = useState(() => [...state.trademarks].sort((t1, t2) => t1.name > t2.name ? 1 : -1))
+  const stateTrademarks = useSelector<State, Trademark[]>(state => state.trademarks)
+  const [trademarks, setTrademarks] = useState(() => [...stateTrademarks].sort((t1, t2) => t1.name > t2.name ? 1 : -1))
   useEffect(() => {
-    setTrademarks(() => [...state.trademarks].sort((t1, t2) => t1.name > t2.name ? 1 : -1))
-  }, [state.trademarks])
+    setTrademarks(() => [...stateTrademarks].sort((t1, t2) => t1.name > t2.name ? 1 : -1))
+  }, [stateTrademarks])
 
   return (
     <IonPage>
