@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import labels from '../data/labels'
-import { getCategoryName, getArchivedProducts, getArchivedPacks, getMessage } from '../data/actions'
+import { getArchivedProducts, getArchivedPacks, getMessage } from '../data/actions'
 import { Category, Err, Product, State } from '../data/types'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonLoading, useIonToast } from '@ionic/react'
 import Header from './header'
@@ -70,8 +70,8 @@ const ArchivedProducts = () => {
                 </IonThumbnail>
                 <IonLabel>
                   <IonText style={{color: colors[0].name}}>{p.name}</IonText>
-                  <IonText style={{color: colors[1].name}}>{getCategoryName(p.categoryInfo, stateCategories)}</IonText>
-                  <IonText style={{color: colors[2].name}}>{`${labels.productOf} ${p.trademarkId ? labels.company + ' ' + p.trademarkId + '-' : ''}${p.countryId}`}</IonText>
+                  <IonText style={{color: colors[1].name}}>{p.categoryInfo.name}</IonText>
+                  <IonText style={{color: colors[2].name}}>{`${labels.productOf} ${p.trademark ? labels.company + ' ' + p.trademark + '-' : ''}${p.countryId}`}</IonText>
                 </IonLabel>
               </IonItem>   
             )

@@ -6,7 +6,7 @@ import { useHistory, useLocation, useParams } from 'react-router'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
 import SmartSelect from './smart-select'
-import { Category, Country, Err, Product, State, Trademark } from '../data/types'
+import { Category, Country, Err, Product, State } from '../data/types'
 import { useSelector } from 'react-redux'
 
 type Params = {
@@ -16,13 +16,12 @@ const AddProduct = () => {
   const params = useParams<Params>()
   const stateCategories = useSelector<State, Category[]>(state => state.categories)
   const stateCountries = useSelector<State, Country[]>(state => state.countries)
-  const stateTrademarks = useSelector<State, Trademark[]>(state => state.trademarks)
   const stateProducts = useSelector<State, Product[]>(state => state.products)
   const [name, setName] = useState('')
   const [alias, setAlias] = useState('')
   const [description, setDescription] = useState('')
   const [categoryId, setCategoryId] = useState(params.id === '0' ? '' : params.id)
-  const [trademarkId, setTrademarkId] = useState('')
+  const [trademark, setTrademark] = useState('')
   const [countryId, setCountryId] = useState('')
   const [imageUrl, setImageUrl] = useState('')
   const [image, setImage] = useState<File>()
@@ -33,12 +32,8 @@ const AddProduct = () => {
   const onUploadClick = () => {
     if (inputEl.current) inputEl.current.click()
   }
-  const [categories] = useState(() => {
-    const categories = stateCategories.filter(c => c.isLeaf)
-    return categories.sort((c1, c2) => c1.name > c2.name ? 1 : -1)
-  })
+  const [categories] = useState(() => stateCategories.sort((c1, c2) => c1.name > c2.name ? 1 : -1))
   const [countries] = useState(() => [...stateCountries].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
-  const [trademarks] = useState(() => [...stateTrademarks].sort((t1, t2) => t1.name > t2.name ? 1 : -1))
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return
@@ -63,7 +58,7 @@ const AddProduct = () => {
         alias,
         description,
         categoryId,
-        trademarkId,
+        trademark,
         countryId,
         sales: 0,
         rating: 0,
@@ -118,7 +113,18 @@ const AddProduct = () => {
               onIonChange={e => setDescription(e.detail.value!)} 
             />
           </IonItem>
-          <SmartSelect label={labels.trademark} data={trademarks} onChange={(v) => setTrademarkId(v)} />
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.trademark}
+            </IonLabel>
+            <IonInput 
+              value={trademark} 
+              type="text" 
+              clearInput
+              onIonChange={e => setTrademark(e.detail.value!)} 
+            />
+          </IonItem>
+
           <SmartSelect label={labels.category} data={categories} onChange={(v) => setCategoryId(v)} />
           <SmartSelect label={labels.country} data={countries} onChange={(v) => setCountryId(v)} />
           <input 

@@ -1,6 +1,6 @@
 import firebase from './firebase'
 import labels from './labels'
-import { Advert, Alarm, Basket, BasketPack, Category, CustomerInfo, Friend, Region, Log, MonthlyOperation, Notification, Order, OrderBasketPack, Pack, PackPrice, Product, Purchase, Rating, RequestedPack, ReturnBasket, Spending, StockPack, StockOperation, Store, StorePayment, UserInfo, Trademark, Country, Err } from "./types"
+import { Advert, Alarm, Basket, BasketPack, Category, CustomerInfo, Friend, Region, Log, MonthlyOperation, Notification, Order, OrderBasketPack, Pack, PackPrice, Product, Purchase, Rating, RequestedPack, ReturnBasket, Spending, StockPack, StockOperation, Store, StorePayment, UserInfo, Country, Err } from "./types"
 import { randomColors, setup } from './config'
 import moment from 'moment'
 
@@ -117,70 +117,25 @@ export const updateAdvertStatus = (advert: Advert, adverts: Advert[]) => {
   batch.commit()
 }
 
-export const addCategory = (parentId: string, name: string, ordering: number) => {
-  const batch = firebase.firestore().batch()
-  let categoryRef
-  if (parentId !== '0') {
-    categoryRef = firebase.firestore().collection('categories').doc(parentId)
-    batch.update(categoryRef, {
-      isLeaf: false
-    })
-  }
-  categoryRef = firebase.firestore().collection('categories').doc()
-  batch.set(categoryRef, {
-    parentId,
-    name,
-    ordering,
-    isLeaf: true,
-    isActive: false
+export const addCategory = (category: Category) => {
+  firebase.firestore().collection('lookups').doc('g').set({
+    values: firebase.firestore.FieldValue.arrayUnion(category)
+  }, {merge: true})
+}
+
+export const editCategory = (category: Category, categories: Category[]) => {
+  const values = categories.filter(c => c.id !== category.id)
+  values.push(category)
+  firebase.firestore().collection('lookups').doc('g').update({
+    values
   })
-  batch.commit()
 }
-
-export const editCategory = (category: Category, oldCategory: Category, categories: Category[]) => {
-  const batch = firebase.firestore().batch()
-  const { id, ...others } = category
-  let categoryRef = firebase.firestore().collection('categories').doc(id)
-  batch.update(categoryRef, others)
-  if (category.parentId !== oldCategory.parentId) {
-    categoryRef = firebase.firestore().collection('categories').doc(category.parentId)
-    batch.update(categoryRef, {
-      isLeaf: false
-    })
-    const childrenCount = categories.filter(c => c.id !== id && c.parentId === oldCategory.parentId).length
-    if (childrenCount === 0) {
-      categoryRef = firebase.firestore().collection('categories').doc(oldCategory.parentId)
-      batch.update(categoryRef, {
-        isLeaf: true
-      })  
-    }
-  }
-  batch.commit()
+export const deleteCategory = (categoryId: string, categories: Country[]) => {
+  const values = categories.filter(c => c.id !== categoryId)
+  firebase.firestore().collection('lookups').doc('g').update({
+    values
+  })
 }
-
-export const deleteCategory = (category: Category, categories: Category[]) => {
-  const batch = firebase.firestore().batch()
-  let categoryRef = firebase.firestore().collection('categories').doc(category.id)
-  batch.delete(categoryRef)
-  const childrenCount = categories.filter(c => c.id !== category.id && c.parentId === category.parentId).length
-  if (childrenCount === 0) {
-    categoryRef = firebase.firestore().collection('categories').doc(category.parentId)
-    batch.update(categoryRef, {
-      isLeaf: true
-    })
-  }
-  batch.commit()
-}
-
-export const getCategoryName = (category: Category, categories: Category[]): string => {
-  if (category.parentId === '0') {
-    return category.name
-  } else {
-    const categoryParent = categories.find(c => c.id === category.parentId)!
-    return getCategoryName(categoryParent, categories) + '-' + category.name
-  }
-}
-
 export const login = (email: string, password: string) => {
   return firebase.auth().signInWithEmailAndPassword(email, password)
 }
@@ -369,7 +324,7 @@ export const editProduct = async (product: Product, oldName: string, packs: Pack
       productDescription: product.description,
       categoryId: product.categoryId,
       country: product.countryId,
-      trademark: product.trademarkId,
+      trademark: product.trademark,
       sales: product.sales,
       rating: product.rating,
       ratingCount: product.ratingCount,
@@ -1838,7 +1793,7 @@ export const getArchivedProducts = async () => {
         name: doc.data().name,
         alias: doc.data().alias,
         description: doc.data().description,
-        trademarkId: doc.data().trademarkId,
+        trademark: doc.data().trademark,
         countryId: doc.data().countryId,
         categoryId: doc.data().categoryId,
         imageUrl: doc.data().imageUrl,
@@ -1867,7 +1822,7 @@ export const getArchivedPacks = async () => {
         productDescription: doc.data().productDescription,
         categoryId: doc.data().categoryId,
         trademark: doc.data().trademark,
-        country: doc.data().country,
+        countryId: doc.data().countryId,
         sales: doc.data().sales,
         rating: doc.data().rating,
         ratingCount: doc.data().ratingCount,
@@ -2059,23 +2014,3 @@ export const getArchivedStockOperations = (month: number) => {
   return stockOperations
 }
 
-export const addTrademark = (trademark: Trademark) => {
-  firebase.firestore().collection('lookups').doc('t').set({
-    values: firebase.firestore.FieldValue.arrayUnion(trademark)
-  }, {merge: true})
-}
-
-export const editTrademark = (trademark: Trademark, trademarks: Trademark[]) => {
-  const values = trademarks.filter(t => t.id !== trademark.id)
-  values.push(trademark)
-  firebase.firestore().collection('lookups').doc('t').update({
-    values
-  })
-}
-
-export const deleteTrademark = (trademarkId: string, trademarks: Trademark[]) => {
-  const values = trademarks.filter(t => t.id !== trademarkId)
-  firebase.firestore().collection('lookups').doc('t').update({
-    values
-  })
-}

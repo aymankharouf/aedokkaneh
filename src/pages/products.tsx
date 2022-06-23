@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import labels from '../data/labels'
-import { productOfText, getCategoryName } from '../data/actions'
-import { Category, Country, Pack, Product, State, Trademark } from '../data/types'
+import { productOfText } from '../data/actions'
+import { Category, Country, Pack, Product, State } from '../data/types'
 import { useParams } from 'react-router'
 import { IonContent, IonFab, IonFabButton, IonFabList, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
 import Header from './header'
@@ -17,7 +17,6 @@ type Params = {
 }
 type ExtendedProduct = Product & {
   categoryName: string,
-  trademarkName: string,
   countryName: string
 }
 const Products = () => {
@@ -27,7 +26,6 @@ const Products = () => {
   const stateCategories = useSelector<State, Category[]>(state => state.categories)
   const stateProducts = useSelector<State, Product[]>(state => state.products)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
-  const stateTrademarks = useSelector<State, Trademark[]>(state => state.trademarks)
   const stateCountries = useSelector<State, Country[]>(state => state.countries)
   const stateSearchText = useSelector<State, string>(state => state.searchText)
   const [category] = useState(() => stateCategories.find(c => c.id === params.id))
@@ -43,18 +41,16 @@ const Products = () => {
       const products = stateProducts.filter(p => params.id === '-1' ? !statePacks.find(pa => pa.productId === p.id) || statePacks.filter(pa => pa.productId === p.id).length === statePacks.filter(pa => pa.productId === p.id && pa.price === 0).length : params.id === '0' || p.categoryId === params.id)
       const result = products.map(p => {
         const categoryInfo = stateCategories.find(c => c.id === p.categoryId)!
-        const trademarkInfo = stateTrademarks.find(t => t.id === p.trademarkId)
         const countryInfo = stateCountries.find(c => c.id === p.countryId)!
         return {
           ...p,
-          categoryName: getCategoryName(categoryInfo, stateCategories),
-          trademarkName: trademarkInfo?.name || '',
+          categoryName: categoryInfo.name,
           countryName: countryInfo.name
         }
       })
       return result.sort((p1, p2) => p1.categoryId === p2.categoryId ? (p1.name > p2.name ? 1 : -1) : (p1.categoryName > p2.categoryName ? 1 : -1))
     })
-  }, [stateProducts, stateCategories, statePacks, stateTrademarks, stateCountries, params.id])
+  }, [stateProducts, stateCategories, statePacks, stateCountries, params.id])
   useEffect(() => {
     if (!stateSearchText) {
       setData(products)
@@ -64,7 +60,7 @@ const Products = () => {
       includeScore: true,
       findAllMatches: true,
       threshold: 0.1,
-      keys: ['name', 'alias', 'description', 'categoryName', 'trademarkName', 'countryName']
+      keys: ['name', 'alias', 'description', 'categoryName', 'trademark', 'countryName']
     }
     const fuse = new Fuse(products, options)
     const result = fuse.search(stateSearchText)
@@ -90,7 +86,7 @@ const Products = () => {
                   <IonText style={{color: colors[1].name}}>{p.alias}</IonText>
                   <IonText style={{color: colors[2].name}}>{p.description}</IonText>
                   <IonText style={{color: colors[3].name}}>{p.categoryName}</IonText>
-                  <IonText style={{color: colors[4].name}}>{productOfText(p.trademarkName, p.countryName)}</IonText>
+                  <IonText style={{color: colors[4].name}}>{productOfText(p.trademark, p.countryName)}</IonText>
                 </IonLabel>
               </IonItem>    
             )

@@ -4,12 +4,8 @@ export type Label = {
     [key: string]: string
 }
 export type Category = {
-  id?: string,
-  parentId: string,
+  id: string,
   name: string,
-  ordering: number,
-  isLeaf: boolean,
-  isActive: boolean
 }
 export type Err = {
   code: string,
@@ -24,7 +20,7 @@ export type Pack = {
   productDescription: string,
   categoryId: string,
   trademark: string,
-  country: string,
+  countryId: string,
   sales: number,
   rating: number,
   ratingCount: number,
@@ -228,7 +224,7 @@ export type Product = {
   name: string,
   alias: string,
   description: string,
-  trademarkId: string,
+  trademark: string,
   countryId: string,
   categoryId: string,
   imageUrl: string,
@@ -332,10 +328,6 @@ export type Country = {
   id: string,
   name: string,
 }
-export type Trademark = {
-  id: string,
-  name: string
-}
 export type State = {
   user?: firebase.User,
   categories: Category[], 
@@ -369,7 +361,6 @@ export type State = {
   returnBasket?: ReturnBasket,
   orderBasket?: OrderBasketPack[],
   searchText: string,
-  trademarks: Trademark[],
 }
 
 export type Action = {

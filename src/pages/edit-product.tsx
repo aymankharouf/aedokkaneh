@@ -5,7 +5,7 @@ import { IonButton, IonContent, IonSelect, IonSelectOption, IonFab, IonFabButton
 import { useHistory, useLocation, useParams } from 'react-router'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
-import { Category, Country, Err, Pack, Product, State, Trademark } from '../data/types'
+import { Category, Country, Err, Pack, Product, State } from '../data/types'
 import { useSelector } from 'react-redux'
 
 type Params = {
@@ -17,20 +17,18 @@ const EditProduct = () => {
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const stateCountries = useSelector<State, Country[]>(state => state.countries)
   const stateCategories = useSelector<State, Category[]>(state => state.categories)
-  const stateTrademarks = useSelector<State, Trademark[]>(state => state.trademarks)
   const [product] = useState(() => stateProducts.find(p => p.id === params.id)!)
   const [name, setName] = useState(product.name)
   const [alias, setAlias] = useState(product.alias)
   const [description, setDescription] = useState(product.description)
   const [categoryId, setCategoryId] = useState(product.categoryId)
-  const [trademarkId, setTrademarkId] = useState(product.trademarkId)
+  const [trademark, setTrademark] = useState(product.trademark)
   const [countryId, setCountryId] = useState(product.countryId)
   const [imageUrl, setImageUrl] = useState(product.imageUrl)
   const [image, setImage] = useState<File>()
   const [hasChanged, setHasChanged] = useState(false)
   const [categories] = useState(() => [...stateCategories].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
   const [countries] = useState(() => [...stateCountries].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
-  const [trademarks] = useState(() => [...stateTrademarks].sort((t1, t2) => t1.name > t2.name ? 1 : -1))
   const inputEl = useRef<HTMLInputElement | null>(null)
   const [message] = useIonToast()
   const location = useLocation()
@@ -58,10 +56,10 @@ const EditProduct = () => {
     || description !== product.description
     || countryId !== product.countryId
     || categoryId !== product.categoryId
-    || trademarkId !== product.trademarkId
+    || trademark !== product.trademark
     || imageUrl !== product.imageUrl) setHasChanged(true)
     else setHasChanged(false)
-  }, [product, name, alias, description, countryId, categoryId, trademarkId, imageUrl])
+  }, [product, name, alias, description, countryId, categoryId, trademark, imageUrl])
   const handleSubmit = () => {
     try{
       if (stateProducts.find(p => p.id !== product.id && p.categoryId === categoryId && p.countryId === countryId && p.name === name && p.alias === alias)) {
@@ -73,7 +71,7 @@ const EditProduct = () => {
         name,
         alias,
         description,
-        trademarkId,
+        trademark,
         countryId,
       }
       editProduct(newProduct, product.name, statePacks, image)
@@ -127,14 +125,12 @@ const EditProduct = () => {
             <IonLabel position="floating" color="primary">
               {labels.trademark}
             </IonLabel>
-            <IonSelect 
-              ok-text={labels.ok} 
-              cancel-text={labels.cancel} 
-              value={trademarkId}
-              onIonChange={e => setTrademarkId(e.detail.value)}
-            >
-              {trademarks.map(t => <IonSelectOption key={t.id} value={t.id}>{t.name}</IonSelectOption>)}
-            </IonSelect>
+            <IonInput 
+              value={trademark} 
+              type="text" 
+              clearInput
+              onIonChange={e => setTrademark(e.detail.value!)} 
+            />
           </IonItem>
           <IonItem>
             <IonLabel position="floating" color="primary">

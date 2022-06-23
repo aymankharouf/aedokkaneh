@@ -21,27 +21,19 @@ const AddPackStore = () => {
   const [offerDays, setOfferDays] = useState('')
   const [isActive, setIsActive] = useState(false)
   const [storeId, setStoreId] = useState('')
-  const [store, setStore] = useState<Store>()
   const [stores] = useState(() => stateStores.filter(s => s.id !== 's'))
   const [pack] = useState(() => statePacks.find(p => p.id === params.id)!)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
   useEffect(() => {
-    if (storeId) {
-      setStore(stateStores.find(s => s.id === storeId)!)
-    }
-  }, [stateStores, storeId])
-  useEffect(() => {
-    setIsActive(store?.isActive || false)
-  }, [store])
-  useEffect(() => {
     if (cost) {
+      const store = stateStores.find(s => s.id === storeId)
       setPrice((+cost * (1 + (store?.isActive && store?.type !== '5' ? 0 : store?.discount || 0))).toFixed(2))
     } else {
       setPrice('')
     }
-  }, [cost, store])
+  }, [cost, stateStores, storeId])
   const handleSubmit = () => {
     try{
       if (statePackPrices.find(p => p.packId === pack.id && p.storeId === storeId)) {

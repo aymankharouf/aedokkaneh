@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import RatingStars from './rating-stars'
 import labels from '../data/labels'
 import { archiveProduct, deleteProduct, getMessage, productOfText } from '../data/actions'
-import { Country, Err, Pack, Product, State, Trademark } from '../data/types'
+import { Country, Err, Pack, Product, State } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { IonActionSheet, IonBadge, IonCard, IonCol, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonRow, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
@@ -19,12 +19,10 @@ const ProductPacks = () => {
   const params = useParams<Params>()
   const stateProducts = useSelector<State, Product[]>(state => state.products)
   const stateArchivedProducts = useSelector<State, Product[]>(state => state.archivedProducts)
-  const stateTrademarks = useSelector<State, Trademark[]>(state => state.trademarks)
   const stateCountries = useSelector<State, Country[]>(state => state.countries)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const stateArchivedPacks = useSelector<State, Pack[]>(state => state.archivedPacks)
   const [product] = useState(() => params.type === 'a' ? stateArchivedProducts.find(p => p.id === params.id)! : stateProducts.find(p => p.id === params.id)!)
-  const [trademark] = useState(() => stateTrademarks.find(t => t.id === product.trademarkId))
   const [country] = useState(() => stateCountries.find(c => c.id === product.countryId))
   const [packs, setPacks] = useState<Pack[]>([])
   const [activePacks, setActivePacks] = useState<Pack[]>([])
@@ -83,7 +81,7 @@ const ProductPacks = () => {
             </IonCol>
           </IonRow>
           <IonRow>
-            <IonCol>{productOfText(trademark?.name || '', country?.name || '')}</IonCol>
+            <IonCol>{productOfText(product.trademark || '', country?.name || '')}</IonCol>
             <IonCol className="ion-text-end"><RatingStars rating={product.rating} count={product.ratingCount} /></IonCol>
           </IonRow>
         </IonCard>

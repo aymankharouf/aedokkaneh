@@ -2,7 +2,7 @@ import { IonApp, IonRouterOutlet, IonSplitPane } from '@ionic/react'
 import { IonReactRouter } from '@ionic/react-router'
 import { Route } from 'react-router-dom'
 import firebase from './data/firebase'
-import { Advert, Alarm, Category, CustomerInfo, Friend, Log, MonthlyOperation, Notification, Order, Pack, PackPrice, PasswordRequest, Product, Purchase, Rating, Spending, StockOperation, Store, StorePayment, UserInfo } from './data/types'
+import { Advert, Alarm, CustomerInfo, Friend, Log, MonthlyOperation, Notification, Order, Pack, PackPrice, PasswordRequest, Product, Purchase, Rating, Spending, StockOperation, Store, StorePayment, UserInfo } from './data/types'
 import { useDispatch } from 'react-redux';
 
 
@@ -119,9 +119,6 @@ import ArchivedProducts from './pages/archived-products'
 import ReturnBasket from './pages/return-basket'
 import StoreBalance from './pages/store-balance'
 import StoreBalanceOperations from './pages/store-balance-operations'
-import Trademarks from './pages/trademarks'
-import AddTrademark from './pages/add-trademark'
-import EditTrademark from './pages/edit-trademark'
 import { useEffect } from 'react'
 
 const App = () => {
@@ -131,22 +128,6 @@ const App = () => {
     window.location.href = window.location.hostname === 'localhost' ? href.substr(0, 21) : href.substr(0, 28)
   }
   useEffect(() => {
-    const unsubscribeCategories = firebase.firestore().collection('categories').onSnapshot(docs => {
-      let categories: Category[] = []
-      docs.forEach(doc => {
-        categories.push({
-          id: doc.id,
-          parentId: doc.data().parentId,
-          name: doc.data().name,
-          ordering: doc.data().ordering,
-          isLeaf: doc.data().isLeaf,
-          isActive: doc.data().isActive
-        })
-      })
-      dispatch({type: 'SET_CATEGORIES', payload: categories})
-    }, err => {
-      unsubscribeCategories()
-    })
     const unsubscribePacks = firebase.firestore().collection('packs').where('isArchived', '==', false).onSnapshot(docs => {
       let packs: Pack[] = []
       let packPrices: PackPrice[] = []
@@ -160,7 +141,7 @@ const App = () => {
           productDescription: doc.data().productDescription,
           categoryId: doc.data().categoryId,
           trademark: doc.data().trademark,
-          country: doc.data().country,
+          countryId: doc.data().countryId,
           sales: doc.data().sales,
           rating: doc.data().rating,
           ratingCount: doc.data().ratingCount,
@@ -247,10 +228,10 @@ const App = () => {
         }, err => {
           unsubscribeCountries()
         })
-        const unsubscribeTrademarks = firebase.firestore().collection('lookups').doc('t').onSnapshot(doc => {
-          if (doc.exists) dispatch({type: 'SET_TRADEMARKS', payload: doc.data()?.values})
+        const unsubscribeCategories = firebase.firestore().collection('lookups').doc('g').onSnapshot(doc => {
+          if (doc.exists) dispatch({type: 'SET_CATEGORIES', payload: doc.data()?.values})
         }, err => {
-          unsubscribeTrademarks()
+          unsubscribeCategories()
         })
         const unsubscribeProducts = firebase.firestore().collection('products').where('isArchived', '==', false).onSnapshot(docs => {
           let products: Product[] = []
@@ -260,7 +241,7 @@ const App = () => {
               name: doc.data().name,
               alias: doc.data().alias,
               description: doc.data().description,
-              trademarkId: doc.data().trademarkId,
+              trademark: doc.data().trademark,
               countryId: doc.data().countryId,
               categoryId: doc.data().categoryId,
               imageUrl: doc.data().imageUrl,
@@ -619,9 +600,6 @@ const App = () => {
             <Route path="/return-basket" exact={true} component={ReturnBasket} />
             <Route path="/store-balance/:id" exact={true} component={StoreBalance} />
             <Route path="/store-balance-operations/:storeId/:month" exact={true} component={StoreBalanceOperations} />
-            <Route path="/trademarks" exact={true} component={Trademarks} />
-            <Route path="/add-trademark" exact={true} component={AddTrademark} />
-            <Route path="/edit-trademark/:id" exact={true} component={EditTrademark} />
           </IonRouterOutlet>
         </IonSplitPane>
       </IonReactRouter>
