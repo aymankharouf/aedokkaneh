@@ -1,6 +1,6 @@
 import firebase from './firebase'
 import labels from './labels'
-import { Advert, Alarm, Basket, BasketPack, Category, CustomerInfo, Friend, Region, Log, MonthlyOperation, Notification, Order, OrderBasketPack, Pack, PackPrice, Product, Purchase, Rating, RequestedPack, ReturnBasket, Spending, StockPack, StockOperation, Store, StorePayment, UserInfo, Country, Err } from "./types"
+import { Advert, Alarm, Basket, BasketPack, Category, CustomerInfo, Region, Log, MonthlyOperation, Notification, Order, OrderBasketPack, Pack, PackPrice, Product, Purchase, Rating, RequestedPack, ReturnBasket, Spending, StockPack, StockOperation, Store, StorePayment, UserInfo, Country, Err } from "./types"
 import { randomColors, setup } from './config'
 import moment from 'moment'
 
@@ -192,7 +192,7 @@ export const deleteUser = async (user: UserInfo, orders: Order[]) => {
   return firebase.auth().currentUser?.delete()
 }
 
-export const approveUser = (id: string, name: string, mobile: string, regionId: string, storeName: string, address: string, users: UserInfo[], invitations: Friend[]) => {
+export const approveUser = (id: string, name: string, mobile: string, regionId: string, storeName: string, address: string) => {
   const batch = firebase.firestore().batch()
   const customerRef = firebase.firestore().collection('customers').doc(id)
   batch.set(customerRef, {
@@ -217,28 +217,6 @@ export const approveUser = (id: string, name: string, mobile: string, regionId: 
     name,
     regionId,
     storeName: ''
-  })
-  const invitedBy = invitations.filter(i => i.mobile === mobile)
-  invitedBy.forEach(i => {
-    const otherInvitations = invitations.filter(ii => ii.userId === i.userId && ii.mobile !== i.mobile)
-    otherInvitations.push({
-      ...i,
-      status: 'r'
-    })
-    const friends = otherInvitations.map(ii => {
-      const {userId, ...others} = ii
-      return others
-    })
-    const userRef = firebase.firestore().collection('users').doc(i.userId)
-    batch.update(userRef, {
-      friends
-    })
-    if (i.status === 's') {
-      const customerRef = firebase.firestore().collection('customers').doc(i.userId)
-      batch.update(customerRef, {
-        discounts: firebase.firestore.FieldValue.increment(setup.invitationDiscount)
-      })
-    }
   })
   batch.commit()
 }
@@ -714,24 +692,6 @@ export const addSpending = (spending: Spending) => {
 export const editSpending = (spending: Spending) => {
   const { id, ...others } = spending
   firebase.firestore().collection('spendings').doc(id).update(others)
-}
-
-export const approveInvitation = (invitation: Friend, invitations: Friend[]) => {
-  const batch = firebase.firestore().batch()
-  const otherInvitations = invitations.filter(i => i.userId === invitation.userId && i.mobile !== invitation.mobile)
-  otherInvitations.push(invitation)
-  const friends = otherInvitations.map(i => {
-    const {userId, ...others} = i
-    return others
-  })
-  const userRef = firebase.firestore().collection('users').doc(invitation.userId)
-  batch.update(userRef, {
-    friends
-  })
-  if (invitation.status === 's') {
-    sendNotification(invitation.userId, labels.approval, labels.approveInvitation, batch)
-  }
-  batch.commit()
 }
 
 export const stockOut = (basket: BasketPack[], orders: Order[], packPrices: PackPrice[], packs: Pack[]) => {
@@ -1408,19 +1368,16 @@ export const returnOrder = (order: Order, orderBasket: OrderBasketPack[], region
       batch.update(customerRef, {
         deliveredOrdersCount: firebase.firestore.FieldValue.increment(-1),
         deliveredOrdersTotal: firebase.firestore.FieldValue.increment(-1 * order.total),
-        discounts: firebase.firestore.FieldValue.increment(-1 * setup.returnPenalty),
         returnedCount: firebase.firestore.FieldValue.increment(1)
       })  
     } else {
       batch.update(customerRef, {
         deliveredOrdersTotal: firebase.firestore.FieldValue.increment(total - order.total),
-        discounts: firebase.firestore.FieldValue.increment(-1 * setup.returnPenalty),
         returnedCount: firebase.firestore.FieldValue.increment(1)
       })
     }
   } else {
     batch.update(customerRef, {
-      discounts: firebase.firestore.FieldValue.increment(-1 * setup.returnPenalty),
       returnedCount: firebase.firestore.FieldValue.increment(1)
     })  
   }

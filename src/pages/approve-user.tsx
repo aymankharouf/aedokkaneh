@@ -6,7 +6,7 @@ import { useHistory, useLocation, useParams } from 'react-router'
 import Header from './header'
 import Footer from './footer'
 import { checkmarkOutline, chevronDownOutline, trashOutline } from 'ionicons/icons'
-import { Err, Friend, Order, Region, State, UserInfo } from '../data/types'
+import { Err, Order, Region, State, UserInfo } from '../data/types'
 import { useSelector } from 'react-redux'
 
 type Params = {
@@ -16,7 +16,6 @@ const ApproveUser = () => {
   const params = useParams<Params>()
   const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
   const stateRegions = useSelector<State, Region[]>(state => state.regions)
-  const stateInvitations = useSelector<State, Friend[]>(state => state.invitations)
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
   const [userInfo] = useState(() => stateUsers.find(u => u.id === params.id)!)
   const [name, setName] = useState(userInfo.name)
@@ -30,7 +29,7 @@ const ApproveUser = () => {
   const [alert] = useIonAlert()
   const handleSubmit = () => {
     try {
-      approveUser(params.id, name, userInfo.mobile, regionId, userInfo.storeName, address, stateUsers, stateInvitations)
+      approveUser(params.id, name, userInfo.mobile, regionId, userInfo.storeName, address)
       message(labels.approveSuccess)
       history.goBack()  
     } catch(error) {

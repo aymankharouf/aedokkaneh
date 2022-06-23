@@ -6,6 +6,7 @@ export type Label = {
 export type Category = {
   id: string,
   name: string,
+  ordering: number
 }
 export type Err = {
   code: string,
@@ -61,12 +62,7 @@ export type Notification = {
   status: string,
   time: Date
 }
-export type Friend = {
-  userId: string,
-  mobile: string,
-  name: string,
-  status: string
-}
+
 export type Rating = {
   userId: string,
   productId: string,
@@ -355,7 +351,6 @@ export type State = {
   notifications: Notification[],
   alarms: Alarm[],
   ratings: Rating[],
-  invitations: Friend[],
   storePayments: StorePayment[],
   basket?: Basket,
   returnBasket?: ReturnBasket,

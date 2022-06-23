@@ -5,7 +5,7 @@ import { IonButton, IonContent, IonPage } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useSelector } from 'react-redux'
-import { Alarm, CustomerInfo, Friend, Order, PasswordRequest, Rating, State, UserInfo } from '../data/types'
+import { Alarm, CustomerInfo, Order, PasswordRequest, Rating, State, UserInfo } from '../data/types'
 
 type Section = {
   id: string,
@@ -19,7 +19,6 @@ const Approvals = () => {
   const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
   const stateAlarms = useSelector<State, Alarm[]>(state => state.alarms)
   const stateRatings = useSelector<State, Rating[]>(state => state.ratings)
-  const stateInvitations = useSelector<State, Friend[]>(state => state.invitations)
   const statePasswordRequests = useSelector<State, PasswordRequest[]>(state => state.passwordRequests)
   const [newOrders, setNewOrders] = useState(0)
   const [orderRequests, setOrderRequests] = useState(0)
@@ -27,7 +26,6 @@ const Approvals = () => {
   const [alarms, setAlarms] = useState(0)
   const [passwordRequests, setPasswordRequests] = useState(0)
   const [ratings, setRatings] = useState(0)
-  const [invitations, setInvitations] = useState(0)
   const [sections, setSections] = useState<Section[]>([])
   const [newOwners, setNewOwners] = useState(0)
   useEffect(() => {
@@ -38,9 +36,8 @@ const Approvals = () => {
     setNewUsers(() => stateUsers.filter(u => !stateCustomers.find(c => c.id === u.id)).length)
     setAlarms(() => stateAlarms.filter(a => a.status === 'n').length)
     setRatings(() => stateRatings.filter(r => r.status === 'n').length)
-    setInvitations(() => stateInvitations.filter(i => i.status === 'n').length)
     setNewOwners(() => stateCustomers.filter(c => c.storeName && !c.storeId).length)
-  }, [stateUsers, stateCustomers, stateAlarms, stateRatings, stateInvitations])
+  }, [stateUsers, stateCustomers, stateAlarms, stateRatings])
   useEffect(() => {
     setPasswordRequests(() => statePasswordRequests.length)
   }, [statePasswordRequests]) 
@@ -52,10 +49,9 @@ const Approvals = () => {
       {id: '4', name: labels.alarms, path: '/alarms', count: alarms},
       {id: '5', name: labels.passwordRequests, path: '/password-requests', count: passwordRequests},
       {id: '6', name: labels.ratings, path: '/ratings', count: ratings},
-      {id: '7', name: labels.invitations, path: '/invitations', count: invitations},
-      {id: '8', name: labels.newOwners, path: '/permission-list/n', count: newOwners},
+      {id: '7', name: labels.newOwners, path: '/permission-list/n', count: newOwners},
     ])
-  }, [newOrders, newUsers, alarms, passwordRequests, ratings, orderRequests, invitations, newOwners])
+  }, [newOrders, newUsers, alarms, passwordRequests, ratings, orderRequests, newOwners])
   let i = 0
   return(
     <IonPage>

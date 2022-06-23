@@ -11,8 +11,8 @@ import { useSelector } from 'react-redux'
 
 const AddCategory = () => {
   const stateCategories = useSelector<State, Category[]>(state => state.categories)
-
   const [name, setName] = useState('')
+  const [ordering, setOrdering] = useState('')
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
@@ -24,7 +24,8 @@ const AddCategory = () => {
       }
       addCategory({
         id: Math.random().toString(),
-        name
+        name,
+        ordering: +ordering
       })
       message(labels.addSuccess, 3000)
       history.goBack()
@@ -50,9 +51,20 @@ const AddCategory = () => {
               onIonChange={e => setName(e.detail.value!)} 
             />
           </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.ordering}
+            </IonLabel>
+            <IonInput 
+              value={ordering} 
+              type="number" 
+              clearInput
+              onIonChange={e => setOrdering(e.detail.value!)} 
+            />
+          </IonItem>
         </IonList>
       </IonContent>
-      {name &&
+      {name && ordering &&
         <IonFab vertical="top" horizontal="end" slot="fixed">
           <IonFabButton onClick={handleSubmit} color="success">
             <IonIcon ios={checkmarkOutline} /> 

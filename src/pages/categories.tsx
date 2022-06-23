@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import labels from '../data/labels'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
 import Header from './header'
@@ -11,10 +11,7 @@ import { Category, State } from '../data/types'
 
 const Categories = () => {
   const stateCategories = useSelector<State, Category[]>(state => state.categories)
-  const [categories, setCategories] = useState(() => [...stateCategories].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
-  useEffect(() => {
-    setCategories(() => [...stateCategories].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
-  }, [stateCategories])
+  const categories = useMemo(() => stateCategories.sort((c1, c2) => c1.ordering - c2.ordering), [stateCategories])
   return (
     <IonPage>
       <Header title={labels.categories} />

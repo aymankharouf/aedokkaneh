@@ -29,7 +29,6 @@ const initState = {
   notifications: [],
   alarms: [],
   ratings: [],
-  invitations: [],
   storePayments: [],
   searchText: '',
   trademarks: []
@@ -203,8 +202,6 @@ const reducer = (state: State = initState, action: Action) => {
         return {...state, alarms: action.payload}
       case 'SET_RATINGS':
         return {...state, ratings: action.payload}
-      case 'SET_INVITATIONS':
-        return {...state, invitations: action.payload}
       case 'SET_STORES':
         return {...state, stores: action.payload}
       case 'SET_CATEGORIES':

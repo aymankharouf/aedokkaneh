@@ -17,6 +17,7 @@ const EditCategory = () => {
   const stateCategories = useSelector<State, Category[]>(state => state.categories)
   const [category] = useState(() => stateCategories.find(c => c.id === params.id)!)
   const [name, setName] = useState(category.name)
+  const [ordering, setOrdering] = useState(category.ordering.toString())
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
@@ -27,15 +28,17 @@ const EditCategory = () => {
     if (hasChanged && fabList.current) fabList.current!.close()
   }, [hasChanged])
   useEffect(() => {
-    if (name !== category.name) setHasChanged(true)
+    if (name !== category.name
+    || +ordering !== category.ordering) setHasChanged(true)
     else setHasChanged(false)
-  }, [category, name])
+  }, [category, name, ordering])
 
   const handleEdit = () => {
     try{
       const newCategory = {
         ...category,
-        name
+        name,
+        ordering: +ordering
       }
       editCategory(newCategory, stateCategories)
       message(labels.editSuccess, 3000)
@@ -82,6 +85,17 @@ const EditCategory = () => {
               onIonChange={e => setName(e.detail.value!)} 
             />
           </IonItem>
+          <IonItem>
+            <IonLabel position="floating" color="primary">
+              {labels.ordering}
+            </IonLabel>
+            <IonInput 
+              value={ordering} 
+              type="number" 
+              clearInput
+              onIonChange={e => setOrdering(e.detail.value!)} 
+            />
+          </IonItem>
         </IonList>
       </IonContent>
       <IonFab horizontal="end" vertical="top" slot="fixed" ref={fabList}>
@@ -93,7 +107,7 @@ const EditCategory = () => {
             <IonIcon ios={trashOutline} />
           </IonFabButton>
         </IonFabList>
-          {name && hasChanged &&
+          {name && ordering && hasChanged &&
             <IonFabButton color="success" onClick={handleEdit}>
               <IonIcon ios={checkmarkOutline} />
             </IonFabButton>

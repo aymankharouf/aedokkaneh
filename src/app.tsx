@@ -2,7 +2,7 @@ import { IonApp, IonRouterOutlet, IonSplitPane } from '@ionic/react'
 import { IonReactRouter } from '@ionic/react-router'
 import { Route } from 'react-router-dom'
 import firebase from './data/firebase'
-import { Advert, Alarm, CustomerInfo, Friend, Log, MonthlyOperation, Notification, Order, Pack, PackPrice, PasswordRequest, Product, Purchase, Rating, Spending, StockOperation, Store, StorePayment, UserInfo } from './data/types'
+import { Advert, Alarm, CustomerInfo, Log, MonthlyOperation, Notification, Order, Pack, PackPrice, PasswordRequest, Product, Purchase, Rating, Spending, StockOperation, Store, StorePayment, UserInfo } from './data/types'
 import { useDispatch } from 'react-redux';
 
 
@@ -98,8 +98,6 @@ import AddOffer from './pages/add-offer'
 import EditOffer from './pages/edit-offer'
 import AddBulk from './pages/add-bulk'
 import EditBulk from './pages/edit-bulk'
-import Invitations from './pages/invitations'
-import InvitationDetails from './pages/invitation-details'
 import Notifications from './pages/notifications'
 import AddNotification from './pages/add-notification'
 import ArchivedOrders from './pages/archived-orders'
@@ -286,7 +284,6 @@ const App = () => {
           const notifications: Notification[] = []
           const alarms: Alarm[] = []
           const ratings: Rating[] = []
-          const invitations: Friend[] = []
           docs.forEach(doc => {
             users.push({
               id: doc.id,
@@ -332,17 +329,11 @@ const App = () => {
                 ratings.push({...r, userId: doc.id})
               })
             }
-            if (doc.data().friends) {
-              doc.data().friends.forEach((f: any) => {
-                invitations.push({...f, userId: doc.id})
-              })
-            }
           })
           dispatch({type: 'SET_USERS', payload: users})
           dispatch({type: 'SET_NOTIFICATIONS', payload: notifications})
           dispatch({type: 'SET_ALARMS', payload: alarms})
           dispatch({type: 'SET_RATINGS', payload: ratings})
-          dispatch({type: 'SET_INVITATIONS', payload: invitations})
         }, err => {
           unsubscribeUsers()
         })  
@@ -580,8 +571,6 @@ const App = () => {
             <Route path="/prepare-orders-list/:packId/:orderId" exact={true} component={PrepareOrdersList} />
             <Route path="/add-bulk/:id" exact={true} component={AddBulk} />
             <Route path="/edit-bulk/:id" exact={true} component={EditBulk} />
-            <Route path="/invitations" exact={true} component={Invitations} />
-            <Route path="/invitation-details/:userId/:mobile" exact={true} component={InvitationDetails} />
             <Route path="/notifications" exact={true} component={Notifications} />
             <Route path="/add-notification" exact={true} component={AddNotification} />
             <Route path="/archived-orders" exact={true} component={ArchivedOrders} />
