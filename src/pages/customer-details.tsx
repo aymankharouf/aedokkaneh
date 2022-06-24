@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import labels from '../data/labels'
 import { IonToggle, IonList, IonItem, IonContent, IonFab, IonFabButton, IonFabList, IonLabel, IonIcon, IonInput, IonPage } from '@ionic/react'
 import Header from './header'
@@ -17,13 +17,9 @@ const CustomerDetails = () => {
   const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const stateRegions = useSelector<State, Region[]>(state => state.regions)
-  const [customer, setCustomer] = useState(() => stateCustomers.find(c => c.id === params.id)!)
-  const [userInfo, setUserInfo] = useState(() => stateUsers.find(u => u.id === params.id)!)
-  const [storeName] = useState(() => stateStores.find(s => s.id === customer.storeId)?.name || '')
-  useEffect(() => {
-    setCustomer(() => stateCustomers.find(c => c.id === params.id)!)
-    setUserInfo(() => stateUsers.find(u => u.id === params.id)!)
-  }, [stateCustomers, stateUsers, params.id])
+  const customer = useMemo(() => stateCustomers.find(c => c.id === params.id)!, [stateCustomers, params.id])
+  const userInfo = useMemo(() => stateUsers.find(u => u.id === params.id)!, [stateUsers, params.id])
+  const storeName = useMemo(() => stateStores.find(s => s.id === customer.storeId)?.name || '', [stateStores, customer])
   return (
     <IonPage>
       <Header title={labels.customerDetails} />
@@ -103,28 +99,10 @@ const CustomerDetails = () => {
           </IonItem>
           <IonItem>
             <IonLabel position="floating" color="primary">
-              {labels.discountBalance}
-            </IonLabel>
-            <IonInput 
-              value={(customer.discounts / 100).toFixed(2)} 
-              readonly
-            />
-          </IonItem>
-          <IonItem>
-            <IonLabel position="floating" color="primary">
               {labels.deliveryFees}
             </IonLabel>
             <IonInput 
               value={(customer.deliveryFees / 100).toFixed(2)} 
-              readonly
-            />
-          </IonItem>
-          <IonItem>
-            <IonLabel position="floating" color="primary">
-              {labels.specialDiscount}
-            </IonLabel>
-            <IonInput 
-              value={(customer.specialDiscount / 100).toFixed(2)} 
               readonly
             />
           </IonItem>

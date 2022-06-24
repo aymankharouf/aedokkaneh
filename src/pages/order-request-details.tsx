@@ -101,11 +101,11 @@ const OrderRequestDetails = () => {
           </IonItem>
           <IonItem>
             <IonLabel>{labels.discount}</IonLabel>
-            <IonLabel slot="end" className="price">{((order.discount.value + fraction) / 100).toFixed(2)}</IonLabel>
+            <IonLabel slot="end" className="price">{(fraction / 100).toFixed(2)}</IonLabel>
           </IonItem>
           <IonItem>
             <IonLabel>{labels.net}</IonLabel>
-            <IonLabel slot="end" className="price">{((total + fixedFees + order.deliveryFees - order.discount.value - fraction) / 100).toFixed(2)}</IonLabel>
+            <IonLabel slot="end" className="price">{((total + fixedFees + order.deliveryFees - fraction) / 100).toFixed(2)}</IonLabel>
           </IonItem>
         </IonList>
       </IonContent>

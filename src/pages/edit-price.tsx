@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { editPrice, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { useHistory, useLocation, useParams } from 'react-router'
@@ -17,15 +17,15 @@ const EditPrice = () => {
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
-  const [pack] = useState(() => statePacks.find(p => p.id === params.packId)!)
-  const [store] = useState(() => stateStores.find(s => s.id === params.storeId)!)
-  const [storePack] = useState(() => statePackPrices.find(p => p.packId === params.packId && p.storeId === params.storeId)!)
+  const pack = useMemo(() => statePacks.find(p => p.id === params.packId)!, [statePacks, params.packId])
+  const store = useMemo(() => stateStores.find(s => s.id === params.storeId)!, [stateStores, params.storeId])
+  const storePack = useMemo(() => statePackPrices.find(p => p.packId === params.packId && p.storeId === params.storeId)!, [statePackPrices, params.packId, params.storeId])
   const [cost, setCost] = useState(params.storeId === 's' ? (storePack.cost / 100).toFixed(2) : '')
-  const [price, setPrice] = useState('')
   const [offerDays, setOfferDays] = useState('')
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
+  const [price, setPrice] = useState('')
   useEffect(() => {
     if (cost && store.id !== 's') {
       setPrice((+cost * (1 + (store.isActive && store.type !== '5' ? 0 : store.discount))).toFixed(2))

@@ -291,7 +291,7 @@ const PackDetails = () => {
           {
             text: labels.editPrice,
             cssClass: currentStorePack?.storeId !== 's' || currentStorePack?.quantity > 0 ? colors[i++ % 10].name : 'ion-hide',
-            handler: () => history.push(`/edit-price/${currentStorePack?.packId}/store/${currentStorePack?.storeId}`)
+            handler: () => history.push(`/edit-price/${currentStorePack?.packId}/${currentStorePack?.storeId}`)
           },
           {
             text: labels.delete,

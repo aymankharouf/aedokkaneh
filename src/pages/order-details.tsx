@@ -177,16 +177,16 @@ const OrderDetails = () => {
             <IonLabel slot="end" className="price">{(order.total / 100).toFixed(2)}</IonLabel>
           </IonItem>
           <IonItem>
-            <IonLabel>{labels.fixedFees}</IonLabel>
-            <IonLabel slot="end" className="price">{((order.fixedFees + order.deliveryFees) / 100).toFixed(2)}</IonLabel>
+            <IonLabel>{labels.deliveryFees}</IonLabel>
+            <IonLabel slot="end" className="price">{(order.deliveryFees / 100).toFixed(2)}</IonLabel>
           </IonItem>
           <IonItem>
             <IonLabel>{labels.discount}</IonLabel>
-            <IonLabel slot="end" className="price">{((order.discount.value + order.fraction) / 100).toFixed(2)}</IonLabel>
+            <IonLabel slot="end" className="price">{(order.fraction / 100).toFixed(2)}</IonLabel>
           </IonItem>
           <IonItem>
             <IonLabel>{labels.net}</IonLabel>
-            <IonLabel slot="end" className="price">{((order.total + order.fixedFees + order.deliveryFees - order.discount.value - order.fraction ) / 100).toFixed(2)}</IonLabel>
+            <IonLabel slot="end" className="price">{((order.total + order.deliveryFees - order.fraction ) / 100).toFixed(2)}</IonLabel>
           </IonItem>
           {order.profit &&
             <IonItem>

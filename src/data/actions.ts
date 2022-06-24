@@ -192,8 +192,9 @@ export const deleteUser = async (user: UserInfo, orders: Order[]) => {
   return firebase.auth().currentUser?.delete()
 }
 
-export const approveUser = (id: string, name: string, mobile: string, regionId: string, storeName: string, address: string) => {
+export const approveUser = (id: string, name: string, mobile: string, regionId: string, storeName: string, address: string, regions: Region[]) => {
   const batch = firebase.firestore().batch()
+  const deliveryFees = regions.find(r => r.id === regionId)?.fees || 0
   const customerRef = firebase.firestore().collection('customers').doc(id)
   batch.set(customerRef, {
     name: `${name}:${mobile}`,
@@ -202,9 +203,7 @@ export const approveUser = (id: string, name: string, mobile: string, regionId: 
     storeName,
     storeId: '',
     address,
-    deliveryFees: 0,
-    specialDiscount: 0,
-    discounts: 0,
+    deliveryFees,
     mapPosition: '',
     ordersCount: 0,
     deliveredOrdersCount: 0,
@@ -775,14 +774,12 @@ export const updateOrder = (batch: firebase.firestore.WriteBatch, storeId: strin
   }
   const profit = basket.reduce((sum, p) => sum + (['p', 'f', 'pu'].includes(p.status) ? Math.round((p.actual - p.cost) * (p.weight || p.purchased)) : 0), 0)
   const total = basket.reduce((sum, p) => sum + (p.gross || 0), 0)
-  const fixedFees = Math.round(setup.fixedFees * total)
-  const fraction = (total + fixedFees) - Math.floor((total + fixedFees) / 5) * 5
+  const fraction = total - Math.floor(total / 5) * 5
   const orderRef = firebase.firestore().collection('orders').doc(order.id)
   batch.update(orderRef, {
     basket,
     profit,
     total,
-    fixedFees,
     fraction,
     status: orderStatus,
     lastUpdate: new Date()
@@ -1397,19 +1394,7 @@ export const updateOrderStatus = (order: Order, type: string, packPrices: PackPr
     newBatch.update(customerRef, {
       ordersCount: firebase.firestore.FieldValue.increment(1)
     }) 
-    if (order.discount.type === 'o') { 
-      newBatch.update(customerRef, {
-        discounts: firebase.firestore.FieldValue.increment(-1 * order.discount.value)
-      })  
-    }
     sendNotification(order.userId, labels.approval, labels.approveOrder, newBatch)
-  } else if (type === 'c') {
-    if (order.discount.type === 'o') {
-      customerRef = firebase.firestore().collection('customers').doc(order.userId)
-      newBatch.update(customerRef, {
-        discounts: firebase.firestore.FieldValue.increment(order.discount.value)
-      })  
-    }
   } else if (type === 'i') {
     basket = order.basket.filter(p => p.purchased > 0)
     basket = basket.map(p => {
@@ -1711,13 +1696,10 @@ export const packUnavailable = (pack: Pack, price: number, orders: Order[], over
     }
     const total = basket.reduce((sum, p) => sum + (p.gross || 0), 0)
     let fixedFees, fraction, profit
-    let discount = o.discount
     if (total === 0) {
       fixedFees = 0
       fraction = 0
       profit = 0
-      discount.value = 0
-      discount.type = 'n'
     } else {
       profit = basket.reduce((sum, p) => sum + (['p', 'f', 'pu'].includes(p.status) ? Math.round((p.actual - p.cost) * (p.weight || p.purchased)) : 0), 0)
       fixedFees = Math.round(setup.fixedFees * total)
@@ -1729,9 +1711,7 @@ export const packUnavailable = (pack: Pack, price: number, orders: Order[], over
       basket,
       profit,
       total,
-      fixedFees,
       fraction,
-      discount,
       status: orderStatus,
       lastUpdate
     })
@@ -1913,8 +1893,6 @@ export const getArchivedOrders = (month: number) => {
         total: doc.data().total,
         deliveryTime: doc.data().deliveryTime,
         deliveryFees: doc.data().deliveryFees,
-        discount: doc.data().discount,
-        fixedFees: doc.data().fixedFees,
         fraction: doc.data().fraction,
         profit: doc.data().profit,
         lastUpdate: doc.data().lastUpdate?.toDate() || null,

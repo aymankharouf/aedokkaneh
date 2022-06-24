@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { approveUser, deleteUser, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, useIonToast, useIonLoading, useIonAlert, IonFabList } from '@ionic/react'
@@ -21,7 +21,7 @@ const ApproveUser = () => {
   const [name, setName] = useState(userInfo.name)
   const [regionId, setRegionId] = useState(userInfo.regionId)
   const [address, setAddress] = useState('')
-  const [regions] = useState(() => [...stateRegions].sort((l1, l2) => l1.ordering - l2.ordering))
+  const regions = useMemo(() => stateRegions.sort((l1, l2) => l1.ordering - l2.ordering), [stateRegions])
   const history = useHistory()
   const location = useLocation()
   const [message] = useIonToast()
@@ -29,7 +29,7 @@ const ApproveUser = () => {
   const [alert] = useIonAlert()
   const handleSubmit = () => {
     try {
-      approveUser(params.id, name, userInfo.mobile, regionId, userInfo.storeName, address)
+      approveUser(params.id, name, userInfo.mobile, regionId, userInfo.storeName, address, regions)
       message(labels.approveSuccess)
       history.goBack()  
     } catch(error) {

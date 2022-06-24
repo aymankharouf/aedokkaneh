@@ -101,8 +101,6 @@ export type CustomerInfo = {
   isBlocked: boolean,
   address: string,
   deliveryFees: number,
-  specialDiscount: number,
-  discounts: number,
   mapPosition: string,
   ordersCount: number,
   deliveredOrdersCount: number,
@@ -136,10 +134,6 @@ export type OrderBasketPack = {
   offerId: string,
   isAllocated: boolean
 }
-export type Discount = {
-  type: string,
-  value: number
-}
 export type Order = {
   id?: string,
   userId: string,
@@ -148,8 +142,6 @@ export type Order = {
   total: number,
   deliveryTime: string,
   deliveryFees: number,
-  discount: Discount,
-  fixedFees: number,
   fraction: number,
   profit: number,
   lastUpdate: Date | null,
@@ -245,11 +237,8 @@ export type MonthlyOperation = {
   stock: number,
   sales: number,
   operationProfit: number,
-  fixedFees: number,
   deliveryFees: number,
   fractions: number,
-  discounts: number,
-  specialDiscounts: number,
   storesBalance: number,
   donations: number,
   damages: number,

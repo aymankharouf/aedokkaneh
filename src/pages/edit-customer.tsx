@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { editCustomer, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { IonToggle, IonContent, IonSelect, IonSelectOption, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
@@ -27,9 +27,8 @@ const EditCustomer = () => {
   const [isBlocked, setIsBlocked] = useState(customer.isBlocked)
   const [deliveryFees, setDeliveryFees] = useState((customer.deliveryFees / 100).toFixed(2))
   const [orderLimit, setOrderLimit] = useState((customer.orderLimit / 100).toFixed(2))
-  const [specialDiscount, setSpecialDiscount] = useState((customer.specialDiscount / 100).toFixed(2))
   const [hasChanged, setHasChanged] = useState(false)
-  const [regions] = useState(() => [...stateRegions].sort((l1, l2) => l1.name > l2.name ? 1 : -1))
+  const regions= useMemo(() => stateRegions.sort((l1, l2) => l1.name > l2.name ? 1 : -1), [stateRegions])
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
@@ -40,19 +39,15 @@ const EditCustomer = () => {
     || mapPosition !== customer.mapPosition
     || isBlocked !== customer.isBlocked
     || +deliveryFees * 100 !== customer.deliveryFees
-    || +specialDiscount * 100 !== customer.specialDiscount
     || +orderLimit * 100 !== customer.orderLimit) setHasChanged(true)
     else setHasChanged(false)
-  }, [customer, userInfo, name, address, regionId, mapPosition, isBlocked, deliveryFees, orderLimit, specialDiscount])
+  }, [customer, userInfo, name, address, regionId, mapPosition, isBlocked, deliveryFees, orderLimit])
   const handleSubmit = () => {
     try{
       if (Number(deliveryFees) < 0 || Number(deliveryFees) !== Number(Number(deliveryFees).toFixed(2))) {
         throw new Error('invalidValue')
       }
       if (Number(orderLimit) < 0 || Number(orderLimit) !== Number(Number(orderLimit).toFixed(2))) {
-        throw new Error('invalidValue')
-      }
-      if (Number(specialDiscount) < 0 || Number(specialDiscount) !== Number(Number(specialDiscount).toFixed(2))) {
         throw new Error('invalidValue')
       }
       const newCustomer = {
@@ -62,7 +57,6 @@ const EditCustomer = () => {
         isBlocked,
         deliveryFees: +deliveryFees * 100,
         orderLimit: +orderLimit * 100,
-        specialDiscount: +specialDiscount * 100
       }
       editCustomer(newCustomer, name, regionId, userInfo.mobile, customer.storeId, stateStores)
       message(labels.editSuccess, 3000)
@@ -111,17 +105,6 @@ const EditCustomer = () => {
               type="number" 
               clearInput
               onIonChange={e => setDeliveryFees(e.detail.value!)} 
-            />
-          </IonItem>
-          <IonItem>
-            <IonLabel position="floating" color="primary">
-              {labels.specialDiscount}
-            </IonLabel>
-            <IonInput 
-              value={specialDiscount} 
-              type="number" 
-              clearInput
-              onIonChange={e => setSpecialDiscount(e.detail.value!)} 
             />
           </IonItem>
           <IonItem>
