@@ -1,5 +1,5 @@
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonList, IonModal, IonSearchbar, IonTitle, IonToolbar } from '@ionic/react'
-import { useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 import labels from '../data/labels'
 import Fuse from "fuse.js"
 import { chevronForwardOutline, closeOutline } from 'ionicons/icons'
@@ -17,11 +17,9 @@ const SmartSelect = (props: Props) => {
   const [isOpen, setIsOpen] = useState(false)
   const [value, setValue] = useState('')
   const [searchText, setSearchText] = useState('')
-  const [values, setValues] = useState<Element[]>([])
-  useEffect(() => {
+  const values = useMemo(() => {
     if (!searchText) {
-      setValues(props.data)
-      return
+      return props.data
     }
     const options = {
       includeScore: true,
@@ -31,7 +29,7 @@ const SmartSelect = (props: Props) => {
     }
     const fuse = new Fuse(props.data, options)
     const result = fuse.search(searchText)
-    setValues(result.map(p => p.item))
+    return result.map(p => p.item)
   }, [searchText, props.data])
 
   const handleSelect = (i: Element | null) => {

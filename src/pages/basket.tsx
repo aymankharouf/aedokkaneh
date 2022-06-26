@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { quantityText } from '../data/actions'
 import labels from '../data/labels'
 import { Basket as BasketType, BasketPack, PackPrice, State, Store } from '../data/types'
 import { IonBadge, IonButton, IonButtons, IonContent, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
 import Header from './header'
-import { useHistory } from 'react-router'
 import { addOutline, removeOutline } from 'ionicons/icons'
 import { colors } from '../data/config'
 import { useSelector, useDispatch } from 'react-redux'
@@ -15,16 +14,8 @@ const Basket = () => {
   const stateBasket = useSelector<State, BasketType | undefined>(state => state.basket)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const [store] = useState(() => stateStores.find(s => s.id === stateBasket?.storeId))
-  const [basket, setBasket] = useState<BasketPack[]>([])
-  const [totalPrice, setTotalPrice] = useState(0)
-  const history = useHistory()
-  useEffect(() => {
-    if (!stateBasket?.packs) history.push('/')
-  }, [stateBasket, history])
-  useEffect(() => {
-    setBasket(() => stateBasket?.packs || [])
-    setTotalPrice(() => stateBasket?.packs?.reduce((sum, p) => sum + Math.round(p.cost * (p.weight || p.quantity)), 0) || 0)
-  }, [stateBasket])
+  const basket = useMemo(() => stateBasket?.packs || [], [stateBasket])
+  const totalPrice = useMemo(() => stateBasket?.packs?.reduce((sum, p) => sum + Math.round(p.cost * (p.weight || p.quantity)), 0) || 0, [stateBasket])
   const handleIncrease = (pack: BasketPack) => {
     if (store?.id === 's') {
       const stock = statePackPrices.find(p => p.packId === pack.packId && p.storeId === 's')

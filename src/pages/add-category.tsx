@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import labels from '../data/labels'
 import { addCategory, getMessage } from '../data/actions'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
@@ -8,11 +8,14 @@ import Footer from './footer'
 import { checkmarkOutline } from 'ionicons/icons'
 import { Category, Err, State } from '../data/types'
 import { useSelector } from 'react-redux'
+import SmartSelect from './smart-select'
 
 const AddCategory = () => {
   const stateCategories = useSelector<State, Category[]>(state => state.categories)
   const [name, setName] = useState('')
   const [ordering, setOrdering] = useState('')
+  const [parentId, setParentId] = useState('')
+  const parentCategories = useMemo(() => stateCategories.filter(c => !c.parentId), [stateCategories])
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
@@ -25,7 +28,8 @@ const AddCategory = () => {
       addCategory({
         id: Math.random().toString(),
         name,
-        ordering: +ordering
+        ordering: +ordering,
+        parentId
       })
       message(labels.addSuccess, 3000)
       history.goBack()
@@ -62,6 +66,8 @@ const AddCategory = () => {
               onIonChange={e => setOrdering(e.detail.value!)} 
             />
           </IonItem>
+          <SmartSelect label={labels.parentCategory} data={parentCategories} onChange={(v) => setParentId(v)} />
+
         </IonList>
       </IonContent>
       {name && ordering &&

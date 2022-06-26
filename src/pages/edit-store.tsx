@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import labels from '../data/labels'
-import { storeTypes, patterns } from '../data/config'
+import { patterns } from '../data/config'
 import { editStore, getMessage } from '../data/actions'
-import { IonToggle, IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, useIonToast } from '@ionic/react'
+import { IonToggle, IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
 import { useHistory, useLocation, useParams } from 'react-router'
 import Header from './header'
 import Footer from './footer'
@@ -17,46 +17,28 @@ const EditStore = () => {
   const params = useParams<Params>()
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const [store] = useState(() => stateStores.find(s => s.id === params.id)!)
-  const [type, setType] = useState(store.type)
   const [name, setName] = useState(store.name)
   const [mobile, setMobile] = useState(store.mobile)
-  const [mobileInvalid, setMobileInvalid] = useState(false)
+  const mobileInvalid = useMemo(() => !mobile || !patterns.mobile.test(mobile), [mobile])
   const [address, setAddress] = useState(store.address)
-  const [discount, setDiscount] = useState((store.discount * 100).toString())
   const [mapPosition, setMapPosition] = useState(store.mapPosition)
-  const [allowReturn, setAllowReturn] = useState(store.allowReturn)
   const [isActive, setIsActive] = useState(store.isActive)
   const [openTime, setOpenTime] = useState(store.openTime)
-  const [hasChanged, setHasChanged] = useState(false)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-  useEffect(() => {
-    setMobileInvalid(!mobile || !patterns.mobile.test(mobile))
-  }, [mobile])
-  useEffect(() => {
-    if (name !== store.name
-    || type !== store.type
-    || mobile !== store.mobile
-    || +discount !== store.discount * 100
-    || address !== store.address
-    || mapPosition !== store.mapPosition
-    || allowReturn !== store.allowReturn
-    || isActive !== store.isActive
-    || openTime !== store.openTime) setHasChanged(true)
-    else setHasChanged(false)
-  }, [store, name, type, mobile, discount, address, mapPosition, allowReturn, isActive, openTime])
+  const hasChanged = useMemo(() => (name !== store.name)
+    || (mobile !== store.mobile)
+    || (address !== store.address)
+    || (mapPosition !== store.mapPosition)
+    || (isActive !== store.isActive)
+    || (openTime !== store.openTime)
+  , [store, name, mobile, address, mapPosition, isActive, openTime])
   const handleSubmit = () => {
     try{
-      if (discount && +discount <= 0) {
-        throw new Error('invalidValue')
-      }
       const newStore = {
         ...store,
         name,
-        type,
-        discount: +discount / 100,
-        allowReturn,
         isActive,
         mobile,
         address,
@@ -101,34 +83,6 @@ const EditStore = () => {
             />
           </IonItem>
           <IonItem>
-            <IonLabel position="floating" color="primary">
-              {labels.type}
-            </IonLabel>
-            <IonSelect 
-              ok-text={labels.ok} 
-              cancel-text={labels.cancel} 
-              value={type}
-              onIonChange={e => setType(e.detail.value)}
-            >
-              {storeTypes.map(t => t.id === '1' ? '' : <IonSelectOption key={t.id} value={t.id}>{t.name}</IonSelectOption>)}
-            </IonSelect>
-          </IonItem>
-          <IonItem>
-            <IonLabel position="floating" color="primary">
-              {labels.discount}
-            </IonLabel>
-            <IonInput 
-              value={discount} 
-              type="text" 
-              clearInput
-              onIonChange={e => setDiscount(e.detail.value!)} 
-            />
-          </IonItem>
-          <IonItem>
-            <IonLabel color="primary">{labels.allowReturn}</IonLabel>
-            <IonToggle checked={allowReturn} onIonChange={() => setAllowReturn(s => !s)}/>
-          </IonItem>
-          <IonItem>
             <IonLabel color="primary">{labels.isActive}</IonLabel>
             <IonToggle checked={isActive} onIonChange={() => setIsActive(s => !s)}/>
           </IonItem>
@@ -167,7 +121,7 @@ const EditStore = () => {
           </IonItem>
         </IonList>
       </IonContent>
-      {name && type && !mobileInvalid && hasChanged &&
+      {name && !mobileInvalid && hasChanged &&
         <IonFab vertical="top" horizontal="end" slot="fixed">
           <IonFabButton onClick={handleSubmit} color="success">
             <IonIcon ios={checkmarkOutline} /> 

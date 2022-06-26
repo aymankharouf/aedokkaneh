@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import { quantityText } from '../data/actions'
 import labels from '../data/labels'
 import { colors, stockOperationTypes } from '../data/config'
-import { Pack, State, StockOperation, StockPack, Store } from '../data/types'
+import { Pack, State, StockOperation, Store } from '../data/types'
 import { IonBadge, IonContent, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -12,25 +12,20 @@ type Props = {
   id: string,
   type: string
 }
-type ExtendedStockPack = StockPack & {
-  packInfo: Pack
-}
 const StockOperationDetails = (props: Props) => {
   const stateArchivedStockOperations = useSelector<State, StockOperation[]>(state => state.archivedStockOperations)
   const stateStockOperations = useSelector<State, StockOperation[]>(state => state.stockOperations)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const stateStores = useSelector<State, Store[]>(state => state.stores)
-  const [stockOperation] = useState(() => props.type === 'a' ? stateArchivedStockOperations.find(t => t.id === props.id)! : stateStockOperations.find(t => t.id === props.id)!)
-  const [stockOperationBasket, setStockOperationBasket] = useState<ExtendedStockPack[]>([])
-  useEffect(() => {
-    setStockOperationBasket(() => stockOperation.basket.map(p => {
+  const stockOperation = useMemo(() => props.type === 'a' ? stateArchivedStockOperations.find(t => t.id === props.id)! : stateStockOperations.find(t => t.id === props.id)!, [stateArchivedStockOperations, stateStockOperations, props.id, props.type])
+  const stockOperationBasket = useMemo(() => stockOperation.basket.map(p => {
       const packInfo = statePacks.find(pa => pa.id === p.packId)!
       return {
         ...p,
         packInfo
       }
-    }))
-  }, [stockOperation, statePacks])
+    })
+  , [stockOperation, statePacks])
   return(
     <IonPage>
       <Header title={`${stockOperationTypes.find(ty => ty.id === stockOperation.type)?.name} ${stockOperation.storeId ? stateStores.find(s => s.id === stockOperation.storeId)?.name : ''}`}/>

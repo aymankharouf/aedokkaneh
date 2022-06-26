@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import labels from '../data/labels'
 import { permitUser, getMessage } from '../data/actions'
 import { CustomerInfo, Err, State, Store, UserInfo } from '../data/types'
@@ -18,24 +18,20 @@ const PermissionList = () => {
   const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
-  const [customers, setCustomers] = useState<CustomerInfo[]>([])
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
   const [alert] = useIonAlert()
   const [loading, dismiss] = useIonLoading()
-  useEffect(() => {
-    setCustomers(() => {
-      const customers = stateCustomers.filter(c => (params.id === 's' && c.storeId) || (params.id === 'n' && c.storeName && !c.storeId))
-      return customers.map(c => {
-        const storeName = stateStores.find(s => s.id === c.storeId)?.name || c.storeName
-        return {
-          ...c,
-          storeName
-        }
-      })
-    })
-  }, [stateCustomers, stateStores, stateUsers, params.id])
+  const customers = useMemo(() => stateCustomers.filter(c => (params.id === 's' && c.storeId) || (params.id === 'n' && c.storeName && !c.storeId))
+                                                .map(c => {
+                                                  const storeName = stateStores.find(s => s.id === c.storeId)?.name || c.storeName
+                                                  return {
+                                                    ...c,
+                                                    storeName
+                                                  }
+                                                })
+  , [stateCustomers, stateStores, params.id])
   const handleUnPermit = (customer: CustomerInfo) => {
     alert({
       header: labels.confirmationTitle,

@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import { quantityText } from '../data/actions'
 import labels from '../data/labels'
-import { Order, Pack, Product, RequestedPack, State } from '../data/types'
+import { Order, Pack, RequestedPack, State } from '../data/types'
 import { IonBadge, IonContent, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -11,10 +11,7 @@ import { useSelector } from 'react-redux'
 const PrepareOrders = () => {
 	const stateOrders = useSelector<State, Order[]>(state => state.orders)
 	const statePacks = useSelector<State, Pack[]>(state => state.packs)
-	const stateProducts = useSelector<State, Product[]>(state => state.products)
-	const [packs, setPacks] = useState<RequestedPack[]>([])
-	useEffect(() => {
-		setPacks(() => {
+	const packs = useMemo(() => {
 			const finishedOrders = stateOrders.filter(o => o.status === 'f')
 			const packsArray: RequestedPack[] = []
 			finishedOrders.forEach(o => {
@@ -46,8 +43,7 @@ const PrepareOrders = () => {
 				})
 			})
 			return packsArray
-		})
-	}, [stateOrders, statePacks, stateProducts])
+	}, [stateOrders, statePacks])
 	let i = 0
   return(
     <IonPage>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import labels from '../data/labels'
 import { getArchivedProducts, getArchivedPacks, getMessage } from '../data/actions'
 import { Category, Err, Product, State } from '../data/types'
@@ -11,30 +11,23 @@ import { colors } from '../data/config'
 import { useSelector, useDispatch } from 'react-redux'
 import firebase from '../data/firebase'
 
-type ExtendedProduct = Product & {
-  categoryInfo: Category
-}
 const ArchivedProducts = () => {
   const dispatch = useDispatch()
   const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
   const stateArchivedProducts = useSelector<State, Product[]>(state => state.archivedProducts)
   const stateCategories = useSelector<State, Category[]>(state => state.categories)
-  const [products, setProducts] = useState<ExtendedProduct[]>([])
   const location = useLocation()
   const [message] = useIonToast()
   const [loading, dismiss] = useIonLoading()
-  useEffect(() => {
-    setProducts(() => {
-      const products = stateArchivedProducts.map(p => {
-        const categoryInfo = stateCategories.find(c => c.id === p.categoryId)!
-        return {
-          ...p,
-          categoryInfo
-        }
-      })
-      return products.sort((p1, p2) => p1.sales - p2.sales)
-    })
-  }, [stateArchivedProducts, stateCategories])
+  const products = useMemo(() => stateArchivedProducts.map(p => {
+                                                        const categoryInfo = stateCategories.find(c => c.id === p.categoryId)!
+                                                        return {
+                                                          ...p,
+                                                          categoryInfo
+                                                        }
+                                                      })
+                                                      .sort((p1, p2) => p1.sales - p2.sales)
+  , [stateArchivedProducts, stateCategories])
   const handleRetreive = async () => {
     try{
       loading()

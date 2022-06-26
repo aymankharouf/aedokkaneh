@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { sendNotification, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { useHistory, useLocation } from 'react-router'
@@ -15,7 +15,7 @@ const AddNotification = () => {
   const [userId, setUserId] = useState('')
   const [title, setTitle] = useState('')
   const [text, setText] = useState('')
-  const [customers] = useState(() => [...stateCustomers].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
+  const customers = useMemo(() => stateCustomers.sort((c1, c2) => c1.name > c2.name ? 1 : -1), [stateCustomers])
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()

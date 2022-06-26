@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { getPackStores, deleteStorePack, refreshPackPrice, deletePack, changeStorePackStatus, getMessage, quantityText } from '../data/actions'
 import moment from 'moment'
 import labels from '../data/labels'
@@ -33,22 +33,17 @@ const PackDetails = () => {
   const stateBasket = useSelector<State, Basket | undefined>(state => state.basket)
   const [currentStorePack, setCurrentStorePack] = useState<ExtendedPackPrice>()
   const [actionOpened, setActionOpened] = useState(false)
-  const [pack, setPack] = useState(() => statePacks.find(p => p.id === params.id)!)
-  const [packStores, setPackStores] = useState<ExtendedPackPrice[]>([])
-  const [detailsCount, setDetailsCount] = useState(0)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
   const [alert] = useIonAlert()
-  useEffect(() => {
-    setDetailsCount(() => {
-      const detailsCount = statePackPrices.filter(p => p.packId === pack.id).length
-      return detailsCount === 0 ? stateOrders.filter(o => o.basket.find(p => p.packId === pack.id)).length : detailsCount
-    })
+  const pack = useMemo(() => statePacks.find(p => p.id === params.id)!, [statePacks, params.id])
+  const detailsCount = useMemo(() => {
+    const detailsCount = statePackPrices.filter(p => p.packId === pack.id).length
+    return detailsCount === 0 ? stateOrders.filter(o => o.basket.find(p => p.packId === pack.id)).length : detailsCount
   }, [pack, stateOrders, statePackPrices])
-  useEffect(() => {
-    setPackStores(() => {
-      const packStores = getPackStores(pack, statePackPrices, statePacks)
+  const packStores = useMemo(() => {
+    const packStores = getPackStores(pack, statePackPrices, statePacks)
       const result = packStores.map(p => {
         const packInfo = statePacks.find(pp => pp.id === p.packId)!
         const storeInfo = stateStores.find(s => s.id === p.storeId)!
@@ -63,28 +58,16 @@ const PackDetails = () => {
       return result.sort((s1, s2) => 
       {
         if (s1.unitPrice === s2.unitPrice) {
-          if (s1.storeInfo.type === s2.storeInfo.type){
-            if (s2.storeInfo.discount === s1.storeInfo.discount) {
-              const store1Purchases = statePurchases.filter(p => p.storeId === s1.storeId && p.time < today)
-              const store2Purchases = statePurchases.filter(p => p.storeId === s2.storeId && p.time < today)
-              const store1Sales = store1Purchases.reduce((sum, p) => sum + p.total, 0)
-              const store2Sales = store2Purchases.reduce((sum, p) => sum + p.total, 0)
-              return store1Sales - store2Sales
-            } else {
-              return Number(s2.storeInfo.discount) - Number(s1.storeInfo.discount)
-            }
-          } else {
-            return Number(s1.storeInfo.type) - Number(s2.storeInfo.type)
-          }
+          const store1Purchases = statePurchases.filter(p => p.storeId === s1.storeId && p.time < today)
+          const store2Purchases = statePurchases.filter(p => p.storeId === s2.storeId && p.time < today)
+          const store1Sales = store1Purchases.reduce((sum, p) => sum + p.total, 0)
+          const store2Sales = store2Purchases.reduce((sum, p) => sum + p.total, 0)
+          return store1Sales - store2Sales
         } else {
           return s1.unitPrice - s2.unitPrice
         }
       })
-    })
-  }, [pack, stateStores, statePackPrices, statePurchases, statePacks])
-  useEffect(() => {
-    setPack(() => statePacks.find(p => p.id === params.id)!)
-  }, [statePacks, statePackPrices, stateOrders, params.id])
+    }, [pack, stateStores, statePackPrices, statePurchases, statePacks])
   const handleRefreshPrice = () => {
     try{
       refreshPackPrice(pack, statePackPrices)

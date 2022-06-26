@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import labels from '../data/labels'
-import { storeTypes } from '../data/config'
 import { IonToggle, IonList, IonItem, IonContent, IonFab, IonFabButton, IonFabList, IonLabel, IonIcon, IonInput, IonPage } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -15,10 +14,7 @@ type Params = {
 const StoreDetails = () => {
   const params = useParams<Params>()
   const stateStores = useSelector<State, Store[]>(state => state.stores)
-  const [store, setStore] = useState(() => stateStores.find(s => s.id === params.id)!)
-  useEffect(() => {
-    setStore(() => stateStores.find(s => s.id === params.id)!)
-  }, [stateStores, params.id])
+  const store = useMemo(() => stateStores.find(s => s.id === params.id)!, [stateStores, params.id])
 
   return (
     <IonPage>
@@ -51,28 +47,6 @@ const StoreDetails = () => {
               value={store.mobile} 
               readonly
             />
-          </IonItem>
-          <IonItem>
-            <IonLabel position="floating" color="primary">
-              {labels.type}
-            </IonLabel>
-            <IonInput 
-              value={storeTypes.find(t => t.id === store.type)?.name} 
-              readonly
-            />
-          </IonItem>
-          <IonItem>
-            <IonLabel position="floating" color="primary">
-              {labels.discount}
-            </IonLabel>
-            <IonInput 
-              value={store.discount * 100} 
-              readonly
-            />
-          </IonItem>
-          <IonItem>
-            <IonLabel color="primary">{labels.allowReturn}</IonLabel>
-            <IonToggle checked={store.allowReturn} disabled />
           </IonItem>
           <IonItem>
             <IonLabel color="primary">{labels.isActive}</IonLabel>

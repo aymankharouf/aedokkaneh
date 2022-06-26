@@ -25,6 +25,7 @@ const Categories = () => {
               <IonItem key={c.id} routerLink={`/edit-category/${c.id}`}>
                 <IonLabel>
                   <IonText style={{color: colors[0].name}}>{c.name}</IonText>
+                  <IonText style={{color: colors[1].name}}>{stateCategories.find(cc => cc.id === c.parentId)?.name}</IonText>
                 </IonLabel>
               </IonItem>    
             )

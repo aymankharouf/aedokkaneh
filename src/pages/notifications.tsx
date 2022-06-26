@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import labels from '../data/labels'
 import moment from 'moment'
 import 'moment/locale/ar'
@@ -13,29 +13,22 @@ import { addOutline, trashOutline } from 'ionicons/icons'
 import { useSelector } from 'react-redux'
 import firebase from '../data/firebase'
 
-type ExtendedNotification = Notification & {
-  userInfo: UserInfo
-}
 const Notifications = () => {
   const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
   const stateNotifications = useSelector<State, Notification[]>(state => state.notifications)
   const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
-  const [notifications, setNotifications] = useState<ExtendedNotification[]>([])
   const location = useLocation()
   const [message] = useIonToast()
   const [alert] = useIonAlert()
-  useEffect(() => {
-    setNotifications(() => {
-      const notifications = stateNotifications.map(n => {
-        const userInfo = stateUsers.find(u => u.id === n.userId)!
-        return {
-          ...n,
-          userInfo
-        }
-      })
-      return notifications.sort((n1, n2) => n2.time > n1.time ? 1 : -1)
-    })
-  }, [stateUsers, stateNotifications])
+  const notifications = useMemo(() => stateNotifications.map(n => {
+                                                          const userInfo = stateUsers.find(u => u.id === n.userId)!
+                                                          return {
+                                                            ...n,
+                                                            userInfo
+                                                          }
+                                                        })
+                                                        .sort((n1, n2) => n2.time > n1.time ? 1 : -1)
+  , [stateUsers, stateNotifications])
   const handleDelete = (notificationId: string) => {
     alert({
       header: labels.confirmationTitle,

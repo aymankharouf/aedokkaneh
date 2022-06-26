@@ -6,7 +6,8 @@ export type Label = {
 export type Category = {
   id: string,
   name: string,
-  ordering: number
+  ordering: number,
+  parentId?: string
 }
 export type Err = {
   code: string,
@@ -28,16 +29,13 @@ export type Pack = {
   price: number,
   imageUrl: string,
   subPackId: string,
+  subQuantity: number,
   specialImage: boolean,
-  bonusPackId: string,
   isOffer: boolean,
   offerEnd: Date | null,
   closeExpired: boolean,
-  forSale: boolean,
-  subQuantity: number,
-  subPercent: number,
-  bonusQuantity: number,
-  bonusPercent: number,
+  withGift: boolean,
+  gift?: string
   unitsCount: number,
   byWeight: boolean,
   isDivided: boolean
@@ -179,10 +177,7 @@ export type Balance = {
 export type Store = {
   id?: string,
   name: string,
-  type: string,
   isActive: boolean,
-  allowReturn: boolean,
-  discount: number,
   mobile: string,
   mapPosition: string,
   openTime: string,

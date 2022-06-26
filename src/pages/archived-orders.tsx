@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useRef, useMemo } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
 import labels from '../data/labels'
@@ -12,32 +12,24 @@ import { useLocation } from 'react-router'
 import { repeatOutline } from 'ionicons/icons'
 import { useSelector, useDispatch } from 'react-redux'
 
-type ExtendedOrder = Order & {
-  customerInfo: CustomerInfo
-}
 const ArchivedOrders = () => {
   const dispatch = useDispatch()
   const stateMonthlyOperations = useSelector<State, MonthlyOperation[]>(state => state.monthlyOperations)
   const stateArchivedOrders = useSelector<State, Order[]>(state => state.archivedOrders)
   const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
-  const [orders, setOrders] = useState<ExtendedOrder[]>([])
-  const [monthlyOperations] = useState(() => [...stateMonthlyOperations.sort((t1, t2) => t2.id - t1.id)])
+  const monthlyOperations = useMemo(() => stateMonthlyOperations.sort((t1, t2) => t2.id - t1.id), [stateMonthlyOperations])
   const lastMonth = useRef(0)
   const [message] = useIonToast()
   const location = useLocation()
-
-  useEffect(() => {
-    setOrders(() => {
-      const orders = stateArchivedOrders.map(o => {
-        const customerInfo = stateCustomers.find(c => c.id === o.userId)!
-        return {
-          ...o,
-          customerInfo
-        }
-      })
-      return orders.sort((o1, o2) => o2.time > o1.time ? 1 : -1)  
-    })
-  }, [stateArchivedOrders, stateCustomers])
+  const orders = useMemo(() => stateArchivedOrders.map(o => {
+                                                    const customerInfo = stateCustomers.find(c => c.id === o.userId)!
+                                                    return {
+                                                      ...o,
+                                                      customerInfo
+                                                    }
+                                                  })
+                                                  .sort((o1, o2) => o2.time > o1.time ? 1 : -1)  
+  , [stateArchivedOrders, stateCustomers])
   const handleRetreive = () => {
     try{
       const id = monthlyOperations[lastMonth.current]?.id

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo } from 'react'
 import labels from '../data/labels'
 import { IonCard, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonIcon, IonImg, IonPage, IonRow } from '@ionic/react'
 import Header from './header'
@@ -14,7 +14,7 @@ type Params = {
 const AdvertDetails = () => {
   const params = useParams<Params>()
   const stateAdverts = useSelector<State, Advert[]>(state => state.adverts)
-  const [advert] = useState(() => stateAdverts.find(a => a.id === params.id)!)
+  const advert = useMemo(() => stateAdverts.find(a => a.id === params.id)!, [stateAdverts, params.id])
   return (
     <IonPage>
       <Header title={labels.advertDetails} />

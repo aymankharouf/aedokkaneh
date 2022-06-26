@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import labels from '../data/labels'
 import { productOfText } from '../data/actions'
 import { Category, Country, Pack, Product, State } from '../data/types'
@@ -15,10 +15,6 @@ import firebase from '../data/firebase'
 type Params = {
   id: string
 }
-type ExtendedProduct = Product & {
-  categoryName: string,
-  countryName: string
-}
 const Products = () => {
   const dispatch = useDispatch()
   const params = useParams<Params>()
@@ -28,33 +24,27 @@ const Products = () => {
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const stateCountries = useSelector<State, Country[]>(state => state.countries)
   const stateSearchText = useSelector<State, string>(state => state.searchText)
-  const [category] = useState(() => stateCategories.find(c => c.id === params.id))
-  const [products, setProducts] = useState<ExtendedProduct[]>([])
-  const [data, setData] = useState<ExtendedProduct[]>([])
+  const category = useMemo(() => stateCategories.find(c => c.id === params.id), [stateCategories, params.id])
   useEffect(() => {
     return function cleanUp() {
       dispatch({type: 'CLEAR_SEARCH'})
     }
   }, [dispatch])
-  useEffect(() => {
-    setProducts(() => {
-      const products = stateProducts.filter(p => params.id === '-1' ? !statePacks.find(pa => pa.productId === p.id) || statePacks.filter(pa => pa.productId === p.id).length === statePacks.filter(pa => pa.productId === p.id && pa.price === 0).length : params.id === '0' || p.categoryId === params.id)
-      const result = products.map(p => {
-        const categoryInfo = stateCategories.find(c => c.id === p.categoryId)!
-        const countryInfo = stateCountries.find(c => c.id === p.countryId)!
-        return {
-          ...p,
-          categoryName: categoryInfo.name,
-          countryName: countryInfo.name
-        }
-      })
-      return result.sort((p1, p2) => p1.categoryId === p2.categoryId ? (p1.name > p2.name ? 1 : -1) : (p1.categoryName > p2.categoryName ? 1 : -1))
-    })
-  }, [stateProducts, stateCategories, statePacks, stateCountries, params.id])
-  useEffect(() => {
+  const products = useMemo(() => stateProducts.filter(p => params.id === '-1' ? !statePacks.find(pa => pa.productId === p.id) || statePacks.filter(pa => pa.productId === p.id).length === statePacks.filter(pa => pa.productId === p.id && pa.price === 0).length : params.id === '0' || p.categoryId === params.id)
+  .map(p => {
+    const categoryInfo = stateCategories.find(c => c.id === p.categoryId)!
+    const countryInfo = stateCountries.find(c => c.id === p.countryId)!
+    return {
+      ...p,
+      categoryName: categoryInfo.name,
+      countryName: countryInfo.name
+    }
+  })
+  .sort((p1, p2) => p1.categoryId === p2.categoryId ? (p1.name > p2.name ? 1 : -1) : (p1.categoryName > p2.categoryName ? 1 : -1))
+  , [stateProducts, stateCategories, statePacks, stateCountries, params.id])
+  const data = useMemo(() => {
     if (!stateSearchText) {
-      setData(products)
-      return
+      return products
     }
     const options = {
       includeScore: true,
@@ -64,7 +54,7 @@ const Products = () => {
     }
     const fuse = new Fuse(products, options)
     const result = fuse.search(stateSearchText)
-    setData(result.map(p => p.item))
+    return result.map(p => p.item)
   }, [stateSearchText, products])
   if (!stateUser) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
   return(

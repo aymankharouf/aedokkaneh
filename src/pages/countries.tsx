@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import labels from '../data/labels'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
 import Header from './header'
@@ -11,10 +11,7 @@ import { Country, State } from '../data/types'
 
 const Countries = () => {
   const stateCountries = useSelector<State, Country[]>(state => state.countries)
-  const [countries, setCountries] = useState(() => [...stateCountries].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
-  useEffect(() => {
-    setCountries(() => [...stateCountries].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
-  }, [stateCountries])
+  const countries = useMemo(() => stateCountries.sort((c1, c2) => c1.name > c2.name ? 1 : -1), [stateCountries])
   return (
     <IonPage>
       <Header title={labels.countries} />

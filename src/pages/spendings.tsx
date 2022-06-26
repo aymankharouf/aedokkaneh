@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
 import labels from '../data/labels'
@@ -15,10 +15,7 @@ import { useSelector } from 'react-redux'
 const Spendings = () => {
   const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
   const stateSpendings = useSelector<State, Spending[]>(state => state.spendings)
-  const [spendings, setSpendings] = useState<Spending[]>([])
-  useEffect(() => {
-    setSpendings(() => [...stateSpendings].sort((s1, s2) => s2.time > s1.time ? 1 : -1))
-  }, [stateSpendings])
+  const spendings = useMemo(() => stateSpendings.sort((s1, s2) => s2.time > s1.time ? 1 : -1), [stateSpendings])
   if (!stateUser) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
   return(
     <IonPage>

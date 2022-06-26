@@ -34,14 +34,6 @@ export const orderStatus = [
   {id: 'm', name: 'مدمج'}
 ]  
 
-export const storeTypes = [
-  {id: '1', name: 'المستودع'},
-  {id: '2', name: 'صغير'},
-  {id: '3', name: 'متوسط'},
-  {id: '4', name: 'كبير'},
-  {id: '5', name: 'جملة'}
-]
-
 export const stockOperationTypes = [
   {id: 'p', name: 'شراء'},
   {id: 'o', name: 'بيع تجزئة'},

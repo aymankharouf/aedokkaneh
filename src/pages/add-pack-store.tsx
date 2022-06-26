@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useMemo, useState } from 'react'
 import labels from '../data/labels'
 import { addPackPrice, getMessage } from '../data/actions'
 import { Err, Pack, PackPrice, State, Store } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
-import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, IonToggle, useIonToast } from '@ionic/react'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonToggle, useIonToast } from '@ionic/react'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
 import { useSelector } from 'react-redux'
+import SmartSelect from './smart-select'
 
 type Params = {
   id: string
@@ -21,19 +22,11 @@ const AddPackStore = () => {
   const [offerDays, setOfferDays] = useState('')
   const [isActive, setIsActive] = useState(false)
   const [storeId, setStoreId] = useState('')
-  const [stores] = useState(() => stateStores.filter(s => s.id !== 's'))
-  const [pack] = useState(() => statePacks.find(p => p.id === params.id)!)
+  const stores = useMemo(() => stateStores.filter(s => s.id !== 's'), [stateStores])
+  const pack = useMemo(() => statePacks.find(p => p.id === params.id)!, [statePacks, params.id])
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-  useEffect(() => {
-    if (cost) {
-      const store = stateStores.find(s => s.id === storeId)
-      setPrice((+cost * (1 + (store?.isActive && store?.type !== '5' ? 0 : store?.discount || 0))).toFixed(2))
-    } else {
-      setPrice('')
-    }
-  }, [cost, stateStores, storeId])
   const handleSubmit = () => {
     try{
       if (statePackPrices.find(p => p.packId === pack.id && p.storeId === storeId)) {
@@ -82,19 +75,7 @@ const AddPackStore = () => {
       <Header title={`${labels.addPrice} ${pack.productName} ${pack.name}${pack.closeExpired ? '(' + labels.closeExpired + ')' : ''}`} />
       <IonContent fullscreen className="ion-padding">
         <IonList>
-          <IonItem>
-            <IonLabel position="floating" color="primary">
-              {labels.store}
-            </IonLabel>
-            <IonSelect 
-              ok-text={labels.ok} 
-              cancel-text={labels.cancel} 
-              value={storeId}
-              onIonChange={e => setStoreId(e.detail.value)}
-            >
-              {stores.map(s => <IonSelectOption key={s.id} value={s.id}>{s.name}</IonSelectOption>)}
-            </IonSelect>
-          </IonItem>
+          <SmartSelect label={labels.store} data={stores} onChange={(v) => setStoreId(v)} />
           <IonItem>
             <IonLabel position="floating" color="primary">
               {labels.cost}

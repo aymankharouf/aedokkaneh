@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import labels from '../data/labels'
 import { approveRating, getMessage } from '../data/actions'
 import { Err, Pack, Product, Rating, State, UserInfo } from '../data/types'
@@ -19,23 +19,19 @@ const Ratings = () => {
   const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
   const stateProducts = useSelector<State, Product[]>(state => state.products)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
-  const [ratings, setRatings] = useState<ExtendedRating[]>([])
   const [message] = useIonToast()
   const location = useLocation()
-  useEffect(() => {
-    setRatings(() => {
-      const ratings = stateRatings.filter(r => r.status === 'n')
-      return ratings.map(r => {
-        const userInfo = stateUsers.find(u => u.id === r.userId)!
-        const productInfo = stateProducts.find(p => p.id === r.productId)!
-        return {
-          ...r,
-          userInfo,
-          productInfo
-        }
-      })
-    })
-  }, [stateUsers, stateProducts, stateRatings])
+  const ratings = useMemo(() => stateRatings.filter(r => r.status === 'n')
+                                            .map(r => {
+                                              const userInfo = stateUsers.find(u => u.id === r.userId)!
+                                              const productInfo = stateProducts.find(p => p.id === r.productId)!
+                                              return {
+                                                ...r,
+                                                userInfo,
+                                                productInfo
+                                              }
+                                            })
+  , [stateUsers, stateProducts, stateRatings])
   const handleApprove = (rating: ExtendedRating) => {
     try{
       approveRating(rating, stateRatings, stateProducts, statePacks)

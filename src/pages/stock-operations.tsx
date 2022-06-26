@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
 import labels from '../data/labels'
@@ -11,25 +11,18 @@ import { colors } from '../data/config'
 import { cloudUploadOutline } from 'ionicons/icons'
 import { useSelector } from 'react-redux'
 
-type ExtendedStockOperation = StockOperation & {
-  storeInfo: Store
-}
 const StockOperations = () => {
   const stateStockOperations = useSelector<State, StockOperation[]>(state => state.stockOperations)
   const stateStores = useSelector<State, Store[]>(state => state.stores)
-  const [stockOperations, setStockOperations] = useState<ExtendedStockOperation[]>([])
-  useEffect(() => {
-    setStockOperations(() => {
-      const stockOperations = stateStockOperations.map(t => {
-        const storeInfo = stateStores.find(s => s.id === t.storeId)!
-        return {
-          ...t,
-          storeInfo
-        }
-      })
-      return stockOperations.sort((t1, t2) => t2.time > t1.time ? 1 : -1)
-    })
-  }, [stateStockOperations, stateStores])
+  const stockOperations = useMemo(() => stateStockOperations.map(t => {
+                                                              const storeInfo = stateStores.find(s => s.id === t.storeId)!
+                                                              return {
+                                                                ...t,
+                                                                storeInfo
+                                                              }
+                                                            })
+                                                            .sort((t1, t2) => t2.time > t1.time ? 1 : -1)
+  , [stateStockOperations, stateStores])
   return(
     <IonPage>
       <Header title={labels.stockOperations} />

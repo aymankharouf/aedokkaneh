@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo } from 'react'
 import { resolvePasswordRequest, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { randomColors } from '../data/config'
@@ -20,12 +20,9 @@ const RetreivePassword = () => {
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-  const [passwordRequest] = useState(() => statePasswordRequests.find(r => r.id === params.id)!)
-  const [userInfo] = useState(() => stateUsers.find(u => u.mobile === passwordRequest.mobile))
-  const [password] = useState(() => {
-    const password = userInfo?.colors.map(c => randomColors.find(rc => rc.name === c)!.id)
-    return password?.join('')
-  })
+  const passwordRequest = useMemo(() => statePasswordRequests.find(r => r.id === params.id)!, [statePasswordRequests, params.id])
+  const userInfo = useMemo(() => stateUsers.find(u => u.mobile === passwordRequest.mobile), [stateUsers, passwordRequest])
+  const password = useMemo(() => userInfo?.colors.map(c => randomColors.find(rc => rc.name === c)!.id).join(''), [userInfo])
   const handleResolve = () => {
     try{
       resolvePasswordRequest(params.id)

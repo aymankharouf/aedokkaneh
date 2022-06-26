@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import labels from '../data/labels'
 import { orderStatus, colors } from '../data/config'
 import { IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage } from '@ionic/react'
@@ -9,28 +9,18 @@ import { useSelector } from 'react-redux'
 import { Order, State } from '../data/types'
 import firebase from '../data/firebase'
 
-type OrderStatus = {
-  id: string,
-  name: string,
-  count: number
-}
 const Orders = () => {
   const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
-  const [orderStatuses, setOrderStatuses] = useState<OrderStatus[]>([])
-  const [orderRequests, setOrderRequests] = useState(0)
-  const [finishedOrders, setFinishedOrders] = useState(0)
-  useEffect(() => {
-    setOrderStatuses(() => orderStatus.map(s => {
-      const orders = stateOrders.filter(o => o.status === s.id).length
-      return {
-        ...s,
-        count: orders
-      }
-    }))
-    setOrderRequests(() => stateOrders.filter(o => o.requestType).length)
-    setFinishedOrders(() => stateOrders.filter(o => o.status === 'f').length)
-  }, [stateOrders])
+  const orderStatuses = useMemo(() => orderStatus.map(s => {
+    const orders = stateOrders.filter(o => o.status === s.id).length
+    return {
+      ...s,
+      count: orders
+    }
+  }), [stateOrders])
+  const orderRequests = useMemo(() => stateOrders.filter(o => o.requestType).length, [stateOrders])
+  const finishedOrders = useMemo(() => stateOrders.filter(o => o.status === 'f').length, [stateOrders])
   let i = 0
   if (!stateUser) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
   return(

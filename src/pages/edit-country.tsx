@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { editCountry, getMessage, deleteCountry } from '../data/actions'
 import labels from '../data/labels'
 import { IonContent, IonFab, IonFabButton, IonFabList, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonAlert, useIonToast } from '@ionic/react'
@@ -21,15 +21,11 @@ const EditCountry = () => {
   const location = useLocation()
   const history = useHistory()
   const [alert] = useIonAlert()
-  const [hasChanged, setHasChanged] = useState(false)
   const fabList = useRef<HTMLIonFabElement | null>(null)
+  const hasChanged = useMemo(() => name !== country.name, [country, name])
   useEffect(() => {
     if (hasChanged && fabList.current) fabList.current!.close()
   }, [hasChanged])
-  useEffect(() => {
-    if (name !== country.name) setHasChanged(true)
-    else setHasChanged(false)
-  }, [country, name])
 
   const handleEdit = () => {
     try{

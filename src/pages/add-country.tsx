@@ -11,7 +11,6 @@ import { useSelector } from 'react-redux'
 
 const AddCountry = () => {
   const stateCountries = useSelector<State, Country[]>(state => state.countries)
-
   const [name, setName] = useState('')
   const [message] = useIonToast()
   const location = useLocation()

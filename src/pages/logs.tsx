@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
 import labels from '../data/labels'
@@ -11,28 +11,20 @@ import { trashOutline } from 'ionicons/icons'
 import { colors } from '../data/config'
 import { useSelector } from 'react-redux'
 
-type ExtendedLog = Log & {
-  userInfo: UserInfo
-}
 const Logs = () => {
   const stateLogs = useSelector<State, Log[]>(state => state.logs)
   const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
   const [message] = useIonToast()
   const location = useLocation()
   const [alert] = useIonAlert()
-  const [logs, setLogs] = useState<ExtendedLog[]>([])
-  useEffect(() => {
-    setLogs(() => {
-      const logs = stateLogs.map(l => {
+  const logs = useMemo(() => stateLogs.map(l => {
         const userInfo = stateUsers.find(u => u.id === l.userId)!
         return {
           ...l,
           userInfo
         }
       })
-      return logs
-    })
-  }, [stateLogs, stateUsers])
+  , [stateLogs, stateUsers])
   const handleDelete = (log: Log) => {
     alert({
       header: labels.confirmationTitle,

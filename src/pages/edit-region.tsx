@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { editRegion, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
@@ -15,20 +15,17 @@ type Params = {
 const EditRegion = () => {
   const params = useParams<Params>()
   const stateRegions = useSelector<State, Region[]>(state => state.regions)
-  const [region] = useState(() => stateRegions.find(r => r.id === params.id)!)
+  const region = useMemo(() => stateRegions.find(r => r.id === params.id)!, [stateRegions, params.id])
   const [name, setName] = useState(region.name)
   const [fees, setFees] = useState((region.fees / 100).toFixed(2))
   const [ordering, setOrdering] = useState(region.ordering.toString())
-  const [hasChanged, setHasChanged] = useState(false)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-  useEffect(() => {
-    if (name !== region.name
-    || +fees * 100 !== region.fees
-    || +ordering !== region.ordering) setHasChanged(true)
-    else setHasChanged(false)
-  }, [region, name, fees, ordering])
+  const hasChanged = useMemo(() => (name !== region.name)
+    || (+fees * 100 !== region.fees)
+    || (+ordering !== region.ordering)
+  , [region, name, fees, ordering])
   const handleEdit = () => {
     try{
       if (Number(fees) < 0 || Number(fees) !== Number(Number(fees).toFixed(2))) {

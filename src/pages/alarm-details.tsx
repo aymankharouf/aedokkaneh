@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
 import { approveAlarm, getMessage } from '../data/actions'
@@ -16,9 +16,7 @@ type Params = {
   id: string,
   userId: string
 }
-type ExtendedPackPrice = PackPrice & {
-  storeInfo: Store
-}
+
 const AlarmDetails = () => {
   const params = useParams<Params>()
   const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
@@ -27,15 +25,14 @@ const AlarmDetails = () => {
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const [newPackId, setNewPackId] = useState('')
-  const [customerInfo] = useState(() => stateCustomers.find(c => c.id === params.userId)!)
-  const [alarm] = useState(() => stateAlarms.find(a => a.id === params.id)!)
-  const [pack] = useState(() => statePacks.find(p => p.id === alarm.packId)!)
-  const [storeName] = useState(() => stateStores.find(s => s.id === customerInfo.storeId)?.name)
-  const [prices, setPrices] = useState<ExtendedPackPrice[]>([])
+  const customerInfo = useMemo(() => stateCustomers.find(c => c.id === params.userId)!, [stateCustomers, params.userId])
+  const alarm = useMemo(() => stateAlarms.find(a => a.id === params.id)!, [stateAlarms, params.id])
+  const pack = useMemo(() => statePacks.find(p => p.id === alarm.packId)!, [statePacks, alarm])
+  const storeName = useMemo(() => stateStores.find(s => s.id === customerInfo.storeId)?.name, [stateStores, customerInfo])
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-  const [packs] = useState(() => {
+  const packs = useMemo(() => {
     const packs = statePacks.filter(p => p.id !== pack.id)
     let result: Pack[] = []
     if (alarm.type === 'go') {
@@ -43,27 +40,24 @@ const AlarmDetails = () => {
     } else if (alarm.type === 'eo') {
       result = packs.filter(p => p.productId === pack.productId && p.isOffer && p.closeExpired)
     }
-    const output = result.map(p => {
+    return result.map(p => {
       return {
         id: p.id,
         name: `${p.productName} ${p.name}`
       }
     })
-    return output.sort((p1, p2) => p1.name > p2.name ? 1 : -1)
-  })
-  useEffect(() => {
-    setPrices(() => {
-      const prices = statePackPrices.filter(p => p.storeId !== customerInfo.storeId && p.packId === (newPackId || pack.id))
-      const result = prices.map(p => {
-        const storeInfo = stateStores.find(s => s.id === p.storeId)!
-        return {
-          ...p,
-          storeInfo
-        }
-      })
-      return result.sort((p1, p2) => p1.price - p2.price)
-    })
-  }, [statePackPrices, stateStores, customerInfo, pack, newPackId])
+    .sort((p1, p2) => p1.name > p2.name ? 1 : -1)
+  }, [statePacks, pack, alarm])
+  const prices = useMemo(() => statePackPrices.filter(p => p.storeId !== customerInfo.storeId && p.packId === (newPackId || pack.id))
+                                              .map(p => {
+                                                const storeInfo = stateStores.find(s => s.id === p.storeId)!
+                                                return {
+                                                  ...p,
+                                                  storeInfo
+                                                }
+                                              })
+                                              .sort((p1, p2) => p1.price - p2.price)
+  , [statePackPrices, stateStores, customerInfo, pack, newPackId])
   const handleApprove = () => {
     try{
       approveAlarm(alarm, stateAlarms, newPackId, customerInfo, statePackPrices, statePacks)

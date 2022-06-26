@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useRef, useMemo } from 'react'
 import { logout } from '../data/actions'
 import labels from '../data/labels'
 import { IonBadge, IonContent, IonItem, IonLabel, IonList, IonMenu, IonMenuToggle } from '@ionic/react'
@@ -17,11 +17,9 @@ const Panel = () => {
   const stateRatings = useSelector<State, Rating[]>(state => state.ratings)
   const statePasswordRequests = useSelector<State, PasswordRequest[]>(state => state.passwordRequests)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
-  const [approvalsCount, setApprovalsAcount] = useState(0)
-  const [offersCount, setOffersAcount] = useState(0)
   const menuEl = useRef<HTMLIonMenuElement | null>(null)
   const history = useHistory()
-  useEffect(() => {
+  const approvalsCount = useMemo(() => {
     const newOrders = stateOrders.filter(o => o.status === 'n').length
     const orderRequests = stateOrders.filter(r => r.requestType).length
     const newUsers = stateUsers.filter(u => !stateCustomers.find(c => c.id === u.id)).length
@@ -29,12 +27,10 @@ const Panel = () => {
     const ratings = stateRatings.filter(r => r.status === 'n').length
     const passwordRequests = statePasswordRequests.length
     const newStoresOwners = stateCustomers.filter(c => c.storeName && !c.storeId).length
-    setApprovalsAcount(newOrders + orderRequests + newUsers + alarms + ratings + passwordRequests + newStoresOwners)
+    return newOrders + orderRequests + newUsers + alarms + ratings + passwordRequests + newStoresOwners
   }, [stateOrders, stateUsers, stateCustomers, statePasswordRequests, stateAlarms, stateRatings])
-  useEffect(() => {
-    const today = (new Date()).setHours(0, 0, 0, 0)
-    setOffersAcount(() => statePackPrices.filter(p => p.offerEnd && p.offerEnd.setHours(0, 0, 0, 0) <= today).length)
-  }, [statePackPrices])
+  const today = (new Date()).setHours(0, 0, 0, 0)
+  const offersCount = useMemo(() => statePackPrices.filter(p => p.offerEnd && p.offerEnd.setHours(0, 0, 0, 0) <= today).length, [statePackPrices, today])
 
   const handleLogout = () => {
     logout()

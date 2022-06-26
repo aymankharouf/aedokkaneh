@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo, useState } from 'react'
 import labels from '../data/labels'
 import { addPackPrice, getMessage } from '../data/actions'
 import { useHistory, useLocation, useParams } from 'react-router'
@@ -20,27 +20,19 @@ const AddStorePack = () => {
   const [cost, setCost] = useState('')
   const [price, setPrice] = useState('')
   const [offerDays, setOfferDays] = useState('')
-  const [store] = useState(() => stateStores.find(s => s.id === params.id)!)
+  const store = useMemo(() => stateStores.find(s => s.id === params.id)!, [stateStores, params.id])
   const [isActive, setIsActive] = useState(store.isActive)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-  const [packs] = useState(() => {
-    const packs = statePacks.map(p => {
-      return {
-        id: p.id,
-        name: `${p.productName}-${p.productAlias} ${p.name}`
-      }
-    })
-    return packs.sort((p1, p2) => p1.name > p2.name ? 1 : -1)
-  }) 
-  useEffect(() => {
-    if (cost) {
-      setPrice((+cost * (1 + (store.isActive && store.type !== '5' ? 0 : store.discount))).toFixed(2))
-    } else {
-      setPrice('')
-    }
-  }, [cost, store])
+  const packs = useMemo(() => statePacks.map(p => {
+                                return {
+                                  id: p.id,
+                                  name: `${p.productName}-${p.productAlias} ${p.name}`
+                                }
+                              })
+                              .sort((p1, p2) => p1.name > p2.name ? 1 : -1)
+  , [statePacks]) 
   const handleSubmit = () => {
     try{
       if (statePackPrices.find(p => p.packId === packId && p.storeId === store.id)) {

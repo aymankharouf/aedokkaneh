@@ -1,4 +1,4 @@
-import { useState, useEffect, ChangeEvent, useRef } from 'react'
+import { useState, ChangeEvent, useRef, useMemo } from 'react'
 import { editProduct, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { IonButton, IonContent, IonSelect, IonSelectOption, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
@@ -26,13 +26,20 @@ const EditProduct = () => {
   const [countryId, setCountryId] = useState(product.countryId)
   const [imageUrl, setImageUrl] = useState(product.imageUrl)
   const [image, setImage] = useState<File>()
-  const [hasChanged, setHasChanged] = useState(false)
-  const [categories] = useState(() => [...stateCategories].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
-  const [countries] = useState(() => [...stateCountries].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
+  const categories = useMemo(() => stateCategories.sort((c1, c2) => c1.name > c2.name ? 1 : -1), [stateCategories])
+  const countries = useMemo(() => stateCountries.sort((c1, c2) => c1.name > c2.name ? 1 : -1), [stateCountries])
   const inputEl = useRef<HTMLInputElement | null>(null)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
+  const hasChanged = useMemo(() => (name !== product.name)
+  || (alias !== product.alias)
+  || (description !== product.description)
+  || (countryId !== product.countryId)
+  || (categoryId !== product.categoryId)
+  || (trademark !== product.trademark)
+  || (imageUrl !== product.imageUrl)
+  , [product, name, alias, description, countryId, categoryId, trademark, imageUrl])
   const onUploadClick = () => {
     if (inputEl.current) inputEl.current.click()
   }
@@ -50,16 +57,6 @@ const EditProduct = () => {
     fileReader.readAsDataURL(files[0])
     setImage(files[0])
   }
-  useEffect(() => {
-    if (name !== product.name
-    || alias !== product.alias
-    || description !== product.description
-    || countryId !== product.countryId
-    || categoryId !== product.categoryId
-    || trademark !== product.trademark
-    || imageUrl !== product.imageUrl) setHasChanged(true)
-    else setHasChanged(false)
-  }, [product, name, alias, description, countryId, categoryId, trademark, imageUrl])
   const handleSubmit = () => {
     try{
       if (stateProducts.find(p => p.id !== product.id && p.categoryId === categoryId && p.countryId === countryId && p.name === name && p.alias === alias)) {

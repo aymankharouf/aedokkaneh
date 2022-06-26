@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import labels from '../data/labels'
-import { Balance, State, Store } from '../data/types'
+import { State, Store } from '../data/types'
 import { IonContent, IonItem, IonLabel, IonList, IonPage } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -13,17 +13,8 @@ type Params = {
 const StoreBalance = () => {
   const params = useParams<Params>()
   const stateStores = useSelector<State, Store[]>(state => state.stores)
-  const [store, setStore] = useState(() => stateStores.find(s => s.id === params.id)!)
-  const [balances, setBalances] = useState<Balance[]>([])
-  useEffect(() => {
-    setStore(() => stateStores.find(s => s.id === params.id)!)
-  }, [stateStores, params.id])
-  useEffect(() => {
-    setBalances(() => {
-      const balances = store.balances?.slice() || []
-      return balances.sort((b1, b2) => b2.month - b1.month)
-    })
-  }, [store])
+  const store = useMemo(() => stateStores.find(s => s.id === params.id)!, [stateStores, params.id])
+  const balances = useMemo(() => store.balances?.slice().sort((b1, b2) => b2.month - b1.month), [store])
 
   return(
     <IonPage>

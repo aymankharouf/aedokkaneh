@@ -300,7 +300,7 @@ export const editProduct = async (product: Product, oldName: string, packs: Pack
       productAlias: product.alias,
       productDescription: product.description,
       categoryId: product.categoryId,
-      country: product.countryId,
+      countryId: product.countryId,
       trademark: product.trademark,
       sales: product.sales,
       rating: product.rating,
@@ -309,15 +309,6 @@ export const editProduct = async (product: Product, oldName: string, packs: Pack
     }
     batch.update(packRef, packInfo)
   })
-  if (product.name !== oldName) {
-    affectedPacks = packs.filter(p => packs.find(bp => bp.id === p.bonusPackId && bp.productId === id))
-    affectedPacks.forEach(p => {
-      const packRef = firebase.firestore().collection('packs').doc(p.id)
-      batch.update(packRef, {
-        bonusProductName: product.name,
-      })
-    })
-  }
   batch.commit()
 }
 
@@ -346,9 +337,9 @@ export const archiveProduct = (product: Product, packs: Pack[]) => {
 }
 
 export const getPackStores = (pack: Pack, packPrices: PackPrice[], packs: Pack[], basketStockQuantity?: number) => {
-  const packStores = packPrices.filter(p => (p.packId === pack.id || packs.find(pa => pa.id === p.packId && pa.forSale && (pa.subPackId === pack.id || pa.bonusPackId === pack.id))) && (p.storeId !== 's' || addQuantity(p.quantity, -1 * (basketStockQuantity || 0)) > 0))
+  const packStores = packPrices.filter(p => (p.packId === pack.id || packs.find(pa => pa.id === p.packId && pa.subPackId === pack.id)) && (p.storeId !== 's' || addQuantity(p.quantity, -1 * (basketStockQuantity || 0)) > 0))
   return packStores.map(s => {
-    let packId = '', unitPrice = 0, unitCost = 0, price, cost, subQuantity = 0, offerInfo, isOffer = false
+    let packId = '', unitPrice = 0, unitCost = 0, price, cost, subQuantity = 0, isOffer = false
     if (s.packId === pack.id) {
       packId = s.packId
       price = s.price
@@ -357,25 +348,13 @@ export const getPackStores = (pack: Pack, packPrices: PackPrice[], packs: Pack[]
       unitCost = s.cost
       isOffer = pack.isOffer
     } else {
-      offerInfo = packs.find(p => p.id === s.packId && p.subPackId === pack.id)
+      subQuantity = packs.find(p => p.id === s.packId)?.subQuantity || 0
       price = s.price
       cost = s.cost
-      if (offerInfo) {
-        packId = offerInfo.id!
-        unitPrice = Math.round(s.price / offerInfo.subQuantity * offerInfo.subPercent * (1 + setup.profit))
-        unitCost = Math.round(s.cost / offerInfo.subQuantity * offerInfo.subPercent)
-        subQuantity = offerInfo.subQuantity
-        isOffer = offerInfo.isOffer
-      } else {
-        offerInfo = packs.find(p => p.id === s.packId && p.bonusPackId === pack.id)
-        if (offerInfo) {
-          packId = offerInfo.id!
-          unitPrice = Math.round(s.price / offerInfo.bonusQuantity * offerInfo.bonusPercent * (1 + setup.profit))
-          unitCost = Math.round(s.cost / offerInfo.bonusQuantity * offerInfo.bonusPercent)
-          subQuantity = offerInfo.bonusQuantity
-          isOffer = offerInfo.isOffer
-        }
-      }
+      packId = s.packId
+      unitPrice = Math.round(s.price / subQuantity)
+      unitCost = Math.round(s.cost / subQuantity)
+      isOffer = true
     }
     return {
       ...s,
@@ -410,7 +389,7 @@ export const changeStorePackStatus = (storePack: PackPrice, packPrices: PackPric
   let actionType
   if (storePack.isActive && storePack.price === pack.price) {
     actionType = 'd'
-  } else if (newStorePack.isActive && pack.forSale && (newStorePack.price <= pack.price || pack.price === 0)) {
+  } else if (newStorePack.isActive && (newStorePack.price <= pack.price || pack.price === 0)) {
     actionType = 'a'
   }
   if (actionType) {
@@ -422,12 +401,6 @@ export const changeStorePackStatus = (storePack: PackPrice, packPrices: PackPric
       offerEnd,
       minStoreId
     })
-  }
-  if (!pack.forSale) { 
-    const subStorePack = packPrices.find(p => p.storeId === storePack.storeId && p.packId === pack.subPackId)
-    if (subStorePack) {
-      changeStorePackStatus(subStorePack, packPrices, packs, newBatch)
-    }
   }
   if (!batch) {
     newBatch.commit()
@@ -475,12 +448,6 @@ export const deleteStorePack = (storePack: PackPrice, packPrices: PackPrice[], p
       minStoreId
     })
   }
-  if (!pack.forSale) {
-    const subStorePack = packPrices.find(p => p.storeId === storePack.storeId && p.packId === pack.subPackId)
-    if (subStorePack) {
-      deleteStorePack(subStorePack, packPrices, packs, newBatch)
-    }
-  } 
   if (!batch) {
     newBatch.commit()
   }
@@ -563,15 +530,6 @@ export const editPack = async (newPack: Pack, oldPack: Pack, packs: Pack[], imag
     }
     batch.update(packRef, packInfo)
   })
-  if (newPack.name !== oldPack.name) {
-    affectedPacks = packs.filter(p => p.bonusPackId === id)
-    affectedPacks.forEach(p => {
-      const packRef = firebase.firestore().collection('packs').doc(p.id)
-      batch.update(packRef, {
-        bonusPackName: newPack.name
-      })
-    })
-  }
   batch.commit()
 }
 
@@ -583,7 +541,7 @@ export const addPackPrice = (storePack: PackPrice, packPrices: PackPrice[], pack
   newBatch.update(packRef, {
     prices: firebase.firestore.FieldValue.arrayUnion(others)
   })
-  if (storePack.isActive && pack.forSale && (storePack.price <= pack.price || pack.price === 0)) {
+  if (storePack.isActive && (storePack.price <= pack.price || pack.price === 0)) {
     const { minPrice, minStoreId, weightedPrice, offerEnd } = getMinPrice(storePack, pack, packPrices, false)
     packRef = firebase.firestore().collection('packs').doc(pack.id)
     newBatch.update(packRef, {
@@ -592,24 +550,6 @@ export const addPackPrice = (storePack: PackPrice, packPrices: PackPrice[], pack
       offerEnd,
       minStoreId
     })
-  }
-  if (!pack.forSale) {
-    let subStorePack = packPrices.find(p => p.storeId === storePack.storeId && p.packId === pack.subPackId)
-    if (!subStorePack) {
-      const subStorePack = {
-        packId: pack.subPackId,
-        storeId: storePack.storeId,
-        cost: Math.round(storePack.cost / pack.subQuantity),
-        price: Math.round(storePack.price / pack.subQuantity),
-        offerEnd: storePack.offerEnd,
-        isActive: storePack.isActive,
-        isAuto: true,
-        time: new Date(),
-        quantity: 0,
-        weight: 0
-      }
-      addPackPrice(subStorePack, packPrices, packs, batch)  
-    }
   }
   if (!batch) {
     newBatch.commit()
@@ -629,7 +569,7 @@ export const editPrice = (storePack: PackPrice, oldPrice: number, packPrices: Pa
   newBatch.update(packRef, {
     prices
   })
-  if (storePack.isActive && pack.forSale && (storePack.price <= pack.price || pack.price === 0 || pack.price === oldPrice)) {
+  if (storePack.isActive && (storePack.price <= pack.price || pack.price === 0 || pack.price === oldPrice)) {
     const { minPrice, minStoreId, weightedPrice, offerEnd } = getMinPrice(storePack, pack, packPrices, false)
     packRef = firebase.firestore().collection('packs').doc(pack.id)
     newBatch.update(packRef, {
@@ -639,18 +579,6 @@ export const editPrice = (storePack: PackPrice, oldPrice: number, packPrices: Pa
       minStoreId
     })
   }
-  if (!pack.forSale) { 
-    let subStorePack = packPrices.find(p => p.storeId === storePack.storeId && p.packId === pack.subPackId)
-    if (subStorePack) {
-      const subStorePackOldPrice = subStorePack.price
-      subStorePack = {
-        ...subStorePack,
-        cost: Math.round(storePack.cost / pack.subQuantity),
-        price: Math.round(storePack.price / pack.subQuantity),
-      }
-      editPrice(subStorePack, subStorePackOldPrice, packPrices, packs, newBatch)
-    }
-  } 
   if (!batch) {
     newBatch.commit()
   }
@@ -916,30 +844,6 @@ export const confirmPurchase = (basket: BasketPack[], orders: Order[], storeId: 
         packsIn.push(p)
       }
     } else {
-      if (!packInfo.forSale) {
-        packInfo = packs.find(pa => pa.id === packInfo.subPackId)!
-        pack = {
-          packId: packInfo.id!,
-          quantity: p.quantity * packInfo.subQuantity,
-          cost: Math.round(p.cost / packInfo.subQuantity * packInfo.subPercent),
-          actual: Math.round(p.actual / packInfo.subQuantity * packInfo.subPercent),
-          exceedPriceType: p.exceedPriceType,
-          productName: packInfo.productName,
-          productAlias: packInfo.productAlias,
-          packName: packInfo.name,
-          imageUrl: packInfo.imageUrl,
-          price: Math.round(p.price / packInfo.subQuantity * packInfo.subPercent),
-          weight: p.weight * packInfo.subQuantity,
-          requested: 0,
-          orderId: '',
-          isOffer: packInfo.isOffer,
-          isDivided: packInfo.isDivided,
-          closeExpired: packInfo.closeExpired,
-          refPackId: '',
-          refPackQuantity: 0,
-          refQuantity: 0
-        }
-      }
       packOrders = approvedOrders.filter(o => o.basket.find(op => op.packId === pack.packId && op.price === p.price && ['n', 'p'].includes(op.status)))
       packOrders.sort((o1, o2) => o1.time > o2.time ? 1 : -1)
       remaining = updateOrders(batch, storeId, packOrders, pack, purchaseRef.id)
@@ -949,14 +853,14 @@ export const confirmPurchase = (basket: BasketPack[], orders: Order[], storeId: 
           subPack = {
             packId: packInfo.subPackId,
             quantity: remaining * packInfo.subQuantity,
-            cost: Math.round(pack.cost / packInfo.subQuantity * packInfo.subPercent),
-            actual: Math.round(pack.actual / packInfo.subQuantity * packInfo.subPercent * (1 + setup.profit)),
+            cost: Math.round(pack.cost / packInfo.subQuantity),
+            actual: Math.round(pack.actual / packInfo.subQuantity),
             exceedPriceType: pack.exceedPriceType,
             productName: packInfo.productName,
             productAlias: packInfo.productAlias,
             packName: packInfo.name,
             imageUrl: packInfo.imageUrl,
-            price: Math.round(p.price / packInfo.subQuantity * packInfo.subPercent),
+            price: Math.round(p.price / packInfo.subQuantity),
             weight: p.weight * packInfo.subQuantity,
             requested: 0,
             orderId: '',
@@ -975,39 +879,6 @@ export const confirmPurchase = (basket: BasketPack[], orders: Order[], storeId: 
             quantity = quantity % packInfo.subQuantity
             if (quantity > 0) {
               packsIn.push({...subPack, quantity})
-            }
-          }
-          if (packInfo.bonusPackId){
-            subPack = {
-              packId: packInfo.bonusPackId,
-              quantity: remaining * packInfo.bonusQuantity,
-              cost: Math.round(p.cost / packInfo.bonusQuantity * packInfo.bonusPercent),
-              actual: Math.round(p.actual / packInfo.bonusQuantity * packInfo.bonusPercent * (1 + setup.profit)),
-              exceedPriceType: p.exceedPriceType,
-              productName: packInfo.productName,
-              productAlias: packInfo.productAlias,
-              packName: packInfo.name,
-              imageUrl: packInfo.imageUrl,
-              price: Math.round(p.price / packInfo.subQuantity * packInfo.subPercent),
-              weight: p.weight * packInfo.subQuantity,
-              requested: 0,
-              orderId: '',
-              isOffer: packInfo.isOffer,
-              isDivided: packInfo.isDivided,
-              closeExpired: packInfo.closeExpired,
-              refPackId: '',
-              refPackQuantity: 0,
-              refQuantity: 0
-            }
-            packOrders = approvedOrders.filter(o => o.basket.find(op => op.packId === subPack.packId && op.price === p.price && ['n', 'p'].includes(op.status)))
-            packOrders.sort((o1, o2) => o1.time > o2.time ? 1 : -1)
-            quantity = updateOrders(batch, storeId, packOrders, subPack, purchaseRef.id)
-            if (quantity > 0) {
-              mainRemaining = Math.min(mainRemaining, Math.trunc(quantity / packInfo.subQuantity))
-              quantity = quantity % packInfo.subQuantity
-              if (quantity > 0) {
-                packsIn.push({...subPack, quantity})
-              }
             }
           }
         }
@@ -1111,7 +982,7 @@ const packStockIn = (batch: firebase.firestore.WriteBatch, basketPack: StockPack
   batch.update(packRef, {
     prices
   })
-  if (pack.forSale && newStock.price <= pack.price) {
+  if (newStock.price <= pack.price) {
     const { minPrice, minStoreId, weightedPrice, offerEnd } = getMinPrice(newStock, pack, packPrices, false)
     batch.update(packRef, {
       price: minPrice,
@@ -1767,18 +1638,15 @@ export const getArchivedPacks = async () => {
         imageUrl: doc.data().imageUrl,
         subPackId: doc.data().subPackId,
         specialImage: doc.data().specialImage,
-        bonusPackId: doc.data().bonusPackId,
         isOffer: doc.data().isOffer,
         offerEnd: doc.data().offerEnd?.toDate() || null,
         closeExpired: doc.data().closeExpired,
-        forSale: doc.data().forSale,
         subQuantity: doc.data().subQuantity,
-        subPercent: doc.data().subPercent,
-        bonusQuantity: doc.data().bonusQuantity,
-        bonusPercent: doc.data().bonusPercent,
         unitsCount: doc.data().unitsCount,
         byWeight: doc.data().byWeight,
-        isDivided: doc.data().isDivided
+        isDivided: doc.data().isDivided,
+        withGift: doc.data().withGift,
+        gift: doc.data().gift
       })
     })
   })

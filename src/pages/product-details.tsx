@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import labels from '../data/labels'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage } from '@ionic/react'
 import { useParams } from 'react-router'
@@ -14,10 +14,8 @@ const ProductDetails = () => {
   const params = useParams<Params>()
   const stateProducts = useSelector<State, Product[]>(state => state.products)
   const stateCategories = useSelector<State, Category[]>(state => state.categories)
-  const [product, setProduct] = useState(() => stateProducts.find(p => p.id === params.id)!)
-  useEffect(() => {
-    setProduct(() => stateProducts.find(p => p.id === params.id)!)
-  }, [stateProducts, params.id])
+  const product = useMemo(() => stateProducts.find(p => p.id === params.id)!, [stateProducts, params.id])
+
   return (
     <IonPage>
       <Header title={labels.productDetails} />

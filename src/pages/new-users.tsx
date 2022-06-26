@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
 import labels from '../data/labels'
@@ -13,13 +13,7 @@ import { useSelector } from 'react-redux'
 const NewUsers = () => {
   const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
   const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
-  const [newUsers, setNewUsers] = useState<UserInfo[]>([])
-  useEffect(() => {
-    setNewUsers(() => {
-      const newUsers = stateUsers.filter(u => !stateCustomers.find(c => c.id === u.id))
-      return newUsers.sort((u1, u2) => u2.time > u1.time ? 1 : -1)
-    })
-  }, [stateUsers, stateCustomers])
+  const newUsers = useMemo(() => stateUsers.filter(u => !stateCustomers.find(c => c.id === u.id)).sort((u1, u2) => u2.time > u1.time ? 1 : -1), [stateUsers, stateCustomers])
   return(
     <IonPage>
       <Header title={labels.newUsers} />

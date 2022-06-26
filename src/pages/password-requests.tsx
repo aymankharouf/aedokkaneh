@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
 import labels from '../data/labels'
@@ -11,10 +11,7 @@ import { useSelector } from 'react-redux'
 
 const PasswordRequests = () => {
   const statePasswordRequests = useSelector<State, PasswordRequest[]>(state => state.passwordRequests)
-  const [passwordRequests, setPasswordRequests] = useState<PasswordRequest[]>([])
-  useEffect(() => {
-    setPasswordRequests(() => statePasswordRequests.sort((r1, r2) => r1.time > r2.time ? 1 : -1))
-  }, [statePasswordRequests])
+  const passwordRequests = useMemo(() => statePasswordRequests.sort((r1, r2) => r1.time > r2.time ? 1 : -1), [statePasswordRequests])
 
   return(
     <IonPage>

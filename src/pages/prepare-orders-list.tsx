@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import { allocateOrderPack, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { CustomerInfo, Err, Order, OrderBasketPack, Pack, State } from '../data/types'
@@ -23,26 +23,22 @@ const PrepareOrdersList = () => {
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
-  const [orders, setOrders] = useState<ExtendedOrder[]>([])
-  const [pack] = useState(() => statePacks.find(p => p.id === params.packId)!)
+  const pack = useMemo(() => statePacks.find(p => p.id === params.packId)!, [statePacks, params.packId])
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-  useEffect(() => {
-    setOrders(() => {
-      const orders = stateOrders.filter(o => o.id === params.orderId || (params.orderId === '0' && o.status === 'f' && o.basket.find(p => p.packId === params.packId && !p.isAllocated)))
-      const result = orders.map(o => {
-        const customerInfo = stateCustomers.find(c => c.id === o.userId)!
-        const basketInfo = o.basket.find(p => p.packId === params.packId)!
-        return {
-          ...o,
-          customerInfo,
-          basketInfo
-        }
-      })
-      return result.sort((o1, o2) => o2.time > o1.time ? 1 : -1)
-    })
-  }, [stateOrders, stateCustomers, params.orderId, params.packId])
+  const orders = useMemo(() => stateOrders.filter(o => o.id === params.orderId || (params.orderId === '0' && o.status === 'f' && o.basket.find(p => p.packId === params.packId && !p.isAllocated)))
+                                          .map(o => {
+                                              const customerInfo = stateCustomers.find(c => c.id === o.userId)!
+                                              const basketInfo = o.basket.find(p => p.packId === params.packId)!
+                                              return {
+                                                ...o,
+                                                customerInfo,
+                                                basketInfo
+                                              }
+                                            })
+                                            .sort((o1, o2) => o2.time > o1.time ? 1 : -1)
+  , [stateOrders, stateCustomers, params.orderId, params.packId])
   const handleAllocate = (order: ExtendedOrder) => {
     try{
       allocateOrderPack(order, pack)

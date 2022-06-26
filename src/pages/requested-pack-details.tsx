@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import { packUnavailable, getMessage, addQuantity, getPackStores } from '../data/actions'
 import labels from '../data/labels'
 import moment from 'moment'
@@ -34,25 +34,20 @@ const RequestedPackDetails = () => {
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const statePurchases = useSelector<State, Purchase[]>(state => state.purchases)
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
-  const [pack] = useState(() => statePacks.find(p => p.id === params.packId)!)
-  const [basketStockQuantity, setBasketStockQuantity] = useState(0)
-  const [packStores, setPackStores] = useState<ExtendedPackPrice[]>([])
+  const pack = useMemo(() => statePacks.find(p => p.id === params.packId)!, [statePacks, params.packId])
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
   const [alert] = useIonAlert()
-  useEffect(() => {
-    setBasketStockQuantity(() => {
-      const basketStock = stateBasket?.storeId === 's' ? stateBasket?.packs.find(p => p.packId === params.packId || statePacks.find(pa => pa.id === p.packId && (pa.subPackId === params.packId || pa.bonusPackId === params.packId))) : undefined
-      return ((basketStock?.quantity || 0) * (basketStock?.refQuantity || 0)) || 0
-    })
+  const basketStockQuantity = useMemo(() => {
+    const basketStock = stateBasket?.storeId === 's' ? stateBasket?.packs.find(p => p.packId === params.packId || statePacks.find(pa => pa.id === p.packId && pa.subPackId === params.packId)) : undefined
+    return ((basketStock?.quantity || 0) * (basketStock?.refQuantity || 0)) || 0
   }, [stateBasket, statePacks, params.packId])
-  useEffect(() => {
-    setPackStores(() => {
-      const packStores = getPackStores(pack, statePackPrices, statePacks, basketStockQuantity)
-      const today = new Date()
-      today.setDate(today.getDate() - 30)
-      const result = packStores.map(p => {
+  const packStores = useMemo(() => {
+    const packStores = getPackStores(pack, statePackPrices, statePacks, basketStockQuantity)
+    const today = new Date()
+    today.setDate(today.getDate() - 30)
+    return packStores.map(p => {
         const storeInfo = stateStores.find(s => s.id === p.storeId)!
         const packInfo = statePacks.find(pp => pp.id === p.packId)!
         return {
@@ -61,27 +56,18 @@ const RequestedPackDetails = () => {
           packInfo
         }
       })
-      return result.sort((s1, s2) => 
+      .sort((s1, s2) => 
       {
         if (s1.unitPrice === s2.unitPrice) {
-          if (s1.storeInfo.type === s2.storeInfo.type){
-            if (s2.storeInfo.discount === s1.storeInfo.discount) {
-              const store1Purchases = statePurchases.filter(p => p.storeId === s1.storeId && p.time >= today)
-              const store2Purchases = statePurchases.filter(p => p.storeId === s2.storeId && p.time >= today)
-              const store1Sales = store1Purchases.reduce((sum, p) => sum + p.total, 0)
-              const store2Sales = store2Purchases.reduce((sum, p) => sum + p.total, 0)
-              return store1Sales - store2Sales
-            } else {
-              return Number(s2.storeInfo.discount) - Number(s1.storeInfo.discount)
-            }
-          } else {
-            return Number(s1.storeInfo.type) - Number(s2.storeInfo.type)
-          }
+          const store1Purchases = statePurchases.filter(p => p.storeId === s1.storeId && p.time >= today)
+          const store2Purchases = statePurchases.filter(p => p.storeId === s2.storeId && p.time >= today)
+          const store1Sales = store1Purchases.reduce((sum, p) => sum + p.total, 0)
+          const store2Sales = store2Purchases.reduce((sum, p) => sum + p.total, 0)
+          return store1Sales - store2Sales
         } else {
           return s1.unitPrice - s2.unitPrice
         }
       })
-    })
   }, [pack, stateStores, statePackPrices, statePurchases, basketStockQuantity, statePacks])
   const handleAddWithWeight = (packStore: ExtendedPackPrice, exceedPriceType: string, weight: number) => {
     try{
@@ -121,7 +107,7 @@ const RequestedPackDetails = () => {
           ],
         })
       } else if (packStore.isAuto) {
-        const mainPackInfo = statePacks.find(p => p.subPackId === packStore.packId && !p.forSale)!
+        const mainPackInfo = statePacks.find(p => p.subPackId === packStore.packId)!
         const mainPackStore = statePackPrices.find(p => p.storeId === packStore.storeId && p.packId === mainPackInfo.id)
         quantity = Math.ceil(Number(params.quantity) / (packStore.quantity * mainPackInfo.subQuantity))
         basketItem = {

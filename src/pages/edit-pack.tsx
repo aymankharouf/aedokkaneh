@@ -1,4 +1,4 @@
-import { useState, useEffect, ChangeEvent, useRef } from 'react'
+import { useState, useEffect, ChangeEvent, useRef, useMemo } from 'react'
 import { editPack, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { useHistory, useLocation, useParams } from 'react-router'
@@ -20,24 +20,21 @@ const EditPack = () => {
   const [isDivided, setIsDivided] = useState(pack.isDivided)
   const [byWeight, setByWeight] = useState(pack.byWeight)
   const [closeExpired, setCloseExpired] = useState(pack.closeExpired)
-  const [hasChanged, setHasChanged] = useState(false)
   const [specialImage, setSpecialImage] = useState(pack.specialImage)
   const [image, setImage] = useState<File>()
   const [imageUrl, setImageUrl] = useState(pack.imageUrl)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-  const inputEl = useRef<HTMLInputElement | null>(null);
-  useEffect(() => {
-    if (name !== pack.name
-    || +unitsCount !== pack.unitsCount
-    || isDivided !== pack.isDivided
-    || byWeight !== pack.byWeight
-    || closeExpired !== pack.closeExpired
-    || specialImage !== pack.specialImage
-    || imageUrl !== pack.imageUrl) setHasChanged(true)
-    else setHasChanged(false)
-  }, [pack, name, unitsCount, isDivided, byWeight, closeExpired, specialImage, imageUrl])
+  const inputEl = useRef<HTMLInputElement | null>(null)
+  const hasChanged = useMemo(() => (name !== pack.name)
+    || (+unitsCount !== pack.unitsCount)
+    || (isDivided !== pack.isDivided)
+    || (byWeight !== pack.byWeight)
+    || (closeExpired !== pack.closeExpired)
+    || (specialImage !== pack.specialImage)
+    || (imageUrl !== pack.imageUrl)
+  , [pack, name, unitsCount, isDivided, byWeight, closeExpired, specialImage, imageUrl])
   useEffect(() => {
     if (isDivided) {
       setByWeight(true)

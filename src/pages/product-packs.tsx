@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import RatingStars from './rating-stars'
 import labels from '../data/labels'
 import { archiveProduct, deleteProduct, getMessage, productOfText } from '../data/actions'
@@ -22,24 +22,18 @@ const ProductPacks = () => {
   const stateCountries = useSelector<State, Country[]>(state => state.countries)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const stateArchivedPacks = useSelector<State, Pack[]>(state => state.archivedPacks)
-  const [product] = useState(() => params.type === 'a' ? stateArchivedProducts.find(p => p.id === params.id)! : stateProducts.find(p => p.id === params.id)!)
-  const [country] = useState(() => stateCountries.find(c => c.id === product.countryId))
-  const [packs, setPacks] = useState<Pack[]>([])
-  const [activePacks, setActivePacks] = useState<Pack[]>([])
+  const product = useMemo(() => params.type === 'a' ? stateArchivedProducts.find(p => p.id === params.id)! : stateProducts.find(p => p.id === params.id)!, [stateArchivedProducts, stateProducts, params.id, params.type])
+  const country = useMemo(() => stateCountries.find(c => c.id === product.countryId), [stateCountries, product])
   const [actionOpened, setActionOpened] = useState(false)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
   const [alert] = useIonAlert()
-  useEffect(() => {
-    setPacks(() => {
-      const packs = params.type === 'a' ? stateArchivedPacks.filter(p => p.productId === params.id) : statePacks.filter(p => p.productId === params.id)
-      return packs.sort((p1, p2) => p2.price - p1.price)
-    })
+  const packs = useMemo(() => {
+    const packs = params.type === 'a' ? stateArchivedPacks.filter(p => p.productId === params.id) : statePacks.filter(p => p.productId === params.id)
+    return packs.sort((p1, p2) => p2.price - p1.price)
   }, [statePacks, stateArchivedPacks, params.id, params.type])
-  useEffect(() => {
-    setActivePacks(() => packs.filter(p => p.price > 0))
-  }, [packs])
+  const activePacks = useMemo(() => packs.filter(p => p.price > 0), [packs])
   const handleArchive = () => {
     try{
       archiveProduct(product, statePacks)
@@ -119,11 +113,6 @@ const ProductPacks = () => {
             text: labels.addOffer,
             cssClass: colors[i++ % 10].name,
             handler: () => history.push(`/add-offer/${params.id}`)
-          },
-          {
-            text: labels.addBulk,
-            cssClass: colors[i++ % 10].name,
-            handler: () => history.push(`/add-bulk/${params.id}`)
           },
           {
             text: labels.archive,

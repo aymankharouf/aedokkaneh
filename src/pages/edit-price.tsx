@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { editPrice, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { useHistory, useLocation, useParams } from 'react-router'
@@ -26,13 +26,6 @@ const EditPrice = () => {
   const location = useLocation()
   const history = useHistory()
   const [price, setPrice] = useState('')
-  useEffect(() => {
-    if (cost && store.id !== 's') {
-      setPrice((+cost * (1 + (store.isActive && store.type !== '5' ? 0 : store.discount))).toFixed(2))
-    } else {
-      setPrice('')
-    }
-  }, [cost, store])
   const handleSubmit = () => {
     try{
       if (Number(cost) <= 0 || Number(cost) !== Number(Number(cost).toFixed(2))) {

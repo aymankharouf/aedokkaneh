@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { permitUser, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { IonContent, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, useIonToast, useIonLoading, IonButton } from '@ionic/react'
@@ -16,25 +16,21 @@ const PermitUser = () => {
   const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const [userId, setUserId] = useState(params.id === '0' ? '' : params.id)
-  const [customerInfo] = useState(() => stateCustomers.find(c => c.id === params.id)!)
-  const [storeId, setStoreId] = useState('')
+  const customerInfo = useMemo(() => stateCustomers.find(c => c.id === params.id)!, [stateCustomers, params.id])
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
   const [loading, dismiss] = useIonLoading()
-  const [users] = useState(() => {
-    const users = stateUsers.map(u => {
-      return {
-        ...u,
-        name: `${u.name}${u.storeName ? '-' + u.storeName : ''}:${u.mobile}`
-      }
-    })
-    return users.sort((u1, u2) => u1.name > u2.name ? 1 : -1)
+  const users = useMemo(() => stateUsers.map(u => {
+    return {
+      ...u,
+      name: `${u.name}${u.storeName ? '-' + u.storeName : ''}:${u.mobile}`
+    }
   })
-  const [stores] = useState(() => {
-    const stores = stateStores.filter(s => s.id !== 's')
-    return stores.sort((s1, s2) => s1.name > s2.name ? 1 : -1)
-  }) 
+  .sort((u1, u2) => u1.name > u2.name ? 1 : -1)
+  , [stateUsers])
+  const stores = useMemo(() => stateStores.filter(s => s.id !== 's').sort((s1, s2) => s1.name > s2.name ? 1 : -1), [stateStores]) 
+  const [storeId, setStoreId] = useState('')
   useEffect(() => {
     setStoreId(params.id === '0' ? '' : (customerInfo.storeId || ''))
   }, [customerInfo, params.id])

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo } from 'react'
 import { confirmPurchase, stockOut, getMessage, quantityText } from '../data/actions'
 import labels from '../data/labels'
 import { IonBadge, IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
@@ -17,18 +17,18 @@ const ConfirmPurchase = () => {
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
-  const [store] = useState(() => stateStores.find(s => s.id === stateBasket?.storeId)!)
+  const store = useMemo(() => stateStores.find(s => s.id === stateBasket?.storeId)!, [stateStores, stateBasket])
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-  const [basket] = useState(() => stateBasket?.packs.map(p => {
+  const basket = useMemo(() => stateBasket?.packs.map(p => {
     const packInfo = statePacks.find(pa => pa.id === p.packId)!
     return {
       ...p,
       packInfo,
     }
-  }))
-  const [total] = useState(() => stateBasket?.packs.reduce((sum, p) => sum + Math.round(p.cost * (p.weight || p.quantity)), 0) || 0)
+  }), [stateBasket, statePacks])
+  const total = useMemo(() => stateBasket?.packs.reduce((sum, p) => sum + Math.round(p.cost * (p.weight || p.quantity)), 0) || 0, [stateBasket])
   const handlePurchase = () => {
     try{
       if (store.id === 's') {

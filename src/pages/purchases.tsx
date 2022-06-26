@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
 import labels from '../data/labels'
@@ -11,26 +11,19 @@ import { cloudUploadOutline } from 'ionicons/icons'
 import { useSelector } from 'react-redux'
 import firebase from '../data/firebase'
 
-type ExtendedPurchase = Purchase & {
-  storeInfo: Store
-}
 const Purchases = () => {
   const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
   const statePurchases = useSelector<State, Purchase[]>(state => state.purchases)
   const stateStores = useSelector<State, Store[]>(state => state.stores)
-  const [purchases, setPurchases] = useState<ExtendedPurchase[]>([])
-  useEffect(() => {
-    setPurchases(() => {
-      const purchases = statePurchases.map(p => {
-        const storeInfo = stateStores.find(s => s.id === p.storeId)!
-        return {
-          ...p,
-          storeInfo
-        }
-      })
-      return purchases.sort((p1, p2) => p2.time > p1.time ? 1 : -1)
-    })
-  }, [statePurchases, stateStores])
+  const purchases = useMemo(() => statePurchases.map(p => {
+                                                  const storeInfo = stateStores.find(s => s.id === p.storeId)!
+                                                  return {
+                                                    ...p,
+                                                    storeInfo
+                                                  }
+                                                })
+                                                .sort((p1, p2) => p2.time > p1.time ? 1 : -1)
+  , [statePurchases, stateStores])
 
   if (!stateUser) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
   return(

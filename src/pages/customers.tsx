@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
 import labels from '../data/labels'
@@ -13,10 +13,7 @@ import firebase from '../data/firebase'
 const Customers = () => {
   const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
   const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
-  const [customers, setCustomers] = useState<CustomerInfo[]>([])
-  useEffect(() => {
-    setCustomers(() => [...stateCustomers].sort((c1, c2) => c2.time > c1.time ? 1 : -1))
-  }, [stateCustomers])
+  const customers = useMemo(() => stateCustomers.sort((c1, c2) => c2.time > c1.time ? 1 : -1), [stateCustomers])
 
   if (!stateUser) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
   return(

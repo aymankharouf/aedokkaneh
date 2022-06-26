@@ -1,8 +1,8 @@
-import { useState, useEffect, ChangeEvent, useRef } from 'react'
+import { useState, useEffect, ChangeEvent, useRef, useMemo } from 'react'
 import { addPack, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { useHistory, useLocation, useParams } from 'react-router'
-import { IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonListHeader, IonPage, IonSelect, IonSelectOption, IonToggle, useIonToast } from '@ionic/react'
+import { IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, IonToggle, useIonToast } from '@ionic/react'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
 import { Err, Pack, Product, State } from '../data/types'
@@ -15,56 +15,38 @@ const AddOffer = () => {
   const params = useParams<Params>()
   const stateProducts = useSelector<State, Product[]>(state => state.products)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
-
-  const [name, setName] = useState('')
   const [subPackId, setSubPackId] = useState('')
   const [subQuantity, setSubQuantity] = useState('')
-  const [subPercent, setSubPercent] = useState('100')
-  const [bonusPackId, setBonusPackId] = useState('')
-  const [bonusQuantity, setBonusQuantity] = useState('')
-  const [bonusPercent, setBonusPercent] = useState('')
+  const [withGift, setWithGift] = useState(false)
+  const [gift, setGift] = useState('')
   const [specialImage, setSpecialImage] = useState(false)
   const [image, setImage] = useState<File>()
-  const [product] = useState(() => stateProducts.find(p => p.id === params.id)!)
+  const product = useMemo(() => stateProducts.find(p => p.id === params.id)!, [stateProducts, params.id])
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
   const inputEl = useRef<HTMLInputElement | null>(null)
-  const [packs] = useState(() => {
-    const packs = statePacks.filter(p => p.productId === params.id && !p.isOffer && !p.byWeight && p.forSale)
-    return packs.map(p => {
-      return {
-        id: p.id,
-        name: `${p.name} ${p.closeExpired ? '(' + labels.closeExpired + ')' : ''}`
-      }
-    })
-  })
+  const packs = useMemo(() => statePacks.filter(p => p.productId === params.id && !p.isOffer && !p.byWeight)
+  .map(p => {
+    return {
+      id: p.id,
+      name: `${p.name} ${p.closeExpired ? '(' + labels.closeExpired + ')' : ''}`
+    }
+  }), [statePacks, params.id])
   const [imageUrl, setImageUrl] = useState(product.imageUrl)
-  const [bonusPacks] = useState(() => {
-    const packs = statePacks.filter(p => p.productId !== params.id && !p.isOffer && !p.byWeight && p.forSale)
-    const result = packs.map(p => {
-      return {
-        id: p.id,
-        name: `${p.productName} ${p.name} ${p.closeExpired ? '(' + labels.closeExpired + ')' : ''}`
-      }
-    })
-    return result.sort((p1, p2) => p1.name > p2.name ? 1 : -1)
-  })
   useEffect(() => {
     setImageUrl(() => statePacks.find(p => p.id === subPackId)?.imageUrl || '')
   }, [statePacks, subPackId])
-  const generateName = () => {
-    let suggestedName
+  const name = useMemo(() => {
+    let suggestedName = ''
     if (subPackId && subQuantity) {
       suggestedName = `${+subQuantity > 1 ? subQuantity + '×' : ''}${statePacks.find(p => p.id === subPackId)!.name}`
-      if (!name) setName(suggestedName)
     }
-    if (name === suggestedName && bonusPackId && bonusQuantity) {
-      const bonusPackInfo = bonusPacks.find(p => p.id === bonusPackId)!
-      suggestedName += ` + ${+bonusQuantity > 1 ? bonusQuantity + '×' : ''}${bonusPackInfo.name}`
-      setName(suggestedName)
+    if (withGift) {
+      suggestedName += ' + ' + gift 
     }
-  }
+    return suggestedName
+  }, [subPackId, subQuantity, withGift, gift, statePacks])
   const onUploadClick = () => {
     if (inputEl.current) inputEl.current.click();
   }
@@ -85,17 +67,10 @@ const AddOffer = () => {
   const handleSubmit = () => {
     try{
       const subPackInfo = statePacks.find(p => p.id === subPackId)!
-      const bonusPackInfo = statePacks.find(p => p.id === bonusPackId)
       if (statePacks.find(p => p.productId === params.id && p.name === name && p.closeExpired === subPackInfo.closeExpired)) {
         throw new Error('duplicateName')
       }
-      if (Number(subPercent) + Number(bonusPercent) !== 100) {
-        throw new Error('invalidPercents')
-      }
-      if (bonusPackInfo && Number(bonusPercent) === 0) {
-        throw new Error('invalidPercents')
-      }
-      if (!bonusPackInfo && Number(subQuantity) <= 1) {
+      if (!withGift && Number(subQuantity) <= 1) {
         throw new Error('invalidQuantity')
       }
       const pack = {
@@ -113,16 +88,13 @@ const AddOffer = () => {
         isOffer: true,
         subPackId,
         subQuantity: +subQuantity,
-        subPercent: +subPercent / 100,
+        withGift,
+        gift,
         unitsCount: +subQuantity * subPackInfo.unitsCount,
         isDivided: subPackInfo.isDivided,
         byWeight: subPackInfo.byWeight,
         closeExpired: subPackInfo.closeExpired,
-        bonusPackId,
-        bonusQuantity: +bonusQuantity,
-        bonusPercent: +bonusPercent / 100,
         price: 0,
-        forSale: true,
         isArchived: false,
         imageUrl: product.imageUrl,
         specialImage: false,
@@ -148,8 +120,7 @@ const AddOffer = () => {
             <IonInput 
               value={name} 
               type="text" 
-              clearInput
-              onIonChange={e => setName(e.detail.value!)} 
+              readonly
             />
           </IonItem>
           <IonItem>
@@ -174,61 +145,25 @@ const AddOffer = () => {
               type="number" 
               clearInput
               onIonChange={e => setSubQuantity(e.detail.value!)} 
-              onBlur={() => generateName()} 
             />
           </IonItem>
           <IonItem>
-            <IonLabel position="floating" color="primary">
-              {labels.percent}
-            </IonLabel>
-            <IonInput 
-              value={subPercent} 
-              type="number" 
-              clearInput
-              onIonChange={e => setSubPercent(e.detail.value!)} 
-            />
+            <IonLabel color="primary">{labels.withGift}</IonLabel>
+            <IonToggle checked={withGift} onIonChange={() => setWithGift(s => !s)}/>
           </IonItem>
-        </IonList>
-        <IonListHeader>
-          <IonLabel>{labels.bonusProduct}</IonLabel>
-        </IonListHeader>
-        <IonList>
-          <IonItem>
-            <IonLabel position="floating" color="primary">
-              {labels.pack}
-            </IonLabel>
-            <IonSelect 
-              ok-text={labels.ok} 
-              cancel-text={labels.cancel} 
-              value={bonusPackId}
-              onIonChange={e => setBonusPackId(e.detail.value)}
-            >
-              {bonusPacks.map(p => <IonSelectOption key={p.id} value={p.id}>{p.name}</IonSelectOption>)}
-            </IonSelect>
-          </IonItem>
-          <IonItem>
-            <IonLabel position="floating" color="primary">
-              {labels.quantity}
-            </IonLabel>
-            <IonInput 
-              value={bonusQuantity} 
-              type="number" 
-              clearInput
-              onIonChange={e => setBonusQuantity(e.detail.value!)} 
-              onBlur={() => generateName()} 
-            />
-          </IonItem>
-          <IonItem>
-            <IonLabel position="floating" color="primary">
-              {labels.percent}
-            </IonLabel>
-            <IonInput 
-              value={bonusPercent} 
-              type="number" 
-              clearInput
-              onIonChange={e => setBonusPercent(e.detail.value!)} 
-            />
-          </IonItem>
+          {withGift &&
+            <IonItem>
+              <IonLabel position="floating" color="primary">
+                {labels.gift}
+              </IonLabel>
+              <IonInput 
+                value={gift} 
+                type="text" 
+                clearInput
+                onIonChange={e => setGift(e.detail.value!)} 
+                />
+            </IonItem>
+          }
           <IonItem>
             <IonLabel color="primary">{labels.specialImage}</IonLabel>
             <IonToggle checked={specialImage} onIonChange={() => setSpecialImage(s => !s)}/>
@@ -252,7 +187,7 @@ const AddOffer = () => {
           </>}
         </IonList>
       </IonContent>
-      {name && subPackId && subQuantity && subPercent &&
+      {name && subPackId && subQuantity && (!withGift || gift) &&
         <IonFab vertical="top" horizontal="end" slot="fixed">
           <IonFabButton onClick={handleSubmit} color="success">
             <IonIcon ios={checkmarkOutline} />

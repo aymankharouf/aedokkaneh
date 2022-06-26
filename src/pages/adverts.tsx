@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import labels from '../data/labels'
 import moment from 'moment'
 import 'moment/locale/ar'
@@ -16,15 +16,12 @@ import { useSelector } from 'react-redux'
 const Adverts = () => {
   const stateAdverts = useSelector<State, Advert[]>(state => state.adverts)
   const [currentAdvert, setCurrentAdvert] = useState<Advert>()
-  const [adverts, setAdverts] = useState<Advert[]>([])
   const [actionsOpened, setActionsOpened] = useState(false)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
   const [alert] = useIonAlert()
-  useEffect(() => {
-    setAdverts(() => [...stateAdverts].sort((a1, a2) => a2.time > a1.time ? 1 : -1))
-  }, [stateAdverts])
+  const adverts = useMemo(() => stateAdverts.sort((a1, a2) => a2.time > a1.time ? 1 : -1), [stateAdverts])
   const handleAction = (advert: Advert) => {
     setCurrentAdvert(advert)
     setActionsOpened(true)

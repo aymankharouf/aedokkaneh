@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
 import { quantityText, getRequestedPacks, getPackStores } from '../data/actions'
 import labels from '../data/labels'
-import { Basket, CustomerInfo, Order, Pack, PackPrice, RequestedPack, State, Store } from '../data/types'
+import { Basket, Order, Pack, PackPrice, State, Store } from '../data/types'
 import { useParams } from 'react-router'
 import { IonBadge, IonContent, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
 import Header from './header'
@@ -18,15 +18,12 @@ const RequestedPacks = () => {
 	const statePacks = useSelector<State, Pack[]>(state => state.packs)
 	const stateOrders = useSelector<State, Order[]>(state => state.orders)
 	const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
-	const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
 	const stateStores = useSelector<State, Store[]>(state => state.stores)
-	const [requestedPacks, setRequestedPacks] = useState<RequestedPack[]>([])
-	useEffect(() => {
-		setRequestedPacks(() => {
+	const requestedPacks = useMemo(() => {
 			const packs = getRequestedPacks(stateOrders, stateBasket!, statePacks)
 			if (params.id){
 				const result = packs.filter(p => {
-					const basketStock = stateBasket?.storeId === 's' ? stateBasket.packs.find(bp => bp.packId === p.packId || statePacks.find(pa => pa.id === bp.packId && (pa.subPackId === p.packId || pa.bonusPackId === p.packId))) : undefined
+					const basketStock = stateBasket?.storeId === 's' ? stateBasket.packs.find(bp => bp.packId === p.packId || statePacks.find(pa => pa.id === bp.packId && pa.subPackId === p.packId)) : undefined
 					const basketStockQuantity = ((basketStock?.quantity || 0) * (basketStock?.refQuantity || 0)) || 0
 					const packStores = getPackStores(p.packInfo, statePackPrices, statePacks, basketStockQuantity)
 					return packStores.find(ps => ps.storeId === params.id)
@@ -34,8 +31,7 @@ const RequestedPacks = () => {
 				return result
 			}
 			return packs
-		})
-	}, [params.id, stateBasket, stateOrders, statePacks, stateCustomers, stateStores, statePackPrices])
+	}, [params.id, stateBasket, stateOrders, statePacks, statePackPrices])
 	let i = 0
 	return(
     <IonPage>

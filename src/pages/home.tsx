@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useMemo } from 'react'
 import { colors } from '../data/config'
 import labels from '../data/labels'
 import Footer from './footer'
 import { IonButton, IonButtons, IonContent, IonHeader, IonMenuButton, IonPage, IonTitle, IonToolbar } from '@ionic/react'
 
 const Home = () => {
-  const [mainPages] = useState(() => [
+  const mainPages = useMemo(() => [
     {id: '1', name: labels.orders, path: '/orders'},
     {id: '2', name: labels.stores, path: '/stores'},
     {id: '3', name: labels.products, path: '/products/0'},
@@ -14,7 +14,7 @@ const Home = () => {
     {id: '6', name: labels.stock, path: '/stock'},
     {id: '7', name: labels.spendings, path: '/spendings'},
     {id: '8', name: labels.notifications, path: '/notifications'}
-  ])
+  ], [])
   let i = 0
   return (
     <IonPage>

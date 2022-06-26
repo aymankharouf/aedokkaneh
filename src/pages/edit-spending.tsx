@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { editSpending, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { spendingTypes } from '../data/config'
@@ -21,10 +21,16 @@ const EditSpending = () => {
   const [amount, setAmount] = useState((spending.amount / 100).toFixed(2))
   const [spendingDate, setSpendingDate] = useState(spending.spendingDate.toString())
   const [description, setDescription] = useState(spending.description)
-  const [hasChanged, setHasChanged] = useState(false)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
+  const hasChanged = useMemo(() => (+amount * 100 !== spending.amount)
+  || (type !== spending.type)
+  || (description !== spending.description)
+  || (!spending.spendingDate && spendingDate.length > 0)
+  || (spending.spendingDate && spendingDate.length === 0)
+  || (spending.spendingDate.toString() !== (new Date(spendingDate)).toString())
+  , [spending, amount, spendingDate, type, description])
   const handleSubmit = () => {
     try{
       if (Number(amount) <= 0 || Number(amount) !== Number(Number(amount).toFixed(2))) {
@@ -45,17 +51,6 @@ const EditSpending = () => {
 			message(getMessage(location.pathname, err), 3000)
 		}    
   }
-  useEffect(() => {
-    if (+amount * 100 !== spending.amount
-    || type !== spending.type
-    || description !== spending.description
-    || (!spending.spendingDate && spendingDate.length > 0)
-    || (spending.spendingDate && spendingDate.length === 0)
-    || spending.spendingDate.toString() !== (new Date(spendingDate)).toString()
-    ) setHasChanged(true)
-    else setHasChanged(false)
-  }, [spending, amount, spendingDate, type, description])
-
   return (
     <IonPage>
       <Header title={labels.editSpending} />

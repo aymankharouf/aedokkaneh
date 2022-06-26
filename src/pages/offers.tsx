@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import moment from 'moment'
 import labels from '../data/labels'
 import { changeStorePackStatus, getMessage } from '../data/actions'
@@ -18,25 +18,21 @@ const Offers = () => {
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const stateStores = useSelector<State, Store[]>(state => state.stores)
-  const [offers, setOffers] = useState<ExtendedPackPrice[]>([])
   const [message] = useIonToast()
   const location = useLocation()
   const [alert] = useIonAlert()
-  useEffect(() => {
-    setOffers(() => {
-      const offers = statePackPrices.filter(p => p.offerEnd)
-      const result = offers.map(o => {
-        const packInfo = statePacks.find(p => p.id === o.packId)!
-        const storeName = o.storeId ? (o.storeId === 'm' ? labels.multipleStores : stateStores.find(s => s.id === o.storeId)?.name || '') : ''
-        return {
-          ...o,
-          packInfo,
-          storeName
-        }
-      })
-      return result.sort((o1, o2) => (o1.offerEnd || new Date()) > (o2.offerEnd || new Date()) ? 1 : -1)
-    })
-  }, [statePackPrices, statePacks, stateStores])
+  const offers = useMemo(() => statePackPrices.filter(p => p.offerEnd)
+                                              .map(o => {
+                                                const packInfo = statePacks.find(p => p.id === o.packId)!
+                                                const storeName = o.storeId ? (o.storeId === 'm' ? labels.multipleStores : stateStores.find(s => s.id === o.storeId)?.name || '') : ''
+                                                return {
+                                                  ...o,
+                                                  packInfo,
+                                                  storeName
+                                                }
+                                              })
+                                              .sort((o1, o2) => (o1.offerEnd || new Date()) > (o2.offerEnd || new Date()) ? 1 : -1)
+  , [statePackPrices, statePacks, stateStores])
   const handleHaltOffer = (storePack: ExtendedPackPrice) => {
     try{
       const offerEndDate = storePack.offerEnd?.setHours(0, 0, 0, 0)

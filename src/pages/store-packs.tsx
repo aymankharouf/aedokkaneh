@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
 import labels from '../data/labels'
@@ -14,33 +14,25 @@ import { useSelector } from 'react-redux'
 type Params = {
   id: string
 }
-type ExtendedPackPrice = PackPrice & {
-  packInfo: Pack,
-  categoryInfo: Category
-}
 const StorePacks = () => {
   const params = useParams<Params>()
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const stateCategories = useSelector<State, Category[]>(state => state.categories)
-  const [store] = useState(() => stateStores.find(s => s.id === params.id)!)
-  const [storePacks, setStorePacks] = useState<ExtendedPackPrice[]>([])
-  useEffect(() => {
-    setStorePacks(() => {
-      const storePacks = statePackPrices.filter(p => p.storeId === params.id && !p.isAuto)
-      const result = storePacks.map(p => {
-        const packInfo = statePacks.find(pa => pa.id === p.packId)!
-        const categoryInfo = stateCategories.find(c => c.id === packInfo.categoryId)!
-        return {
-          ...p,
-          packInfo,
-          categoryInfo
-        } 
-      })
-      return result.sort((p1, p2) => p1.packInfo.categoryId === p2.packInfo.categoryId ? (p2.time > p1.time ? 1 : -1) : (p1.categoryInfo.name > p2.categoryInfo.name ? 1 : -1))
-    })
-  }, [statePackPrices, statePacks, stateCategories, params.id])
+  const store = useMemo(() => stateStores.find(s => s.id === params.id)!, [stateStores, params.id])
+  const storePacks = useMemo(() => statePackPrices.filter(p => p.storeId === params.id && !p.isAuto)
+                                                  .map(p => {
+                                                    const packInfo = statePacks.find(pa => pa.id === p.packId)!
+                                                    const categoryInfo = stateCategories.find(c => c.id === packInfo.categoryId)!
+                                                    return {
+                                                      ...p,
+                                                      packInfo,
+                                                      categoryInfo
+                                                    } 
+                                                  })
+                                                  .sort((p1, p2) => p1.packInfo.categoryId === p2.packInfo.categoryId ? (p2.time > p1.time ? 1 : -1) : (p1.categoryInfo.name > p2.categoryInfo.name ? 1 : -1))
+  , [statePackPrices, statePacks, stateCategories, params.id])
   let i = 0
   return(
     <IonPage>

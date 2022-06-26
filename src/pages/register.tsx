@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { registerUser, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { IonButton, IonContent, IonInput, IonItem, IonLabel, IonList, IonPage, useIonLoading, useIonToast } from '@ionic/react'
@@ -10,18 +10,12 @@ import { Err } from '../data/types'
 const Register = () => {
   const [password, setPassword] = useState('')
   const [email, setEmail] = useState('')
-  const [passwordInvalid, setPasswordInvalid] = useState(true)
-  const [emailInvalid, setEmailInvalid] = useState(true)
+  const passwordInvalid = useMemo(() => !password || !patterns.password.test(password), [password])
+  const emailInvalid = useMemo(() => !email || !patterns.email.test(email), [email])
   const history = useHistory()
   const location = useLocation()
   const [message] = useIonToast()
   const [loading, dismiss] = useIonLoading()
-  useEffect(() => {
-    setPasswordInvalid(!password || !patterns.password.test(password))
-  }, [password])
-  useEffect(() => {
-    setEmailInvalid(!email || !patterns.email.test(email))
-  }, [email])
   const handleRegister = async () => {
     try{
       loading()

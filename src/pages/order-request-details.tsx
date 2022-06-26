@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { getMessage, quantityDetails, approveOrderRequest, addQuantity } from '../data/actions'
 import labels from '../data/labels'
-import { colors, orderPackStatus, orderRequestTypes, setup } from '../data/config'
+import { colors, orderPackStatus, orderRequestTypes } from '../data/config'
 import { IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -23,30 +23,29 @@ const OrderRequestDetails = () => {
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-  const [orderBasket] = useState(() => {
-    const basket = order.basket.slice()
-    const result = basket.map(p => {
-      return {
-        ...p,
-        change: 0
-      }
-    })
+  const orderBasket = useMemo(() => {
+    const basket = order.basket.slice().map(p => {
+                                          return {
+                                            ...p,
+                                            change: 0
+                                          }
+                                        })
     order.requestBasket.forEach(p => {
-      const index = result.findIndex(bp => bp.packId === p.packId)
+      const index = basket.findIndex(bp => bp.packId === p.packId)
       if (index === -1) {
-        result.push({
+        basket.push({
           ...p,
           change: p.quantity
         })
       } else {
-        result.splice(index, 1, {
-          ...result[index],
+        basket.splice(index, 1, {
+          ...basket[index],
           quantity: p.quantity,
-          change: addQuantity(p.quantity, -1 * result[index].quantity)
+          change: addQuantity(p.quantity, -1 * basket[index].quantity)
         })
       }
     })
-    return result.map(p => {
+    return basket.map(p => {
       const storeName = p.storeId ? (p.storeId === 'm' ? labels.multipleStores : stateStores.find(s => s.id === p.storeId)?.name) : ''
       const statusNote = `${orderPackStatus.find(s => s.id === p.status)?.name} ${p.overPriced ? labels.overPricedNote : ''}`
       const changeQuantityNote = p.change === 0 ? '' : p.change > 0 ? `${labels.increase} ${p.change}` : `${labels.decrease} ${-1 * p.change}`
@@ -57,10 +56,9 @@ const OrderRequestDetails = () => {
         changeQuantityNote,
       }
     })
-  })
-  const [total] = useState(() => orderBasket.reduce((sum, p) => sum + p.price * p.quantity, 0))
-  const [fixedFees] = useState(() => Math.round(setup.fixedFees * total))
-  const [fraction] = useState(() => (total + fixedFees) - Math.floor((total + fixedFees) / 5) * 5)
+  }, [order, stateStores])
+  const total = useMemo(() => orderBasket.reduce((sum, p) => sum + p.price * p.quantity, 0), [orderBasket])
+  const fraction = useMemo(() => total - Math.floor(total / 5) * 5, [total])
   const handleApprove = () => {
     try{
       approveOrderRequest(order, stateOrders, statePackPrices, statePacks)
@@ -96,8 +94,8 @@ const OrderRequestDetails = () => {
             <IonLabel slot="end" className="price">{(total / 100).toFixed(2)}</IonLabel>
           </IonItem>
           <IonItem>
-            <IonLabel>{labels.fixedFees}</IonLabel>
-            <IonLabel slot="end" className="price">{((fixedFees + order.deliveryFees) / 100).toFixed(2)}</IonLabel>
+            <IonLabel>{labels.deliveryFees}</IonLabel>
+            <IonLabel slot="end" className="price">{(order.deliveryFees / 100).toFixed(2)}</IonLabel>
           </IonItem>
           <IonItem>
             <IonLabel>{labels.discount}</IonLabel>
@@ -105,7 +103,7 @@ const OrderRequestDetails = () => {
           </IonItem>
           <IonItem>
             <IonLabel>{labels.net}</IonLabel>
-            <IonLabel slot="end" className="price">{((total + fixedFees + order.deliveryFees - fraction) / 100).toFixed(2)}</IonLabel>
+            <IonLabel slot="end" className="price">{((total + order.deliveryFees - fraction) / 100).toFixed(2)}</IonLabel>
           </IonItem>
         </IonList>
       </IonContent>

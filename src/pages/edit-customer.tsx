@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { editCustomer, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { IonToggle, IonContent, IonSelect, IonSelectOption, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
@@ -27,21 +27,18 @@ const EditCustomer = () => {
   const [isBlocked, setIsBlocked] = useState(customer.isBlocked)
   const [deliveryFees, setDeliveryFees] = useState((customer.deliveryFees / 100).toFixed(2))
   const [orderLimit, setOrderLimit] = useState((customer.orderLimit / 100).toFixed(2))
-  const [hasChanged, setHasChanged] = useState(false)
   const regions= useMemo(() => stateRegions.sort((l1, l2) => l1.name > l2.name ? 1 : -1), [stateRegions])
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-  useEffect(() => {
-    if (name !== userInfo.name
-    || address !== customer.address
-    || regionId !== userInfo.regionId
-    || mapPosition !== customer.mapPosition
-    || isBlocked !== customer.isBlocked
-    || +deliveryFees * 100 !== customer.deliveryFees
-    || +orderLimit * 100 !== customer.orderLimit) setHasChanged(true)
-    else setHasChanged(false)
-  }, [customer, userInfo, name, address, regionId, mapPosition, isBlocked, deliveryFees, orderLimit])
+  const hasChanged = useMemo(() => (name !== userInfo.name)
+  || (address !== customer.address)
+  || (regionId !== userInfo.regionId)
+  || (mapPosition !== customer.mapPosition)
+  || (isBlocked !== customer.isBlocked)
+  || (+deliveryFees * 100 !== customer.deliveryFees)
+  || (+orderLimit * 100 !== customer.orderLimit)
+  , [customer, userInfo, name, address, regionId, mapPosition, isBlocked, deliveryFees, orderLimit])
   const handleSubmit = () => {
     try{
       if (Number(deliveryFees) < 0 || Number(deliveryFees) !== Number(Number(deliveryFees).toFixed(2))) {

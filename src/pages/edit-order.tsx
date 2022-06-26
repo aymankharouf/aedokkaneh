@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { updateOrderStatus, editOrder, getMessage, quantityDetails, returnOrder } from '../data/actions'
 import labels from '../data/labels'
 import { Err, Order, OrderBasketPack, Pack, PackPrice, Region, State, UserInfo } from '../data/types'
@@ -24,15 +24,13 @@ const EditOrder = (props: Props) => {
   const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
   const stateRegions = useSelector<State, Region[]>(state => state.regions)
   const stateOrderBasket = useSelector<State, OrderBasketPack[] | undefined>(state => state.orderBasket)
-  const [order] = useState(() => stateOrders.find(o => o.id === props.id)!)
-  const [orderBasket, setOrderBasket] = useState<ExtendedOrderBasketPack[]>([])
-  const [total, setTotal] = useState(0)
-  const [hasChanged, setHasChanged] = useState(false)
+  const order = useMemo(() => stateOrders.find(o => o.id === props.id)!, [stateOrders, props.id])
+  const hasChanged = useMemo(() => stateOrderBasket?.find(p => p.oldQuantity !== p.quantity) ? true : false, [stateOrderBasket])
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
   const [alert] = useIonAlert()
-
+  
   useEffect(() => {
     const basket = order.basket.map(p => {
       return {
@@ -43,24 +41,16 @@ const EditOrder = (props: Props) => {
     })
     dispatch({type: 'LOAD_ORDER_BASKET', payload: basket})
   }, [dispatch, order, props.type])
-  useEffect(() => {
-    setOrderBasket(() => {
-      const orderBasket = stateOrderBasket?.filter(p => p.quantity > 0) || []
-      return orderBasket.map(p => {
-        const packInfo = statePacks.find(pa => pa.id === p.packId)!
-        return {
-          ...p,
-          packInfo
-        }
-      })
-    })
-  }, [stateOrderBasket, statePacks])
-  useEffect(() => {
-    setHasChanged(() => stateOrderBasket?.find(p => p.oldQuantity !== p.quantity) ? true : false)
-  }, [stateOrderBasket])
-  useEffect(() => {
-    setTotal(() => orderBasket.reduce((sum, p) => sum + p.gross, 0))
-  }, [orderBasket])
+  const orderBasket = useMemo(() => stateOrderBasket?.filter(p => p.quantity > 0)
+                                                      .map(p => {
+                                                        const packInfo = statePacks.find(pa => pa.id === p.packId)!
+                                                        return {
+                                                          ...p,
+                                                          packInfo
+                                                        }
+                                                      })
+  , [stateOrderBasket, statePacks])
+  const total = useMemo(() => orderBasket?.reduce((sum, p) => sum + p.gross, 0) || 0, [orderBasket])
   const handleDelete = () => {
     alert({
       header: labels.confirmationTitle,
@@ -116,11 +106,11 @@ const EditOrder = (props: Props) => {
       <Header title={props.type === 'e' ? labels.editOrder : labels.returnOrder} />
       <IonContent fullscreen>
         <IonList className="ion-padding">
-          {orderBasket.length === 0 ? 
+          {orderBasket?.length === 0 ? 
             <IonItem> 
               <IonLabel>{labels.noData}</IonLabel>
             </IonItem> 
-          :orderBasket.map(p =>
+          :orderBasket?.map(p =>
             <IonItem key={p.packId}>
               <IonThumbnail slot="start">
                 <IonImg src={p.imageUrl} alt={labels.noImage} />

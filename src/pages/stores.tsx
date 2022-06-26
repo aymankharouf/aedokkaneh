@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import { addStock, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { Err, Purchase, State, Store } from '../data/types'
@@ -9,35 +9,26 @@ import { addOutline } from 'ionicons/icons'
 import Footer from './footer'
 import { useSelector } from 'react-redux'
 
-type ExtendedStore = Store & {
-  sales: number
-}
 const Stores = () => {
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const statePurchases = useSelector<State, Purchase[]>(state => state.purchases)
-  const [stores, setStores] = useState<ExtendedStore[]>([])
-  const [stock, setStock] = useState<Store>()
   const history = useHistory()
   const location = useLocation()
   const [message] = useIonToast()
-  useEffect(() => {
-    setStock(() => stateStores.find(s => s.id === 's'))
-  }, [stateStores])
-  useEffect(() => {
-    setStores(() => {
-      const today = new Date()
-      today.setDate(today.getDate() - 30)
-      const stores = stateStores.filter(s => s.id !== 's')
-      const result = stores.map(s => {
-        const storePurchases = statePurchases.filter(p => p.storeId === s.id && p.time >= today)
-        const sales = storePurchases.reduce((sum, p) => sum + p.total, 0)
-        return {
-          ...s,
-          sales
-        }
-      })
-      return result.sort((s1, s2) => s1.sales - s2.sales)
+  const stock = useMemo(() => stateStores.find(s => s.id === 's'), [stateStores])
+  const stores = useMemo(() => {
+    const today = new Date()
+    today.setDate(today.getDate() - 30)
+    const stores = stateStores.filter(s => s.id !== 's')
+    return stores.map(s => {
+      const storePurchases = statePurchases.filter(p => p.storeId === s.id && p.time >= today)
+      const sales = storePurchases.reduce((sum, p) => sum + p.total, 0)
+      return {
+        ...s,
+        sales
+      }
     })
+    .sort((s1, s2) => s1.sales - s2.sales)
   }, [stateStores, statePurchases])
   const handleAddStock = () => {
     try{
@@ -61,7 +52,6 @@ const Stores = () => {
           : stores.map(s =>
               <IonItem routerLink={`/store-details/${s.id}`} key={s.id}>
                 <IonLabel>{s.name}</IonLabel>
-                <IonLabel slot="end" className="price">{s.discount * 100}</IonLabel>
                 {!s.isActive && <IonBadge color="danger">{labels.inActive}</IonBadge>}
               </IonItem>
             )

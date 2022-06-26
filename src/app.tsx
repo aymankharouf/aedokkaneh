@@ -96,8 +96,6 @@ import PrepareOrdersList from './pages/prepare-orders-list'
 import ProductDetails from './pages/product-details'
 import AddOffer from './pages/add-offer'
 import EditOffer from './pages/edit-offer'
-import AddBulk from './pages/add-bulk'
-import EditBulk from './pages/edit-bulk'
 import Notifications from './pages/notifications'
 import AddNotification from './pages/add-notification'
 import ArchivedOrders from './pages/archived-orders'
@@ -147,18 +145,15 @@ const App = () => {
           imageUrl: doc.data().imageUrl,
           subPackId: doc.data().subPackId,
           specialImage: doc.data().specialImage,
-          bonusPackId: doc.data().bonusPackId,
           isOffer: doc.data().isOffer,
           offerEnd: doc.data().offerEnd?.toDate() || null,
           closeExpired: doc.data().closeExpired,
-          forSale: doc.data().forSale,
           subQuantity: doc.data().subQuantity,
-          subPercent: doc.data().subPercent,
-          bonusQuantity: doc.data().bonusQuantity,
-          bonusPercent: doc.data().bonusPercent,
           unitsCount: doc.data().unitsCount,
           byWeight: doc.data().byWeight,
-          isDivided: doc.data().isDivided
+          isDivided: doc.data().isDivided,
+          withGift: doc.data().withGift,
+          gift: doc.data().gift
         })
         if (doc.data().prices) {
           doc.data().prices.forEach((p: any) => {
@@ -366,10 +361,7 @@ const App = () => {
             stores.push({
               id: doc.id,
               name: doc.data().name,
-              type: doc.data().type,
-              discount: doc.data().discount,
               isActive: doc.data().isActive,
-              allowReturn: doc.data().allowReturn,
               mobile: doc.data().mobile,
               mapPosition: doc.data().mapPosition,
               openTime: doc.data().openTime,
@@ -522,7 +514,7 @@ const App = () => {
             <Route path="/add-spending" exact={true} component={AddSpending} />
             <Route path="/edit-spending/:id" exact={true} component={EditSpending} />
             <Route path="/categories/:id" exact={true} component={Categories} />
-            <Route path="/add-category/:id" exact={true} component={AddCategory} />
+            <Route path="/add-category" exact={true} component={AddCategory} />
             <Route path="/edit-category/:id" exact={true} component={EditCategory} />
             <Route path="/store-packs/:id" exact={true} component={StorePacks} />
             <Route path="/edit-store/:id" exact={true} component={EditStore} />
@@ -562,8 +554,6 @@ const App = () => {
             <Route path="/logs" exact={true} component={Logs} />
             <Route path="/prepare-orders" exact={true} component={PrepareOrders} />
             <Route path="/prepare-orders-list/:packId/:orderId" exact={true} component={PrepareOrdersList} />
-            <Route path="/add-bulk/:id" exact={true} component={AddBulk} />
-            <Route path="/edit-bulk/:id" exact={true} component={EditBulk} />
             <Route path="/notifications" exact={true} component={Notifications} />
             <Route path="/add-notification" exact={true} component={AddNotification} />
             <Route path="/archived-orders" exact={true} component={ArchivedOrders} />

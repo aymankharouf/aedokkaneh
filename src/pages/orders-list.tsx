@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
 import labels from '../data/labels'
@@ -14,31 +14,23 @@ type Params = {
   id: string,
   type: string
 }
-type ExtendedOrder = Order & {
-  userInfo: UserInfo,
-  customerInfo: CustomerInfo
-}
 const OrdersList = () => {
   const params = useParams<Params>()
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
   const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
   const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
-  const [orders, setOrders] = useState<ExtendedOrder[]>([])
-  useEffect(() => {
-    setOrders(() => {
-      const orders = stateOrders.filter(o => (params.type === 's' && o.status === params.id) || (params.type === 'u' && o.userId === params.id))
-      const result = orders.map(o => {
-        const userInfo = stateUsers.find(u => u.id === o.userId)!
-        const customerInfo = stateCustomers.find(c => c.id === o.userId)!
-        return {
-          ...o,
-          userInfo,
-          customerInfo,
-        }
-      })
-      return result.sort((o1, o2) => o2.time > o1.time ? 1 : -1)
-    })
-  }, [stateOrders, stateUsers, stateCustomers, params.id, params.type])
+  const orders = useMemo(() => stateOrders.filter(o => (params.type === 's' && o.status === params.id) || (params.type === 'u' && o.userId === params.id))
+                                          .map(o => {
+                                            const userInfo = stateUsers.find(u => u.id === o.userId)!
+                                            const customerInfo = stateCustomers.find(c => c.id === o.userId)!
+                                            return {
+                                              ...o,
+                                              userInfo,
+                                              customerInfo,
+                                            }
+                                          })
+                                          .sort((o1, o2) => o2.time > o1.time ? 1 : -1)
+  , [stateOrders, stateUsers, stateCustomers, params.id, params.type])
 
   return(
     <IonPage>

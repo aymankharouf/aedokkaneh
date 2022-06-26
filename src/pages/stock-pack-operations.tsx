@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import moment from 'moment'
 import 'moment/locale/ar'
 import { getMessage, quantityText, unfoldStockPack } from '../data/actions'
 import labels from '../data/labels'
 import { stockOperationTypes } from '../data/config'
-import { Err, Pack, PackPrice, Purchase, ReturnBasket, State, StockOperation, StockPack, Store } from '../data/types'
+import { Err, Pack, PackPrice, Purchase, ReturnBasket, State, StockOperation, Store } from '../data/types'
 import { IonActionSheet, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -16,13 +16,6 @@ import { useSelector, useDispatch } from 'react-redux'
 type Params = {
   id: string
 }
-type ExtendedStockPack = StockPack & {
-  storeInfo: Store,
-  id: string,
-  purchaseId: string,
-  type: string,
-  time: Date
-}
 const StockPackOperations = () => {
   const dispatch = useDispatch()
   const params = useParams<Params>()
@@ -32,15 +25,14 @@ const StockPackOperations = () => {
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const stateStockOperations = useSelector<State, StockOperation[]>(state => state.stockOperations)
   const stateReturnBasket = useSelector<State, ReturnBasket | undefined>(state => state.returnBasket)
-  const [pack] = useState(() => statePacks.find(p => p.id === params.id)!)
-  const [stockPackInfo] = useState(() => statePackPrices.find(p => p.storeId === 's' && p.packId === params.id)!)
+  const pack = useMemo(() => statePacks.find(p => p.id === params.id)!, [statePacks, params.id])
+  const stockPackInfo = useMemo(() => statePackPrices.find(p => p.storeId === 's' && p.packId === params.id)!, [statePackPrices, params])
   const [actionOpened, setActionOpened] = useState(false)
-  const [packOperations, setPackOperations] = useState<ExtendedStockPack[]>([])
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
   const [alert] = useIonAlert()
-  const [lastPurchase] = useState<ExtendedStockPack>(() => {
+  const lastPurchase = useMemo(() => {
     const purchases = statePurchases.filter(p => p.basket.find(bp => bp.packId === pack.id))
     const result = purchases.map(p => {
       const operationPack = p.basket.find(bp => bp.packId === pack.id)!
@@ -56,25 +48,22 @@ const StockPackOperations = () => {
     })
     result.sort((t1, t2) => t2.time > t1.time ? 1 : -1)
     return result[0]
-  })
-  useEffect(() => {
-    setPackOperations(() => {
-      const packOperations = stateStockOperations.filter(t => t.basket.find(p => p.packId === pack.id))
-      const result = packOperations.map(t => {
-        const operationPack = t.basket.find(p => p.packId === pack.id)!
-        const storeInfo = stateStores.find(s => s.id === t.storeId)!
-        return {
-          ...operationPack,
-          id: t.id!,
-          purchaseId: t.purchaseId,
-          type: t.type,
-          time: t.time,
-          storeInfo
-        }
-      })
-      return result.sort((t1, t2) => t2.time > t1.time ? 1 : -1)
-    })
-  }, [stateStockOperations, stateStores, pack])
+  }, [statePurchases, stateStores, pack])
+  const packOperations = useMemo(() => stateStockOperations.filter(t => t.basket.find(p => p.packId === pack.id))
+                                                            .map(t => {
+                                                              const operationPack = t.basket.find(p => p.packId === pack.id)!
+                                                              const storeInfo = stateStores.find(s => s.id === t.storeId)!
+                                                              return {
+                                                                ...operationPack,
+                                                                id: t.id!,
+                                                                purchaseId: t.purchaseId,
+                                                                type: t.type,
+                                                                time: t.time,
+                                                                storeInfo
+                                                              }
+                                                            })
+                                                            .sort((t1, t2) => t2.time > t1.time ? 1 : -1)
+  , [stateStockOperations, stateStores, pack])
   const handleQuantity = (type: string, quantity: number) => {
     try{
       if (stateReturnBasket?.packs?.find(p => p.packId === pack.id)) {
@@ -167,7 +156,7 @@ const StockPackOperations = () => {
           },
           {
             text: labels.return,
-            cssClass: lastPurchase?.storeInfo?.allowReturn ? colors[i++ % 10].name : 'ion-hide',
+            cssClass: colors[i++ % 10].name,
             handler: () => handleAddOperation('r')
           },
           {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import labels from '../data/labels'
 import { getMessage, quantityText } from '../data/actions'
 import { Err, Order, Pack, Purchase, ReturnBasket, State, StockPack } from '../data/types'
@@ -25,25 +25,18 @@ const PurchaseDetails = () => {
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
   const stateReturnBasket = useSelector<State, ReturnBasket | undefined>(state => state.returnBasket)
-  const [purchase, setPurchase] = useState<Purchase>()
-  const [purchaseBasket, setPurchaseBasket] = useState<ExtendedStockPack[]>([])
   const [message] = useIonToast()
   const location = useLocation()
-  useEffect(() => {
-    setPurchase(() => params.type === 'a' ? stateArchivedPurchases.find(p => p.id === params.id)! : statePurchases.find(p => p.id === params.id)!)
-  }, [statePurchases, stateArchivedPurchases, params.id, params.type])
-  useEffect(() => {
-    setPurchaseBasket(() => {
-      const purchaseBasket =  purchase ? purchase.basket.filter(p => !(stateReturnBasket?.purchaseId === purchase.id && stateReturnBasket?.packs?.find(bp => bp.packId === p.packId && (!bp.weight || bp.weight === p.weight)))) : []
-      return purchaseBasket.map(p => {
-        const packInfo = statePacks.find(pa => pa.id === p.packId)!
-        return {
-          ...p,
-          packInfo,
-        }
-      })
-    })
-  }, [statePacks, stateReturnBasket, purchase])
+  const purchase = useMemo(() => params.type === 'a' ? stateArchivedPurchases.find(p => p.id === params.id)! : statePurchases.find(p => p.id === params.id)!, [statePurchases, stateArchivedPurchases, params.id, params.type])
+  const purchaseBasket = useMemo(() => purchase.basket.filter(p => !(stateReturnBasket?.purchaseId === purchase.id && stateReturnBasket?.packs?.find(bp => bp.packId === p.packId && (!bp.weight || bp.weight === p.weight))))
+                                                      .map(p => {
+                                                        const packInfo = statePacks.find(pa => pa.id === p.packId)!
+                                                        return {
+                                                          ...p,
+                                                          packInfo,
+                                                        }
+                                                      })
+  , [statePacks, stateReturnBasket, purchase])
   const handleReturn = (pack: ExtendedStockPack) => {
     try{
       const affectedOrders = stateOrders.filter(o => o.basket.find(p => p.packId === pack.packId && p.lastPurchaseId === purchase?.id) && ['p', 'd'].includes(o.status))

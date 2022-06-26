@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { updateOrderStatus, getMessage, quantityDetails, mergeOrder, setDeliveryTime } from '../data/actions'
 import labels from '../data/labels'
 import { colors, orderPackStatus } from '../data/config'
-import { CustomerInfo, Err, Order, OrderBasketPack, Pack, PackPrice, State, Store } from '../data/types'
+import { CustomerInfo, Err, Order, Pack, PackPrice, State, Store } from '../data/types'
 import { IonActionSheet, IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -14,11 +14,6 @@ type Params = {
   id: string,
   type: string
 }
-type ExtendedOrderBasketPack = OrderBasketPack & {
-  storeName: string,
-  priceNote: string,
-  statusNote: string
-}
 const OrderDetails = () => {
   const params = useParams<Params>()
   const stateArchivedOrders = useSelector<State, Order[]>(state => state.archivedOrders)
@@ -27,36 +22,28 @@ const OrderDetails = () => {
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
-  const [order, setOrder] = useState(() => params.type === 'a' ? stateArchivedOrders.find(o => o.id === params.id)! : stateOrders.find(o => o.id === params.id)!)
-  const [orderBasket, setOrderBasket] = useState<ExtendedOrderBasketPack[]>([])
-  const [lastOrder, setLastOrder] = useState<Order>()
+  const order = useMemo(() => params.type === 'a' ? stateArchivedOrders.find(o => o.id === params.id)! : stateOrders.find(o => o.id === params.id)!, [stateArchivedOrders, stateOrders, params.id, params.type])
   const [actionsOpened, setActionsOpened] = useState(false)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
   const [alert] = useIonAlert()
-  useEffect(() => {
-    setOrder(() => stateOrders.find(o => o.id === params.id)!)
-  }, [stateOrders, params.id])
-  useEffect(() => {
-    setOrderBasket(() => order.basket.map(p => {
-      const storeName = p.storeId ? (p.storeId === 'm' ? labels.multipleStores : stateStores.find(s => s.id === p.storeId)?.name || '') : ''
-      const priceNote = p.actual && p.actual !== p.price ? `${labels.orderPrice}: ${(p.price / 100).toFixed(2)}, ${labels.currentPrice}: ${(p.actual / 100).toFixed(2)}` : `${labels.unitPrice}: ${(p.price / 100).toFixed(2)}`
-      const statusNote = `${orderPackStatus.find(s => s.id === p.status)?.name} ${p.overPriced ? labels.overPricedNote : ''}`
-      return {
+  const orderBasket = useMemo(() => order.basket.map(p => {
+    const storeName = p.storeId ? (p.storeId === 'm' ? labels.multipleStores : stateStores.find(s => s.id === p.storeId)?.name || '') : ''
+    const priceNote = p.actual && p.actual !== p.price ? `${labels.orderPrice}: ${(p.price / 100).toFixed(2)}, ${labels.currentPrice}: ${(p.actual / 100).toFixed(2)}` : `${labels.unitPrice}: ${(p.price / 100).toFixed(2)}`
+    const statusNote = `${orderPackStatus.find(s => s.id === p.status)?.name} ${p.overPriced ? labels.overPricedNote : ''}`
+    return {
         ...p,
         storeName,
         priceNote,
         statusNote
       }
-    }))
-  }, [order, stateStores])
-  useEffect(() => {
-    setLastOrder(() => {
-      const userOrders = stateOrders.filter(o => o.id !== order.id && o.userId === order.userId && !['c', 'm', 'r'].includes(o.status))
-      userOrders.sort((o1, o2) => o2.time > o1.time ? 1 : -1)
-      return ['a', 'e'].includes(userOrders[0]?.status) ? userOrders[0] : undefined
     })
+  , [order, stateStores])
+  const lastOrder = useMemo(() => {
+      const userOrders = stateOrders.filter(o => o.id !== order.id && o.userId === order.userId && !['c', 'm', 'r'].includes(o.status))
+                                    .sort((o1, o2) => o2.time > o1.time ? 1 : -1)
+      return ['a', 'e'].includes(userOrders[0]?.status) ? userOrders[0] : undefined
   }, [stateOrders, order])
   const confirmMerge = () => {
     try{

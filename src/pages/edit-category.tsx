@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { editCategory, getMessage, deleteCategory } from '../data/actions'
 import labels from '../data/labels'
 import { IonContent, IonFab, IonFabButton, IonFabList, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonAlert, useIonToast } from '@ionic/react'
@@ -8,6 +8,7 @@ import Footer from './footer'
 import { checkmarkOutline, chevronDownOutline, trashOutline } from 'ionicons/icons'
 import { Category, Err, State } from '../data/types'
 import { useSelector } from 'react-redux'
+import SmartSelect from './smart-select'
 
 type Params = {
   id: string
@@ -18,27 +19,25 @@ const EditCategory = () => {
   const [category] = useState(() => stateCategories.find(c => c.id === params.id)!)
   const [name, setName] = useState(category.name)
   const [ordering, setOrdering] = useState(category.ordering.toString())
+  const [parentId, setParentId] = useState(category.parentId)
+  const parentCategories = useMemo(() => stateCategories.filter(c => !c.parentId), [stateCategories])
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
   const [alert] = useIonAlert()
-  const [hasChanged, setHasChanged] = useState(false)
   const fabList = useRef<HTMLIonFabElement | null>(null)
+  const hasChanged= useMemo(() => (name !== category.name) || (+ordering !== category.ordering), [category, name, ordering])
   useEffect(() => {
     if (hasChanged && fabList.current) fabList.current!.close()
   }, [hasChanged])
-  useEffect(() => {
-    if (name !== category.name
-    || +ordering !== category.ordering) setHasChanged(true)
-    else setHasChanged(false)
-  }, [category, name, ordering])
 
   const handleEdit = () => {
     try{
       const newCategory = {
         ...category,
         name,
-        ordering: +ordering
+        ordering: +ordering,
+        parentId
       }
       editCategory(newCategory, stateCategories)
       message(labels.editSuccess, 3000)
@@ -96,6 +95,7 @@ const EditCategory = () => {
               onIonChange={e => setOrdering(e.detail.value!)} 
             />
           </IonItem>
+          <SmartSelect label={labels.parentCategory} data={parentCategories} onChange={(v) => setParentId(v)} />
         </IonList>
       </IonContent>
       <IonFab horizontal="end" vertical="top" slot="fixed" ref={fabList}>

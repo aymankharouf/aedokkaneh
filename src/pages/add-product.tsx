@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, useRef } from 'react'
+import { useState, ChangeEvent, useRef, useMemo } from 'react'
 import { addProduct, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
@@ -32,8 +32,8 @@ const AddProduct = () => {
   const onUploadClick = () => {
     if (inputEl.current) inputEl.current.click()
   }
-  const [categories] = useState(() => stateCategories.sort((c1, c2) => c1.name > c2.name ? 1 : -1))
-  const [countries] = useState(() => [...stateCountries].sort((c1, c2) => c1.name > c2.name ? 1 : -1))
+  const categories = useMemo(() => stateCategories.sort((c1, c2) => c1.name > c2.name ? 1 : -1), [stateCategories])
+  const countries = useMemo(() => stateCountries.sort((c1, c2) => c1.name > c2.name ? 1 : -1), [stateCountries])
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return

@@ -210,6 +210,7 @@ const labels: Label = {
   sell: 'بيع',
   cashing: 'بيع المواد',
   withGift: 'مع هدية',
+  gift: 'الهدية',
   addOffer: 'اضافة عرض',
   details: 'تفاصيل',
   productDetails: 'تفاصيل المنتج',
@@ -379,7 +380,7 @@ const labels: Label = {
   timing: 'تحديد موعد التسليم',
   yes: 'موافق',
   setImage: 'حمل الصورة',
-
+  parentCategory: 'التصنيف الرئيس'
 }
 
 export default labels

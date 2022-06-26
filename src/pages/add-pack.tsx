@@ -1,4 +1,4 @@
-import { useState, useEffect, ChangeEvent, useRef } from 'react'
+import { useState, useEffect, ChangeEvent, useRef, useMemo } from 'react'
 import { addPack, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { useHistory, useLocation, useParams } from 'react-router'
@@ -22,7 +22,7 @@ const AddPack = () => {
   const [closeExpired, setCloseExpired] = useState(false)
   const [specialImage, setSpecialImage] = useState(false)
   const [image, setImage] = useState<File>()
-  const [product] = useState(() => stateProducts.find(p => p.id === params.id)!)
+  const product = useMemo(() => stateProducts.find(p => p.id === params.id)!, [stateProducts, params.id])
   const [imageUrl, setImageUrl] = useState(product.imageUrl)
   const [message] = useIonToast()
   const location = useLocation()
@@ -73,17 +73,14 @@ const AddPack = () => {
         byWeight,
         isOffer: false,
         price: 0,
-        forSale: true,
         isArchived: false,
         imageUrl: product.imageUrl,
         specialImage: false,
         subPackId: '',
-        bonusPackId: '',
         offerEnd: null,
         subQuantity: 0,
-        subPercent: 0,
-        bonusQuantity: 0,
-        bonusPercent: 0
+        withGift: false,
+        gift: ''
       }
       addPack(pack, image)
       message(labels.addSuccess, 3000)
