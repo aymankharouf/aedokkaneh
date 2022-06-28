@@ -32,7 +32,7 @@ const AddProduct = () => {
   const onUploadClick = () => {
     if (inputEl.current) inputEl.current.click()
   }
-  const categories = useMemo(() => stateCategories.sort((c1, c2) => c1.name > c2.name ? 1 : -1), [stateCategories])
+  const categories = useMemo(() => stateCategories.filter(c => c.level === 2).sort((c1, c2) => c1.name > c2.name ? 1 : -1), [stateCategories])
   const countries = useMemo(() => stateCountries.sort((c1, c2) => c1.name > c2.name ? 1 : -1), [stateCountries])
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -125,8 +125,8 @@ const AddProduct = () => {
             />
           </IonItem>
 
-          <SmartSelect label={labels.category} data={categories} onChange={(v) => setCategoryId(v)} />
-          <SmartSelect label={labels.country} data={countries} onChange={(v) => setCountryId(v)} />
+          <SmartSelect label={labels.category} data={categories} value={categoryId} onChange={(v) => setCategoryId(v)} />
+          <SmartSelect label={labels.country} data={countries} value={countryId} onChange={(v) => setCountryId(v)} />
           <input 
             ref={inputEl}
             type="file" 

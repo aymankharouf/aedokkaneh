@@ -17,7 +17,6 @@ type Params = {
 type ExtendedPackPrice = PackPrice & {
   subQuantity: number,
   unitPrice: number,
-  unitCost: number,
   isOffer: boolean,
   packInfo: Pack,
   storeInfo: Store
@@ -219,13 +218,12 @@ const PackDetails = () => {
                 <IonText style={{color: colors[1].name}}>{s.packId === pack.id ? '' : `${s.packInfo.productName}${s.packInfo.productAlias ? '-' + s.packInfo.productAlias : ''}`}</IonText>
                 <IonText style={{color: colors[2].name}}>{s.packId === pack.id ? '' : s.packInfo.name}</IonText>
                 <IonText style={{color: colors[3].name}}>{`${labels.price}: ${(s.price / 100).toFixed(2)}${s.price === s.unitPrice ? '' : '(' + (s.unitPrice / 100).toFixed(2) + ')'}`}</IonText>
-                <IonText style={{color: colors[4].name}}>{`${labels.cost}: ${(s.cost / 100).toFixed(2)}${s.cost === s.unitCost ? '' : '(' + (s.unitCost / 100).toFixed(2) + ')'}`}</IonText>
-                <IonText style={{color: colors[5].name}}>{s.subQuantity ? `${labels.quantity}: ${s.subQuantity}` : ''}</IonText>
-                {s.offerEnd && <IonText style={{color: colors[6].name}}>{labels.offerUpTo}: {moment(s.offerEnd).format('Y/M/D')}</IonText>}
+                <IonText style={{color: colors[4].name}}>{s.subQuantity ? `${labels.quantity}: ${s.subQuantity}` : ''}</IonText>
+                {s.offerEnd && <IonText style={{color: colors[5].name}}>{labels.offerUpTo}: {moment(s.offerEnd).format('Y/M/D')}</IonText>}
                 {!s.isActive && <IonBadge color="danger">{labels.inActive}</IonBadge>}
-                {s.quantity > 0 && <IonText style={{color: colors[7].name}}>{`${labels.balance}: ${quantityText(s.quantity, s.weight)}`}</IonText>}
+                {s.quantity > 0 && <IonText style={{color: colors[6].name}}>{`${labels.balance}: ${quantityText(s.quantity, s.weight)}`}</IonText>}
               </IonLabel>
-              {s.packId === pack.id && !s.isAuto &&
+              {s.packId === pack.id &&
                 <IonIcon 
                   ios={ellipsisVerticalOutline}
                   slot="end" 

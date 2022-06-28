@@ -17,7 +17,6 @@ const AddStorePack = () => {
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const [packId, setPackId] = useState('')
-  const [cost, setCost] = useState('')
   const [price, setPrice] = useState('')
   const [offerDays, setOfferDays] = useState('')
   const store = useMemo(() => stateStores.find(s => s.id === params.id)!, [stateStores, params.id])
@@ -38,13 +37,7 @@ const AddStorePack = () => {
       if (statePackPrices.find(p => p.packId === packId && p.storeId === store.id)) {
         throw new Error('duplicatePackInStore')
       }
-      if (Number(cost) <= 0 || Number(cost) !== Number(Number(cost).toFixed(2))) {
-        throw new Error('invalidPrice')
-      }
       if (Number(price) !== Number(Number(price).toFixed(2))) {
-        throw new Error('invalidPrice')
-      }
-      if (Number(price) < Number(cost)) {
         throw new Error('invalidPrice')
       }
       if (offerDays && Number(offerDays) <= 0) {
@@ -58,7 +51,6 @@ const AddStorePack = () => {
       const storePack = {
         packId,
         storeId: store.id!,
-        cost: +cost * 100,
         price: +price * 100,
         offerEnd,
         isActive,
@@ -95,17 +87,6 @@ const AddStorePack = () => {
           </IonItem>
           <IonItem>
             <IonLabel position="floating" color="primary">
-              {labels.cost}
-            </IonLabel>
-            <IonInput 
-              value={cost} 
-              type="number" 
-              clearInput
-              onIonChange={e => setCost(e.detail.value!)} 
-            />
-          </IonItem>
-          <IonItem>
-            <IonLabel position="floating" color="primary">
               {labels.price}
             </IonLabel>
             <IonInput 
@@ -132,7 +113,7 @@ const AddStorePack = () => {
           </IonItem>
         </IonList>
       </IonContent>
-      {packId && cost &&
+      {packId && price &&
         <IonFab vertical="top" horizontal="end" slot="fixed">
           <IonFabButton onClick={handleSubmit} color="success">
             <IonIcon ios={checkmarkOutline} />

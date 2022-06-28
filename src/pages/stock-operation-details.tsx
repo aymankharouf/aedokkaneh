@@ -43,7 +43,7 @@ const StockOperationDetails = (props: Props) => {
                 <IonText style={{color: colors[3].name}}>{`${labels.quantity}: ${quantityText(p.quantity, p.weight)}`}</IonText>
               </IonLabel>
               {p.packInfo.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
-              <IonLabel slot="end" className="price">{(Math.round(p.cost * (p.weight || p.quantity)) / 100).toFixed(2)}</IonLabel>
+              <IonLabel slot="end" className="price">{(Math.round(p.price * (p.weight || p.quantity)) / 100).toFixed(2)}</IonLabel>
             </IonItem>    
           )}
         </IonList>

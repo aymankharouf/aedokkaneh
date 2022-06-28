@@ -20,7 +20,6 @@ type Params = {
 type ExtendedPackPrice = PackPrice & {
   subQuantity: number,
   unitPrice: number,
-  unitCost: number,
   isOffer: boolean,
   packInfo: Pack,
   storeInfo: Store
@@ -106,22 +105,6 @@ const RequestedPackDetails = () => {
             {text: labels.ok, handler: (e) => handleAddWithWeight(packStore, exceedPriceType, e.weight)}
           ],
         })
-      } else if (packStore.isAuto) {
-        const mainPackInfo = statePacks.find(p => p.subPackId === packStore.packId)!
-        const mainPackStore = statePackPrices.find(p => p.storeId === packStore.storeId && p.packId === mainPackInfo.id)
-        quantity = Math.ceil(Number(params.quantity) / (packStore.quantity * mainPackInfo.subQuantity))
-        basketItem = {
-          pack: mainPackInfo,
-          packStore: mainPackStore,
-          refPackId: params.packId,
-          refPackQuantity: mainPackInfo.subQuantity,
-          quantity,
-          price: Number(params.price),
-          exceedPriceType
-        }
-        dispatch({type: 'ADD_TO_BASKET', payload: basketItem})
-        message(labels.addToBasketSuccess, 3000)
-        history.goBack()
       } else {
         if (packStore.subQuantity) {
           quantity = Math.ceil(Number(params.quantity) / packStore.subQuantity)
@@ -253,10 +236,9 @@ const RequestedPackDetails = () => {
                 <IonText style={{color: colors[1].name}}>{s.packId === pack.id ? '' : `${s.packInfo.productName}${s.packInfo.productAlias ? '-' + s.packInfo.productAlias : ''}`}</IonText>
                 <IonText style={{color: colors[2].name}}>{s.packId === pack.id ? '' : s.packInfo.name}</IonText>
                 <IonText style={{color: colors[3].name}}>{`${labels.price}: ${(s.price / 100).toFixed(2)}${s.price === s.unitPrice ? '' : '(' + (s.unitPrice / 100).toFixed(2) + ')'}`}</IonText>
-                <IonText style={{color: colors[4].name}}>{`${labels.cost}: ${(s.cost / 100).toFixed(2)}${s.cost === s.unitCost ? '' : '(' + (s.unitCost / 100).toFixed(2) + ')'}`}</IonText>
-                <IonText style={{color: colors[5].name}}>{s.subQuantity ? `${labels.quantity}: ${s.subQuantity}` : ''}</IonText>
-                {s.offerEnd && <IonText style={{color: colors[6].name}}>{labels.offerUpTo}: {moment(s.offerEnd).format('Y/M/D')}</IonText>}
-                <IonText style={{color: colors[7].name}}>{addQuantity(s.quantity, -1 * basketStockQuantity) > 0 ? `${labels.balance}: ${addQuantity(s.quantity, -1 * basketStockQuantity)}` : ''}</IonText>
+                <IonText style={{color: colors[4].name}}>{s.subQuantity ? `${labels.quantity}: ${s.subQuantity}` : ''}</IonText>
+                {s.offerEnd && <IonText style={{color: colors[5].name}}>{labels.offerUpTo}: {moment(s.offerEnd).format('Y/M/D')}</IonText>}
+                <IonText style={{color: colors[6].name}}>{addQuantity(s.quantity, -1 * basketStockQuantity) > 0 ? `${labels.balance}: ${addQuantity(s.quantity, -1 * basketStockQuantity)}` : ''}</IonText>
                 {!s.isActive && <IonBadge color="danger">{labels.inActive}</IonBadge>}
               </IonLabel>
               {s.isActive &&

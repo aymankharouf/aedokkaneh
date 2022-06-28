@@ -15,7 +15,7 @@ const Basket = () => {
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const [store] = useState(() => stateStores.find(s => s.id === stateBasket?.storeId))
   const basket = useMemo(() => stateBasket?.packs || [], [stateBasket])
-  const totalPrice = useMemo(() => stateBasket?.packs?.reduce((sum, p) => sum + Math.round(p.cost * (p.weight || p.quantity)), 0) || 0, [stateBasket])
+  const totalPrice = useMemo(() => stateBasket?.packs?.reduce((sum, p) => sum + Math.round(p.price * (p.weight || p.quantity)), 0) || 0, [stateBasket])
   const handleIncrease = (pack: BasketPack) => {
     if (store?.id === 's') {
       const stock = statePackPrices.find(p => p.packId === pack.packId && p.storeId === 's')
@@ -41,9 +41,9 @@ const Basket = () => {
                 <IonText style={{color: colors[0].name}}>{p.productName}</IonText>
                 <IonText style={{color: colors[1].name}}>{p.productAlias}</IonText>
                 <IonText style={{color: colors[2].name}}>{p.packName}</IonText>
-                <IonText style={{color: colors[3].name}}>{`${labels.unitPrice}: ${(p.cost / 100).toFixed(2)}`}</IonText>
+                <IonText style={{color: colors[3].name}}>{`${labels.unitPrice}: ${(p.price / 100).toFixed(2)}`}</IonText>
                 <IonText style={{color: colors[4].name}}>{`${labels.quantity}: ${quantityText(p.quantity, p.weight)}`}</IonText>
-                <IonText style={{color: colors[5].name}}>{`${labels.grossPrice}: ${(Math.round(p.cost * (p.weight || p.quantity)) / 100).toFixed(2)}`}</IonText>
+                <IonText style={{color: colors[5].name}}>{`${labels.grossPrice}: ${(Math.round(p.price * (p.weight || p.quantity)) / 100).toFixed(2)}`}</IonText>
                 {p.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
               </IonLabel>
               {p.price > 0 && <>
@@ -66,18 +66,19 @@ const Basket = () => {
           )}
         </IonList>
       </IonContent>
-      <div className="ion-text-center">
-        <IonButton 
-          fill="solid" 
-          shape="round"
-          color="secondary"
-          style={{width: '10rem'}}
-          routerLink="/confirm-purchase"
-        >
-          {`${labels.submit} ${(totalPrice / 100).toFixed(2)}`}
-        </IonButton>
-      </div>
-
+      {totalPrice &&
+        <div className="ion-text-center">
+          <IonButton 
+            fill="solid" 
+            shape="round"
+            color="secondary"
+            style={{width: '10rem'}}
+            routerLink="/confirm-purchase"
+          >
+            {`${labels.submit} ${(totalPrice / 100).toFixed(2)}`}
+          </IonButton>
+        </div>
+      }
     </IonPage>
   )
 }

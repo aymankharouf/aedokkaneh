@@ -20,7 +20,7 @@ const EditCategory = () => {
   const [name, setName] = useState(category.name)
   const [ordering, setOrdering] = useState(category.ordering.toString())
   const [parentId, setParentId] = useState(category.parentId)
-  const parentCategories = useMemo(() => stateCategories.filter(c => !c.parentId), [stateCategories])
+  const parentCategories = useMemo(() => stateCategories.filter(c => c.level === 1), [stateCategories])
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
@@ -37,7 +37,8 @@ const EditCategory = () => {
         ...category,
         name,
         ordering: +ordering,
-        parentId
+        parentId,
+        level: parentId ? 2 : 1
       }
       editCategory(newCategory, stateCategories)
       message(labels.editSuccess, 3000)
@@ -95,7 +96,7 @@ const EditCategory = () => {
               onIonChange={e => setOrdering(e.detail.value!)} 
             />
           </IonItem>
-          <SmartSelect label={labels.parentCategory} data={parentCategories} onChange={(v) => setParentId(v)} />
+          <SmartSelect label={labels.parentCategory} data={parentCategories} value={parentId} onChange={(v) => setParentId(v)} />
         </IonList>
       </IonContent>
       <IonFab horizontal="end" vertical="top" slot="fixed" ref={fabList}>

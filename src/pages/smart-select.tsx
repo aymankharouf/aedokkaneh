@@ -11,11 +11,12 @@ type Element = {
 type Props = {
   label: string,
   data: Element[],
+  value?: string,
   onChange: (v: string) => void
 }
 const SmartSelect = (props: Props) => {
   const [isOpen, setIsOpen] = useState(false)
-  const [value, setValue] = useState('')
+  const [value, setValue] = useState(props.data.find(i => i.id === props.value)?.name)
   const [searchText, setSearchText] = useState('')
   const values = useMemo(() => {
     if (!searchText) {

@@ -33,7 +33,7 @@ const ReturnBasket = () => {
     }
   })
   , [stateReturnBasket, statePacks])
-  const totalPrice = useMemo(() => stateReturnBasket?.packs?.reduce((sum, p) => sum + Math.round(p.cost * (p.weight || p.quantity)), 0) || 0, [stateReturnBasket])
+  const totalPrice = useMemo(() => stateReturnBasket?.packs?.reduce((sum, p) => sum + Math.round(p.price * (p.weight || p.quantity)), 0) || 0, [stateReturnBasket])
   useEffect(() => {
     if (!stateReturnBasket) history.push('/')
   }, [stateReturnBasket, history])
@@ -65,9 +65,9 @@ const ReturnBasket = () => {
                 <IonText style={{color: colors[0].name}}>{p.packInfo.productName}</IonText>
                 <IonText style={{color: colors[1].name}}>{p.packInfo.productAlias}</IonText>
                 <IonText style={{color: colors[2].name}}>{p.packInfo.name}</IonText>
-                <IonText style={{color: colors[3].name}}>{`${labels.unitPrice}: ${(p.cost / 100).toFixed(2)}`}</IonText>
+                <IonText style={{color: colors[3].name}}>{`${labels.unitPrice}: ${(p.price / 100).toFixed(2)}`}</IonText>
                 <IonText style={{color: colors[4].name}}>{`${labels.quantity}: ${quantityText(p.quantity, p.weight)}`}</IonText>
-                <IonText style={{color: colors[5].name}}>{`${labels.grossPrice}: ${(Math.round(p.cost * p.quantity) / 100).toFixed(2)}`}</IonText>
+                <IonText style={{color: colors[5].name}}>{`${labels.grossPrice}: ${(Math.round(p.price * p.quantity) / 100).toFixed(2)}`}</IonText>
                 {p.packInfo.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
               </IonLabel>
               <IonButtons slot="end" onClick={() => dispatch({type: 'REMOVE_FROM_RETURN_BASKET', payload: p})}>

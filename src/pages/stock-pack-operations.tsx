@@ -81,7 +81,6 @@ const StockPackOperations = () => {
       const params = {
         type,
         packId: pack.id,
-        cost: type === 'r' ? lastPurchase.cost : stockPackInfo.cost,
         price: type === 'r' ? lastPurchase.price : stockPackInfo.price,
         quantity: Number(quantity),
         storeId: type === 'r' ? lastPurchase.storeInfo.id : '',
@@ -130,7 +129,7 @@ const StockPackOperations = () => {
                 <IonLabel>
                   <IonText style={{color: colors[0].name}}>{`${stockOperationTypes.find(tt => tt.id === t.type)?.name} ${t.storeInfo?.name || ''}`}</IonText>
                   <IonText style={{color: colors[1].name}}>{`${labels.quantity}: ${quantityText(t.quantity, t.weight)}`}</IonText>
-                  <IonText style={{color: colors[2].name}}>{`${labels.price}: ${(t.cost / 100).toFixed(2)}`}</IonText>
+                  <IonText style={{color: colors[2].name}}>{`${labels.price}: ${(t.price / 100).toFixed(2)}`}</IonText>
                   <IonText style={{color: colors[3].name}}>{moment(t.time).fromNow()}</IonText>
                 </IonLabel>
               </IonItem>

@@ -15,7 +15,7 @@ const AddCategory = () => {
   const [name, setName] = useState('')
   const [ordering, setOrdering] = useState('')
   const [parentId, setParentId] = useState('')
-  const parentCategories = useMemo(() => stateCategories.filter(c => !c.parentId), [stateCategories])
+  const parentCategories = useMemo(() => stateCategories.filter(c => c.level === 1), [stateCategories])
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
@@ -29,7 +29,8 @@ const AddCategory = () => {
         id: Math.random().toString(),
         name,
         ordering: +ordering,
-        parentId
+        parentId,
+        level: parentId ? 2 : 1
       })
       message(labels.addSuccess, 3000)
       history.goBack()
@@ -66,7 +67,7 @@ const AddCategory = () => {
               onIonChange={e => setOrdering(e.detail.value!)} 
             />
           </IonItem>
-          <SmartSelect label={labels.parentCategory} data={parentCategories} onChange={(v) => setParentId(v)} />
+          <SmartSelect label={labels.parentCategory} data={parentCategories} value={parentId} onChange={(v) => setParentId(v)} />
 
         </IonList>
       </IonContent>

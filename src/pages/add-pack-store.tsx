@@ -17,7 +17,6 @@ const AddPackStore = () => {
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
-  const [cost, setCost] = useState('')
   const [price, setPrice] = useState('')
   const [offerDays, setOfferDays] = useState('')
   const [isActive, setIsActive] = useState(false)
@@ -32,13 +31,7 @@ const AddPackStore = () => {
       if (statePackPrices.find(p => p.packId === pack.id && p.storeId === storeId)) {
         throw new Error('duplicatePackInStore')
       }
-      if (Number(cost) <= 0 || Number(cost) !== Number(Number(cost).toFixed(2))) {
-        throw new Error('invalidPrice')
-      }
       if (Number(price) !== Number(Number(price).toFixed(2))) {
-        throw new Error('invalidPrice')
-      }
-      if (Number(price) < Number(cost)) {
         throw new Error('invalidPrice')
       }
       if (offerDays && Number(offerDays) <= 0) {
@@ -52,7 +45,6 @@ const AddPackStore = () => {
       const storePack = {
         packId: pack.id!,
         storeId,
-        cost: +cost * 100,
         price: +price * 100,
         offerEnd,
         isActive,
@@ -75,18 +67,7 @@ const AddPackStore = () => {
       <Header title={`${labels.addPrice} ${pack.productName} ${pack.name}${pack.closeExpired ? '(' + labels.closeExpired + ')' : ''}`} />
       <IonContent fullscreen className="ion-padding">
         <IonList>
-          <SmartSelect label={labels.store} data={stores} onChange={(v) => setStoreId(v)} />
-          <IonItem>
-            <IonLabel position="floating" color="primary">
-              {labels.cost}
-            </IonLabel>
-            <IonInput 
-              value={cost} 
-              type="number" 
-              clearInput
-              onIonChange={e => setCost(e.detail.value!)} 
-            />
-          </IonItem>
+          <SmartSelect label={labels.store} data={stores} value={storeId} onChange={(v) => setStoreId(v)} />
           <IonItem>
             <IonLabel position="floating" color="primary">
               {labels.price}
@@ -115,7 +96,7 @@ const AddPackStore = () => {
           </IonItem>
         </IonList>
       </IonContent>
-      {storeId && cost &&
+      {storeId && price &&
         <IonFab vertical="top" horizontal="end" slot="fixed">
           <IonFabButton onClick={handleSubmit} color="success">
             <IonIcon ios={checkmarkOutline} />

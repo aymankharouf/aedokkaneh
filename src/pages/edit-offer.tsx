@@ -16,7 +16,7 @@ const EditOffer = () => {
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const [pack] = useState(() => statePacks.find(p => p.id === params.id)!)
   const [subPackId, setSubPackId] = useState(pack.subPackId)
-  const [subQuantity, setSubQuantity] = useState(pack.subQuantity.toString())
+  const [subQuantity, setSubQuantity] = useState((pack.subQuantity || 0).toString())
   const [withGift, setWithGift] = useState(pack.withGift)
   const [gift, setGift] = useState(pack.gift)
   const [specialImage, setSpecialImage] = useState(pack.specialImage)

@@ -163,11 +163,9 @@ const App = () => {
               quantity: p.quantity,
               weight: p.weight,
               price: p.price,
-              cost: p.cost,
               isActive: p.isActive,
               offerEnd: p.offerEnd?.toDate() || null,
-              time: p.time.toDate(),
-              isAuto: p.isAuto
+              time: p.time.toDate()
             })
           })
         }

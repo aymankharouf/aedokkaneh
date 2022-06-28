@@ -5,7 +5,7 @@ import { useParams } from 'react-router'
 import Header from './header'
 import { pencilOutline } from 'ionicons/icons'
 import { useSelector } from 'react-redux'
-import { Category, Product, State } from '../data/types'
+import { Category, Country, Product, State } from '../data/types'
 
 type Params = {
   id: string
@@ -14,6 +14,7 @@ const ProductDetails = () => {
   const params = useParams<Params>()
   const stateProducts = useSelector<State, Product[]>(state => state.products)
   const stateCategories = useSelector<State, Category[]>(state => state.categories)
+  const stateCountries = useSelector<State, Country[]>(state => state.countries)
   const product = useMemo(() => stateProducts.find(p => p.id === params.id)!, [stateProducts, params.id])
 
   return (
@@ -76,7 +77,7 @@ const ProductDetails = () => {
               {labels.country}
             </IonLabel>
             <IonInput 
-              value={product.countryId} 
+              value={stateCountries.find(c => c.id === product.countryId)?.name} 
               type="text"
               readonly
             />

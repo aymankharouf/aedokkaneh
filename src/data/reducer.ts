@@ -48,7 +48,6 @@ const reducer = (state: State = initState, action: Action) => {
           price: action.payload.price,
           quantity: action.payload.quantity,
           actual: action.payload.packStore.price,
-          cost: action.payload.packStore.cost,
           requested: action.payload.quantity,
           orderId: action.payload.orderId,
           weight: action.payload.weight,
@@ -159,7 +158,6 @@ const reducer = (state: State = initState, action: Action) => {
       case 'ADD_TO_RETURN_BASKET':
         pack = {
           packId: action.payload.packId,
-          cost: action.payload.cost,
           price: action.payload.price,
           actual: action.payload.price,
           quantity: action.payload.quantity,

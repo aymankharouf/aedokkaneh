@@ -7,7 +7,8 @@ export type Category = {
   id: string,
   name: string,
   ordering: number,
-  parentId?: string
+  parentId?: string,
+  level: number
 }
 export type Err = {
   code: string,
@@ -28,8 +29,9 @@ export type Pack = {
   ratingCount: number,
   price: number,
   imageUrl: string,
-  subPackId: string,
-  subQuantity: number,
+  subPackId?: string,
+  subQuantity?: number,
+  subPackName?: string,
   specialImage: boolean,
   isOffer: boolean,
   offerEnd: Date | null,
@@ -46,11 +48,9 @@ export type PackPrice = {
   quantity: number,
   weight: number,
   price: number,
-  cost: number,
   isActive: boolean,
   offerEnd: Date | null,
-  time: Date,
-  isAuto: boolean
+  time: Date
 }
 export type Notification = {
   id: string,
@@ -113,7 +113,6 @@ export type OrderBasketPack = {
   packName: string,
   storeId: string,
   price: number,
-  cost: number,
   actual: number,
   quantity: number,
   weight: number,
@@ -274,7 +273,6 @@ export type BasketPack = {
   imageUrl: string,
   price: number,
   actual: number,
-  cost: number,
   quantity: number,
   weight: number,
   requested: number,
@@ -290,7 +288,6 @@ export type BasketPack = {
 export type StockPack = {
   packId: string,
   quantity: number,
-  cost: number,
   price: number,
   actual: number,
   weight: number
@@ -347,7 +344,3 @@ export type Action = {
   payload?: any
 }
 
-export type Context = {
-  state: State
-  dispatch: React.Dispatch<Action>
-}

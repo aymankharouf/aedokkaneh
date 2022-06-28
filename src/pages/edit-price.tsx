@@ -20,7 +20,6 @@ const EditPrice = () => {
   const pack = useMemo(() => statePacks.find(p => p.id === params.packId)!, [statePacks, params.packId])
   const store = useMemo(() => stateStores.find(s => s.id === params.storeId)!, [stateStores, params.storeId])
   const storePack = useMemo(() => statePackPrices.find(p => p.packId === params.packId && p.storeId === params.storeId)!, [statePackPrices, params.packId, params.storeId])
-  const [cost, setCost] = useState(params.storeId === 's' ? (storePack.cost / 100).toFixed(2) : '')
   const [offerDays, setOfferDays] = useState('')
   const [message] = useIonToast()
   const location = useLocation()
@@ -28,13 +27,7 @@ const EditPrice = () => {
   const [price, setPrice] = useState('')
   const handleSubmit = () => {
     try{
-      if (Number(cost) <= 0 || Number(cost) !== Number(Number(cost).toFixed(2))) {
-        throw new Error('invalidPrice')
-      }
       if (Number(price) !== Number(Number(price).toFixed(2))) {
-        throw new Error('invalidPrice')
-      }
-      if (Number(price) < Number(cost)) {
         throw new Error('invalidPrice')
       }
       if (offerDays && Number(offerDays) <= 0) {
@@ -47,7 +40,6 @@ const EditPrice = () => {
       }
       const newStorePack = {
         ...storePack,
-        cost: +cost * 100,
         price : +price * 100,
         offerEnd,
         time: new Date()
@@ -85,15 +77,6 @@ const EditPrice = () => {
           </IonItem>
           <IonItem>
             <IonLabel position="floating" color="primary">
-              {labels.oldCost}
-            </IonLabel>
-            <IonInput 
-              value={(storePack.cost / 100).toFixed(2)} 
-              readonly
-            />
-          </IonItem>
-          <IonItem>
-            <IonLabel position="floating" color="primary">
               {labels.oldPrice}
             </IonLabel>
             <IonInput 
@@ -101,19 +84,6 @@ const EditPrice = () => {
               readonly
             />
           </IonItem>
-          {params.storeId === 's' && 
-            <IonItem>
-              <IonLabel position="floating" color="primary">
-                {labels.cost}
-              </IonLabel>
-              <IonInput 
-                value={cost} 
-                type="number" 
-                clearInput
-                onIonChange={e => setCost(e.detail.value!)} 
-              />
-            </IonItem>
-          }
           <IonItem>
             <IonLabel position="floating" color="primary">
               {labels.price}
@@ -138,7 +108,7 @@ const EditPrice = () => {
           </IonItem>
         </IonList>
       </IonContent>
-      {cost && (!storePack.isActive || price) &&
+      {price &&
         <IonFab vertical="top" horizontal="end" slot="fixed">
           <IonFabButton onClick={handleSubmit} color="success">
             <IonIcon ios={checkmarkOutline} />

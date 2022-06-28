@@ -35,7 +35,7 @@ const MonthlyOperations = () => {
   const ordersCount = useMemo(() => monthlyOperation?.ordersCount || orders.length, [monthlyOperation, orders])
   const deliveredOrdersCount = useMemo(() => monthlyOperation?.deliveredOrdersCount || deliveredOrders.length, [monthlyOperation, deliveredOrders])
   const finishedOrdersCount = useMemo(() => monthlyOperation?.finishedOrdersCount || finishedOrders.length, [monthlyOperation, finishedOrders])
-  const stock = useMemo(() => monthlyOperation?.stock || statePackPrices.filter(p => p.storeId === 's' && p.quantity > 0).reduce((sum, p) => sum + Math.round(p.cost * p.quantity), 0), [monthlyOperation, statePackPrices])
+  const stock = useMemo(() => monthlyOperation?.stock || statePackPrices.filter(p => p.storeId === 's' && p.quantity > 0).reduce((sum, p) => sum + Math.round(p.price * p.quantity), 0), [monthlyOperation, statePackPrices])
   const sales = useMemo(() => monthlyOperation?.sales || deliveredOrders.reduce((sum, o) => sum + o.total, 0), [monthlyOperation, deliveredOrders])
   const operationProfit = useMemo(() => monthlyOperation?.operationProfit || deliveredOrders.reduce((sum, o) => sum + o.profit, 0), [monthlyOperation, deliveredOrders])
   const deliveryFees = useMemo(() => monthlyOperation?.deliveryFees || deliveredOrders.reduce((sum, o) => sum + o.deliveryFees, 0), [monthlyOperation, deliveredOrders])

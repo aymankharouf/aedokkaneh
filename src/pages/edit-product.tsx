@@ -1,12 +1,13 @@
 import { useState, ChangeEvent, useRef, useMemo } from 'react'
 import { editProduct, getMessage } from '../data/actions'
 import labels from '../data/labels'
-import { IonButton, IonContent, IonSelect, IonSelectOption, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
+import { IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
 import { useHistory, useLocation, useParams } from 'react-router'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
 import { Category, Country, Err, Pack, Product, State } from '../data/types'
 import { useSelector } from 'react-redux'
+import SmartSelect from './smart-select'
 
 type Params = {
   id: string
@@ -26,7 +27,7 @@ const EditProduct = () => {
   const [countryId, setCountryId] = useState(product.countryId)
   const [imageUrl, setImageUrl] = useState(product.imageUrl)
   const [image, setImage] = useState<File>()
-  const categories = useMemo(() => stateCategories.sort((c1, c2) => c1.name > c2.name ? 1 : -1), [stateCategories])
+  const categories = useMemo(() => stateCategories.filter(c => c.level === 2).sort((c1, c2) => c1.name > c2.name ? 1 : -1), [stateCategories])
   const countries = useMemo(() => stateCountries.sort((c1, c2) => c1.name > c2.name ? 1 : -1), [stateCountries])
   const inputEl = useRef<HTMLInputElement | null>(null)
   const [message] = useIonToast()
@@ -129,32 +130,8 @@ const EditProduct = () => {
               onIonChange={e => setTrademark(e.detail.value!)} 
             />
           </IonItem>
-          <IonItem>
-            <IonLabel position="floating" color="primary">
-              {labels.category}
-            </IonLabel>
-            <IonSelect 
-              ok-text={labels.ok} 
-              cancel-text={labels.cancel} 
-              value={categoryId}
-              onIonChange={e => setCategoryId(e.detail.value)}
-            >
-              {categories.map(c => <IonSelectOption key={c.id} value={c.id}>{c.name}</IonSelectOption>)}
-            </IonSelect>
-          </IonItem>
-          <IonItem>
-            <IonLabel position="floating" color="primary">
-              {labels.country}
-            </IonLabel>
-            <IonSelect 
-              ok-text={labels.ok} 
-              cancel-text={labels.cancel} 
-              value={countryId}
-              onIonChange={e => setCountryId(e.detail.value)}
-            >
-              {countries.map(c => <IonSelectOption key={c.id} value={c.id}>{c.name}</IonSelectOption>)}
-            </IonSelect>
-          </IonItem>
+          <SmartSelect label={labels.category} data={categories} value={categoryId} onChange={(v) => setCategoryId(v)} />
+          <SmartSelect label={labels.country} data={countries} value={countryId} onChange={(v) => setCountryId(v)} />
           <input 
               ref={inputEl}
               type="file" 

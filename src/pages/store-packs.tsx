@@ -21,7 +21,7 @@ const StorePacks = () => {
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const stateCategories = useSelector<State, Category[]>(state => state.categories)
   const store = useMemo(() => stateStores.find(s => s.id === params.id)!, [stateStores, params.id])
-  const storePacks = useMemo(() => statePackPrices.filter(p => p.storeId === params.id && !p.isAuto)
+  const storePacks = useMemo(() => statePackPrices.filter(p => p.storeId === params.id)
                                                   .map(p => {
                                                     const packInfo = statePacks.find(pa => pa.id === p.packId)!
                                                     const categoryInfo = stateCategories.find(c => c.id === packInfo.categoryId)!
@@ -52,11 +52,10 @@ const StorePacks = () => {
                   <IonText style={{color: colors[0].name}}>{p.packInfo.productName}</IonText>
                   <IonText style={{color: colors[1].name}}>{p.packInfo.productAlias}</IonText>
                   <IonText style={{color: colors[2].name}}>{p.packInfo.name}</IonText>
-                  <IonText style={{color: colors[3].name}}>{`${labels.cost}: ${(p.cost / 100).toFixed(2)}`}</IonText>
-                  <IonText style={{color: colors[4].name}}>{`${labels.price}: ${(p.price / 100).toFixed(2)}`}</IonText>
+                  <IonText style={{color: colors[3].name}}>{`${labels.price}: ${(p.price / 100).toFixed(2)}`}</IonText>
                   <IonText style={{color: colors[4].name}}>{p.categoryInfo.name}</IonText>
-                  <IonText style={{color: colors[4].name}}>{p.offerEnd ? `${labels.offerUpTo}: ${moment(p.offerEnd).format('Y/M/D')}` : ''}</IonText>
-                  <IonText style={{color: colors[4].name}}>{moment(p.time).fromNow()}</IonText>
+                  <IonText style={{color: colors[5].name}}>{p.offerEnd ? `${labels.offerUpTo}: ${moment(p.offerEnd).format('Y/M/D')}` : ''}</IonText>
+                  <IonText style={{color: colors[6].name}}>{moment(p.time).fromNow()}</IonText>
                 </IonLabel>
                 {p.packInfo.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
                 {p.packInfo.isOffer && <IonBadge color="success">{labels.offer}</IonBadge>}

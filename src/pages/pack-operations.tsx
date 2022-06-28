@@ -49,7 +49,7 @@ const PackOperations = () => {
                   <IonText style={{color: colors[1].name}}>{`${labels.quantity}: ${quantityText(t.quantity, t.weight)}`}</IonText>
                   <IonText style={{color: colors[2].name}}>{moment(t.time).fromNow()}</IonText>
                 </IonLabel>
-                <IonLabel slot="end" className="price">{(t.cost / 100).toFixed(2)}</IonLabel>
+                <IonLabel slot="end" className="price">{(t.price / 100).toFixed(2)}</IonLabel>
               </IonItem>    
             )
           }
