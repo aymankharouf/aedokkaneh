@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { allocateOrderPack, getMessage } from '../data/actions'
 import labels from '../data/labels'
-import { CustomerInfo, Err, Order, OrderBasketPack, Pack, State } from '../data/types'
+import { Customer, Err, Order, OrderBasketPack, Pack, State } from '../data/types'
 import { IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -15,13 +15,13 @@ type Params = {
   orderId: string
 }
 type ExtendedOrder = Order & {
-  customerInfo: CustomerInfo,
+  customer: Customer,
   basketInfo: OrderBasketPack
 }
 const PrepareOrdersList = () => {
   const params = useParams<Params>()
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
-  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
+  const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
   const pack = useMemo(() => statePacks.find(p => p.id === params.packId)!, [statePacks, params.packId])
   const [message] = useIonToast()
@@ -29,11 +29,11 @@ const PrepareOrdersList = () => {
   const history = useHistory()
   const orders = useMemo(() => stateOrders.filter(o => o.id === params.orderId || (params.orderId === '0' && o.status === 'f' && o.basket.find(p => p.packId === params.packId && !p.isAllocated)))
                                           .map(o => {
-                                              const customerInfo = stateCustomers.find(c => c.id === o.userId)!
+                                              const customer = stateCustomers.find(c => c.id === o.userId)!
                                               const basketInfo = o.basket.find(p => p.packId === params.packId)!
                                               return {
                                                 ...o,
-                                                customerInfo,
+                                                customer,
                                                 basketInfo
                                               }
                                             })
@@ -61,7 +61,7 @@ const PrepareOrdersList = () => {
           : orders.map(o => 
               <IonItem key={o.id}>
                 <IonLabel>
-                  <IonText style={{color: colors[0].name}}>{o.customerInfo.name}</IonText>
+                  <IonText style={{color: colors[0].name}}>{o.customer.name}</IonText>
                   <IonText style={{color: colors[1].name}}>{`${labels.quantity}: ${o.basketInfo.weight || o.basketInfo.quantity}`}</IonText>
                 </IonLabel>
                 <IonIcon 

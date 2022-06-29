@@ -1,35 +1,40 @@
 import { useMemo, useState } from 'react'
-import { approveUser, deleteUser, getMessage } from '../data/actions'
+import { approveCustomer, blockCustomer, getMessage } from '../data/actions'
 import labels from '../data/labels'
-import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, useIonToast, useIonLoading, useIonAlert, IonFabList } from '@ionic/react'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, useIonToast, useIonLoading, useIonAlert, IonActionSheet } from '@ionic/react'
 import { useHistory, useLocation, useParams } from 'react-router'
 import Header from './header'
 import Footer from './footer'
-import { checkmarkOutline, chevronDownOutline, trashOutline } from 'ionicons/icons'
-import { Err, Order, Region, State, UserInfo } from '../data/types'
+import { chevronUpOutline } from 'ionicons/icons'
+import { Customer, Err, Region, State, Store } from '../data/types'
 import { useSelector } from 'react-redux'
+import { colors } from '../data/config'
 
 type Params = {
   id: string
 }
-const ApproveUser = () => {
+const ApproveCustomer = () => {
   const params = useParams<Params>()
-  const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
+  const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
   const stateRegions = useSelector<State, Region[]>(state => state.regions)
-  const stateOrders = useSelector<State, Order[]>(state => state.orders)
-  const [userInfo] = useState(() => stateUsers.find(u => u.id === params.id)!)
-  const [name, setName] = useState(userInfo.name)
-  const [regionId, setRegionId] = useState(userInfo.regionId)
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const customer = useMemo(() => stateCustomers.find(c => c.id === params.id)!, [stateCustomers, params.id])
+  const [name, setName] = useState(customer.name)
+  const storeId = useMemo(() => stateStores.find(s => s.mobile === customer.mobile)?.id, [stateStores, customer])
+  const [mobile, setMobile] = useState(customer.mobile)
+  const [regionId, setRegionId] = useState(customer.regionId)
   const [address, setAddress] = useState('')
+  const [actionOpened, setActionOpened] = useState(false)
   const regions = useMemo(() => stateRegions.sort((l1, l2) => l1.ordering - l2.ordering), [stateRegions])
   const history = useHistory()
   const location = useLocation()
   const [message] = useIonToast()
   const [loading, dismiss] = useIonLoading()
   const [alert] = useIonAlert()
+  const stores = useMemo(() => stateStores.filter(s => s.id !== 's').sort((s1, s2) => s1.name > s2.name ? 1 : -1), [stateStores]) 
   const handleSubmit = () => {
     try {
-      approveUser(params.id, name, userInfo.mobile, regionId, userInfo.storeName, address, regions)
+      approveCustomer(params.id, name, mobile, regionId, storeId || '', address, regions)
       message(labels.approveSuccess)
       history.goBack()  
     } catch(error) {
@@ -37,7 +42,7 @@ const ApproveUser = () => {
 			message(getMessage(location.pathname, err), 3000)
 		}
   }
-  const handleDelete = () => {
+  const handleBlock = () => {
     alert({
       header: labels.confirmationTitle,
       message: labels.confirmationText,
@@ -46,7 +51,7 @@ const ApproveUser = () => {
         {text: labels.yes, handler: async () => {
           try{
             loading()
-            await deleteUser(userInfo, stateOrders)
+            await blockCustomer(customer)
             dismiss()
             message(labels.deleteSuccess, 3000)
             history.goBack()
@@ -59,6 +64,7 @@ const ApproveUser = () => {
       ],
     })
   }
+  let i = 0
   return (
     <IonPage>
       <Header title={labels.approveUser} />
@@ -70,7 +76,6 @@ const ApproveUser = () => {
             </IonLabel>
             <IonInput 
               value={name} 
-              type="text" 
               autofocus
               clearInput
               onIonChange={e => setName(e.detail.value!)} 
@@ -81,24 +86,31 @@ const ApproveUser = () => {
               {labels.mobile}
             </IonLabel>
             <IonInput 
-              value={userInfo.mobile} 
-              readonly
+              value={mobile} 
+              clearInput
+              onIonChange={e => setMobile(e.detail.value!)}
             />
           </IonItem>
           <IonItem>
             <IonLabel position="floating" color="primary">
-              {labels.storeName}
+              {labels.store}
             </IonLabel>
-            <IonInput 
-              value={userInfo.storeName} 
-              readonly
-            />
+            <IonSelect 
+              interface="action-sheet"
+              ok-text={labels.ok} 
+              cancel-text={labels.cancel} 
+              value={storeId}
+              disabled
+            >
+              {stores.map(s => <IonSelectOption key={s.id} value={s.id}>{s.name}</IonSelectOption>)}
+            </IonSelect>
           </IonItem>
           <IonItem>
             <IonLabel position="floating" color="primary">
               {labels.region}
             </IonLabel>
             <IonSelect 
+              interface="action-sheet"
               ok-text={labels.ok} 
               cancel-text={labels.cancel} 
               value={regionId}
@@ -120,23 +132,31 @@ const ApproveUser = () => {
           </IonItem>
         </IonList>
       </IonContent>
-      <IonFab horizontal="end" vertical="top" slot="fixed">
-        <IonFabButton>
-          <IonIcon ios={chevronDownOutline} />
+      <IonFab horizontal="center" vertical="bottom" slot="fixed">
+        <IonFabButton size="small" onClick={() => setActionOpened(true)}>
+          <IonIcon ios={chevronUpOutline} />
         </IonFabButton>
-        <IonFabList>
-          <IonFabButton color="danger" onClick={handleDelete}>
-            <IonIcon ios={trashOutline} />
-          </IonFabButton>
-          {name && regionId &&
-            <IonFabButton color="success" onClick={handleSubmit}>
-              <IonIcon ios={checkmarkOutline} />
-            </IonFabButton>
-          }
-        </IonFabList>
       </IonFab>
+      <IonActionSheet
+        mode='ios'
+        isOpen={actionOpened}
+        onDidDismiss={() => setActionOpened(false)}
+        buttons={[
+          {
+            text: labels.save,
+            cssClass: name && regionId && mobile ? colors[i++ % 10].name : 'ion-hide',
+            handler: () => handleSubmit()
+          },
+          {
+            text: labels.block,
+            cssClass: colors[i++ % 10].name,
+            handler: () => handleBlock()
+          },
+        ]}
+      />
+
       <Footer />
     </IonPage>
   )
 }
-export default ApproveUser
+export default ApproveCustomer

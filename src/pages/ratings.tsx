@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import labels from '../data/labels'
 import { approveRating, getMessage } from '../data/actions'
-import { Err, Pack, Product, Rating, State, UserInfo } from '../data/types'
+import { Customer, Err, Pack, Product, Rating, State } from '../data/types'
 import { IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -11,27 +11,27 @@ import { useLocation } from 'react-router'
 import { useSelector } from 'react-redux'
 
 type ExtendedRating = Rating & {
-  userInfo: UserInfo,
-  productInfo: Product
+  customer: Customer,
+  product: Product
 }
 const Ratings = () => {
   const stateRatings = useSelector<State, Rating[]>(state => state.ratings)
-  const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
+  const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
   const stateProducts = useSelector<State, Product[]>(state => state.products)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const [message] = useIonToast()
   const location = useLocation()
   const ratings = useMemo(() => stateRatings.filter(r => r.status === 'n')
                                             .map(r => {
-                                              const userInfo = stateUsers.find(u => u.id === r.userId)!
-                                              const productInfo = stateProducts.find(p => p.id === r.productId)!
+                                              const customer = stateCustomers.find(c => c.id === r.userId)!
+                                              const product = stateProducts.find(p => p.id === r.productId)!
                                               return {
                                                 ...r,
-                                                userInfo,
-                                                productInfo
+                                                customer,
+                                                product
                                               }
                                             })
-  , [stateUsers, stateProducts, stateRatings])
+  , [stateCustomers, stateProducts, stateRatings])
   const handleApprove = (rating: ExtendedRating) => {
     try{
       approveRating(rating, stateRatings, stateProducts, statePacks)
@@ -54,11 +54,11 @@ const Ratings = () => {
           : ratings.map(r => 
               <IonItem key={i++}>
                 <IonThumbnail slot="start">
-                  <img src={r.productInfo.imageUrl} alt={labels.noImage} />
+                  <img src={r.product.imageUrl} alt={labels.noImage} />
                 </IonThumbnail>
                 <IonLabel>
-                  <IonText style={{color: colors[0].name}}>{r.productInfo.name}</IonText>
-                  <IonText style={{color: colors[1].name}}>{`${r.userInfo.name}:${r.userInfo.mobile}`}</IonText>
+                  <IonText style={{color: colors[0].name}}>{r.product.name}</IonText>
+                  <IonText style={{color: colors[1].name}}>{`${r.customer.name}:${r.customer.mobile}`}</IonText>
                 </IonLabel>
                 <IonIcon 
                   ios={checkmarkOutline} 

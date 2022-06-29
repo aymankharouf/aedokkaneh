@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import { updateOrderStatus, editOrder, getMessage, quantityDetails, returnOrder } from '../data/actions'
 import labels from '../data/labels'
-import { Err, Order, OrderBasketPack, Pack, PackPrice, Region, State, UserInfo } from '../data/types'
+import { Customer, Err, Order, OrderBasketPack, Pack, PackPrice, Region, State } from '../data/types'
 import { IonButton, IonButtons, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import { addOutline, removeOutline, trashOutline } from 'ionicons/icons'
@@ -21,7 +21,7 @@ const EditOrder = (props: Props) => {
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
-  const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
+  const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
   const stateRegions = useSelector<State, Region[]>(state => state.regions)
   const stateOrderBasket = useSelector<State, OrderBasketPack[] | undefined>(state => state.orderBasket)
   const order = useMemo(() => stateOrders.find(o => o.id === props.id)!, [stateOrders, props.id])
@@ -77,7 +77,7 @@ const EditOrder = (props: Props) => {
       if (props.type === 'e') {
         editOrder(order, stateOrderBasket!, statePackPrices, statePacks)
       } else {
-        const userRegion = stateUsers.find(c => c.id === order.userId)?.regionId
+        const userRegion = stateCustomers.find(c => c.id === order.userId)?.regionId
         const regionFees = stateRegions.find(r => r.id === userRegion)?.fees || 0
         returnOrder(order, stateOrderBasket!, regionFees, statePackPrices, statePacks)
       }

@@ -3,7 +3,7 @@ import moment from 'moment'
 import 'moment/locale/ar'
 import labels from '../data/labels'
 import { orderStatus, orderRequestTypes, colors } from '../data/config'
-import { CustomerInfo, Order, State } from '../data/types'
+import { Customer, Order, State } from '../data/types'
 import { IonContent, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -11,7 +11,7 @@ import { useSelector } from 'react-redux'
 
 const OrderRequests = () => {
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
-  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
+  const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
   const orderRequests = useMemo(() => stateOrders.filter(r => r.requestType)
                                                   .map(r => {
                                                     const customerInfo = stateCustomers.find(c => c.id === r.userId)!

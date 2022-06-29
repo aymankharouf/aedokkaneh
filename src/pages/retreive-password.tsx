@@ -7,7 +7,7 @@ import Header from './header'
 import Footer from './footer'
 import { checkmarkOutline } from 'ionicons/icons'
 import { useHistory, useLocation, useParams } from 'react-router'
-import { Err, PasswordRequest, State, UserInfo } from '../data/types'
+import { Customer, Err, PasswordRequest, State } from '../data/types'
 import { useSelector } from 'react-redux'
 
 type Params = {
@@ -16,12 +16,12 @@ type Params = {
 const RetreivePassword = () => {
   const params = useParams<Params>()
   const statePasswordRequests = useSelector<State, PasswordRequest[]>(state => state.passwordRequests)
-  const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
+  const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
   const passwordRequest = useMemo(() => statePasswordRequests.find(r => r.id === params.id)!, [statePasswordRequests, params.id])
-  const userInfo = useMemo(() => stateUsers.find(u => u.mobile === passwordRequest.mobile), [stateUsers, passwordRequest])
+  const userInfo = useMemo(() => stateCustomers.find(c => c.mobile === passwordRequest.mobile), [stateCustomers, passwordRequest])
   const password = useMemo(() => userInfo?.colors.map(c => randomColors.find(rc => rc.name === c)!.id).join(''), [userInfo])
   const handleResolve = () => {
     try{

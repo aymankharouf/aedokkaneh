@@ -6,20 +6,16 @@ import Footer from './footer'
 import { useParams } from 'react-router'
 import { chevronDownOutline, pencilOutline, swapVerticalOutline } from 'ionicons/icons'
 import { useSelector } from 'react-redux'
-import { CustomerInfo, Region, State, Store, UserInfo } from '../data/types'
+import { Customer, Region, State } from '../data/types'
 
 type Params = {
   id: string
 }
 const CustomerDetails = () => {
   const params = useParams<Params>()
-  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
-  const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
-  const stateStores = useSelector<State, Store[]>(state => state.stores)
+  const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
   const stateRegions = useSelector<State, Region[]>(state => state.regions)
   const customer = useMemo(() => stateCustomers.find(c => c.id === params.id)!, [stateCustomers, params.id])
-  const userInfo = useMemo(() => stateUsers.find(u => u.id === params.id)!, [stateUsers, params.id])
-  const storeName = useMemo(() => stateStores.find(s => s.id === customer.storeId)?.name || '', [stateStores, customer])
   return (
     <IonPage>
       <Header title={labels.customerDetails} />
@@ -28,15 +24,6 @@ const CustomerDetails = () => {
           <IonItem>
             <IonLabel position="floating" color="primary">
               {labels.name}
-            </IonLabel>
-            <IonInput 
-              value={userInfo.name} 
-              readonly
-            />
-          </IonItem>
-          <IonItem>
-            <IonLabel position="floating" color="primary">
-              {labels.fullName}
             </IonLabel>
             <IonInput 
               value={customer.name} 
@@ -48,7 +35,7 @@ const CustomerDetails = () => {
               {labels.region}
             </IonLabel>
             <IonInput 
-              value={stateRegions.find(r => r.id === userInfo.regionId)?.name} 
+              value={stateRegions.find(r => r.id === customer.regionId)?.name} 
               readonly
             />
           </IonItem>
@@ -108,15 +95,6 @@ const CustomerDetails = () => {
           </IonItem>
           <IonItem>
             <IonLabel position="floating" color="primary">
-              {labels.store}
-            </IonLabel>
-            <IonInput 
-              value={storeName} 
-              readonly
-            />
-          </IonItem>
-          <IonItem>
-            <IonLabel position="floating" color="primary">
               {labels.mapPosition}
             </IonLabel>
             <IonInput 
@@ -135,7 +113,7 @@ const CustomerDetails = () => {
           </IonItem>
           <IonItem>
             <IonLabel color="primary">{labels.isBlocked}</IonLabel>
-            <IonToggle checked={customer.isBlocked} disabled/>
+            <IonToggle checked={customer.status === 'b'} disabled/>
           </IonItem>
         </IonList>
       </IonContent>

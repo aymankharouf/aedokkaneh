@@ -4,7 +4,7 @@ import 'moment/locale/ar'
 import { approveAlarm, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { alarmTypes, colors } from '../data/config'
-import { Alarm, CustomerInfo, Err, Pack, PackPrice, State, Store } from '../data/types'
+import { Alarm, Customer, Err, Pack, PackPrice, State, Store } from '../data/types'
 import { IonList, IonItem, IonContent, IonFab, IonFabButton, IonLabel, IonIcon, IonInput, IonPage, useIonToast, IonSelect, IonSelectOption, IonListHeader, IonText } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -19,16 +19,16 @@ type Params = {
 
 const AlarmDetails = () => {
   const params = useParams<Params>()
-  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
+  const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
   const stateAlarms = useSelector<State, Alarm[]>(state => state.alarms)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const [newPackId, setNewPackId] = useState('')
-  const customerInfo = useMemo(() => stateCustomers.find(c => c.id === params.userId)!, [stateCustomers, params.userId])
+  const customer = useMemo(() => stateCustomers.find(u => u.id === params.userId)!, [stateCustomers, params.userId])
   const alarm = useMemo(() => stateAlarms.find(a => a.id === params.id)!, [stateAlarms, params.id])
   const pack = useMemo(() => statePacks.find(p => p.id === alarm.packId)!, [statePacks, alarm])
-  const storeName = useMemo(() => stateStores.find(s => s.id === customerInfo.storeId)?.name, [stateStores, customerInfo])
+  const storeName = useMemo(() => stateStores.find(s => s.id === customer.storeId)?.name, [stateStores, customer])
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
@@ -48,7 +48,7 @@ const AlarmDetails = () => {
     })
     .sort((p1, p2) => p1.name > p2.name ? 1 : -1)
   }, [statePacks, pack, alarm])
-  const prices = useMemo(() => statePackPrices.filter(p => p.storeId !== customerInfo.storeId && p.packId === (newPackId || pack.id))
+  const prices = useMemo(() => statePackPrices.filter(p => p.storeId !== customer.storeId && p.packId === (newPackId || pack.id))
                                               .map(p => {
                                                 const storeInfo = stateStores.find(s => s.id === p.storeId)!
                                                 return {
@@ -57,10 +57,10 @@ const AlarmDetails = () => {
                                                 }
                                               })
                                               .sort((p1, p2) => p1.price - p2.price)
-  , [statePackPrices, stateStores, customerInfo, pack, newPackId])
+  , [statePackPrices, stateStores, customer, pack, newPackId])
   const handleApprove = () => {
     try{
-      approveAlarm(alarm, stateAlarms, newPackId, customerInfo, statePackPrices, statePacks)
+      approveAlarm(alarm, stateAlarms, newPackId, customer, statePackPrices, statePacks)
       message(labels.approveSuccess, 3000)
 			history.goBack()
     } catch(error) {
@@ -79,7 +79,7 @@ const AlarmDetails = () => {
               {labels.name}
             </IonLabel>
             <IonInput 
-              value={customerInfo.name} 
+              value={customer.name} 
               readonly
             />
           </IonItem>

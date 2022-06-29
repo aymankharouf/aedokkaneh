@@ -6,12 +6,12 @@ import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel,
 import Header from './header'
 import Footer from './footer'
 import { checkmarkOutline } from 'ionicons/icons'
-import { CustomerInfo, Err, State } from '../data/types'
+import { Customer, Err, State } from '../data/types'
 import { useSelector } from 'react-redux'
 
 
 const AddNotification = () => {
-  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
+  const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
   const [userId, setUserId] = useState('')
   const [title, setTitle] = useState('')
   const [text, setText] = useState('')

@@ -3,7 +3,7 @@ import labels from '../data/labels'
 import moment from 'moment'
 import 'moment/locale/ar'
 import { deleteNotification, getMessage } from '../data/actions'
-import { Err, Notification, State, UserInfo } from '../data/types'
+import { Err, Notification, State, Customer } from '../data/types'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -16,19 +16,19 @@ import firebase from '../data/firebase'
 const Notifications = () => {
   const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
   const stateNotifications = useSelector<State, Notification[]>(state => state.notifications)
-  const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
+  const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
   const location = useLocation()
   const [message] = useIonToast()
   const [alert] = useIonAlert()
   const notifications = useMemo(() => stateNotifications.map(n => {
-                                                          const userInfo = stateUsers.find(u => u.id === n.userId)!
+                                                          const customer = stateCustomers.find(c => c.id === n.userId)!
                                                           return {
                                                             ...n,
-                                                            userInfo
+                                                            customer
                                                           }
                                                         })
                                                         .sort((n1, n2) => n2.time > n1.time ? 1 : -1)
-  , [stateUsers, stateNotifications])
+  , [stateCustomers, stateNotifications])
   const handleDelete = (notificationId: string) => {
     alert({
       header: labels.confirmationTitle,
@@ -62,7 +62,7 @@ const Notifications = () => {
           : notifications.map(n =>
               <IonItem key={n.id}>
                 <IonLabel>
-                  <IonText style={{color: colors[0].name}}>{`${n.userInfo.name}:${n.userInfo.mobile}`}</IonText>
+                  <IonText style={{color: colors[0].name}}>{`${n.customer.name}:${n.customer.mobile}`}</IonText>
                   <IonText style={{color: colors[1].name}}>{n.title}</IonText>
                   <IonText style={{color: colors[2].name}}><p>{n.text}</p></IonText>
                   <IonText style={{color: colors[3].name}}>{n.status === 'n' ? labels.notRead : labels.read}</IonText>

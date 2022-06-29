@@ -2,7 +2,7 @@ import { IonApp, IonRouterOutlet, IonSplitPane } from '@ionic/react'
 import { IonReactRouter } from '@ionic/react-router'
 import { Route } from 'react-router-dom'
 import firebase from './data/firebase'
-import { Advert, Alarm, CustomerInfo, Log, MonthlyOperation, Notification, Order, Pack, PackPrice, PasswordRequest, Product, Purchase, Rating, Spending, StockOperation, Store, StorePayment, UserInfo } from './data/types'
+import { Advert, Alarm, Customer, Log, MonthlyOperation, Notification, Order, Pack, PackPrice, PasswordRequest, Product, Purchase, Rating, Spending, StockOperation, Store, StorePayment } from './data/types'
 import { useDispatch } from 'react-redux';
 
 
@@ -67,8 +67,8 @@ import EditCategory from './pages/edit-category'
 import EditStore from './pages/edit-store'
 import CustomerDetails from './pages/customer-details'
 import EditCustomer from './pages/edit-customer'
-import NewUsers from './pages/new-users'
-import ApproveUser from './pages/approve-user'
+import NewCustomers from './pages/new-customers'
+import ApproveCustomer from './pages/approve-customer'
 import Alarms from './pages/alarms'
 import AlarmDetails from './pages/alarm-details'
 import Offers from './pages/offers'
@@ -78,7 +78,6 @@ import EditSpending from './pages/edit-spending'
 import MonthlyOperationCall from './pages/monthly-operation-call'
 import MonthlyOperations from './pages/monthly-operations'
 import RetreivePassword from './pages/retreive-password'
-import StoreOwners from './pages/store-owners'
 import EditOrder from './pages/edit-order'
 import ChangePassword from './pages/change-password'
 import Regions from './pages/regions'
@@ -106,10 +105,8 @@ import AddAdvert from './pages/add-advert'
 import AdvertDetails from './pages/advert-details'
 import EditAdvert from './pages/edit-advert'
 import OrderRequestDetails from './pages/order-request-details'
-import PermitUser from './pages/permit-user'
 import Register from './pages/register'
 import ArchivedPurchases from './pages/archived-purchases'
-import PermissionList from './pages/permission-list'
 import ArchivedStockOperations from './pages/archived-stock-operations'
 import ArchivedProducts from './pages/archived-products'
 import ReturnBasket from './pages/return-basket'
@@ -270,19 +267,28 @@ const App = () => {
         }, err => {
           unsubscribeOrders()
         })  
-        const unsubscribeUsers = firebase.firestore().collection('users').onSnapshot(docs => {
-          const users: UserInfo[] = []
+        const unsubscribeCustomers = firebase.firestore().collection('customers').onSnapshot(docs => {
+          const customers: Customer[] = []
           const notifications: Notification[] = []
           const alarms: Alarm[] = []
           const ratings: Rating[] = []
           docs.forEach(doc => {
-            users.push({
+            customers.push({
               id: doc.id,
               name: doc.data().name,
               mobile: doc.data().mobile,
-              storeName: doc.data().storeName,
+              storeId: doc.data().storeId,
               colors: doc.data().colors,
               regionId: doc.data().regionId,
+              status: doc.data().status,
+              orderLimit: doc.data().orderLimit,
+              address: doc.data().address,
+              deliveryFees: doc.data().deliveryFees,
+              mapPosition: doc.data().mapPosition,
+              ordersCount: doc.data().ordersCount,
+              deliveredOrdersCount: doc.data().deliveredOrdersCount,
+              returnedCount: doc.data().returnedCount,
+              deliveredOrdersTotal: doc.data().deliveredOrdersTotal,
               time: doc.data().time.toDate()
             })
             if (doc.data().notifications) {
@@ -321,34 +327,10 @@ const App = () => {
               })
             }
           })
-          dispatch({type: 'SET_USERS', payload: users})
+          dispatch({type: 'SET_CUSTOMERS', payload: customers})
           dispatch({type: 'SET_NOTIFICATIONS', payload: notifications})
           dispatch({type: 'SET_ALARMS', payload: alarms})
           dispatch({type: 'SET_RATINGS', payload: ratings})
-        }, err => {
-          unsubscribeUsers()
-        })  
-        const unsubscribeCustomers = firebase.firestore().collection('customers').onSnapshot(docs => {
-          let customers: CustomerInfo[] = []
-          docs.forEach(doc => {
-            customers.push({
-              id: doc.id,
-              name: doc.data().name,
-              storeId: doc.data().storeId,
-              storeName: doc.data().storeName,
-              orderLimit: doc.data().orderLimit,
-              isBlocked: doc.data().isBlocked,
-              address: doc.data().address,
-              deliveryFees: doc.data().deliveryFees,
-              mapPosition: doc.data().mapPosition,
-              ordersCount: doc.data().ordersCount,
-              deliveredOrdersCount: doc.data().deliveredOrdersCount,
-              returnedCount: doc.data().returnedCount,
-              deliveredOrdersTotal: doc.data().deliveredOrdersTotal,
-              time: doc.data().time.toDate()
-            })
-          })
-          dispatch({type: 'SET_CUSTOMERS', payload: customers})
         }, err => {
           unsubscribeCustomers()
         })  
@@ -484,7 +466,6 @@ const App = () => {
             <Route path="/" exact={true} component={Home} />
             <Route path="/login" exact={true} component={Login} />
             <Route path="/change-password" exact={true} component={ChangePassword} />
-            <Route path="/permit-user/:id" exact={true} component={PermitUser} />
             <Route path="/register" exact={true} component={Register} />
             <Route path="/products/:id" exact={true} component={Products} />
             <Route path="/product-packs/:id/:type" exact={true} component={ProductPacks} />
@@ -496,8 +477,8 @@ const App = () => {
             <Route path="/stores" exact={true} component={Stores} />
             <Route path="/add-store" exact={true} component={AddStore} />
             <Route path="/customers" exact={true} component={Customers} />
-            <Route path="/new-users" exact={true} component={NewUsers} />
-            <Route path="/approve-user/:id" exact={true} component={ApproveUser} />
+            <Route path="/new-customers" exact={true} component={NewCustomers} />
+            <Route path="/approve-customer/:id" exact={true} component={ApproveCustomer} />
             <Route path="/customer-details/:id" exact={true} component={CustomerDetails} />
             <Route path="/edit-customer/:id" exact={true} component={EditCustomer} />
             <Route path="/store-details/:id" exact={true} component={StoreDetails} />
@@ -541,7 +522,6 @@ const App = () => {
             <Route path="/monthly-operation-call" exact={true} component={MonthlyOperationCall} />
             <Route path="/monthly-operations/:id" exact={true} component={MonthlyOperations} />
             <Route path="/retreive-password/:id" exact={true} component={RetreivePassword} />
-            <Route path="/store-owners/:id" exact={true} component={StoreOwners} />
             <Route path="/regions" exact={true} component={Regions} />
             <Route path="/add-region" exact={true} component={AddRegion} />
             <Route path="/edit-region/:id" exact={true} component={EditRegion} />
@@ -564,7 +544,6 @@ const App = () => {
             <Route path="/edit-advert/:id" exact={true} component={EditAdvert} />
             <Route path="/order-request-details/:id" exact={true} component={OrderRequestDetails} />
             <Route path="/archived-purchases" exact={true} component={ArchivedPurchases} />
-            <Route path="/permission-list/:id" exact={true} component={PermissionList} />
             <Route path="/archived-stock-operations" exact={true} component={ArchivedStockOperations} />
             <Route path="/archived-products" exact={true} component={ArchivedProducts} />
             <Route path="/return-basket" exact={true} component={ReturnBasket} />

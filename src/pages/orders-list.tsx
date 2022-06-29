@@ -3,7 +3,7 @@ import moment from 'moment'
 import 'moment/locale/ar'
 import labels from '../data/labels'
 import { colors, orderStatus } from '../data/config'
-import { CustomerInfo, Order, State, UserInfo } from '../data/types'
+import { Customer, Order, State } from '../data/types'
 import { IonContent, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -17,20 +17,17 @@ type Params = {
 const OrdersList = () => {
   const params = useParams<Params>()
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
-  const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
-  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
+  const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
   const orders = useMemo(() => stateOrders.filter(o => (params.type === 's' && o.status === params.id) || (params.type === 'u' && o.userId === params.id))
                                           .map(o => {
-                                            const userInfo = stateUsers.find(u => u.id === o.userId)!
-                                            const customerInfo = stateCustomers.find(c => c.id === o.userId)!
+                                            const customer = stateCustomers.find(c => c.id === o.userId)!
                                             return {
                                               ...o,
-                                              userInfo,
-                                              customerInfo,
+                                              customer
                                             }
                                           })
                                           .sort((o1, o2) => o2.time > o1.time ? 1 : -1)
-  , [stateOrders, stateUsers, stateCustomers, params.id, params.type])
+  , [stateOrders, stateCustomers, params.id, params.type])
 
   return(
     <IonPage>
@@ -44,7 +41,7 @@ const OrdersList = () => {
           : orders.map(o => 
               <IonItem key={o.id} routerLink={`/order-details/${o.id}/n`}>
                 <IonLabel>
-                  <IonText style={{color: colors[0].name}}>{params.type === 's' ? (o.customerInfo?.name || o.userInfo.name) : orderStatus.find(s => s.id === o.status)?.name}</IonText>
+                  <IonText style={{color: colors[0].name}}>{params.type === 's' ? o.customer?.name : orderStatus.find(s => s.id === o.status)?.name}</IonText>
                   <IonText style={{color: colors[1].name}}>{o.deliveryTime}</IonText>
                   <IonText style={{color: colors[2].name}}>{moment(o.time).fromNow()}</IonText>
                   <IonText style={{color: colors[3].name}}>{o.lastUpdate ? moment(o.lastUpdate).fromNow() : ''}</IonText>

@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { updateOrderStatus, getMessage, quantityDetails, mergeOrder, setDeliveryTime } from '../data/actions'
 import labels from '../data/labels'
 import { colors, orderPackStatus } from '../data/config'
-import { CustomerInfo, Err, Order, Pack, PackPrice, State, Store } from '../data/types'
+import { Customer, Err, Order, Pack, PackPrice, State, Store } from '../data/types'
 import { IonActionSheet, IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -21,7 +21,7 @@ const OrderDetails = () => {
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
-  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
+  const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
   const order = useMemo(() => params.type === 'a' ? stateArchivedOrders.find(o => o.id === params.id)! : stateOrders.find(o => o.id === params.id)!, [stateArchivedOrders, stateOrders, params.id, params.type])
   const [actionsOpened, setActionsOpened] = useState(false)
   const [message] = useIonToast()

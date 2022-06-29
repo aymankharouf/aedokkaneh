@@ -261,6 +261,7 @@ const PackDetails = () => {
         </IonFabList>
       </IonFab>
       <IonActionSheet
+        mode='ios'
         isOpen={actionOpened}
         onDidDismiss={() => setActionOpened(false)}
         buttons={[

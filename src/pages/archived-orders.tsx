@@ -4,7 +4,7 @@ import 'moment/locale/ar'
 import labels from '../data/labels'
 import { colors, orderStatus } from '../data/config'
 import { getArchivedOrders, getMessage } from '../data/actions'
-import { CustomerInfo, Err, MonthlyOperation, Order, State } from '../data/types'
+import { Customer, Err, MonthlyOperation, Order, State } from '../data/types'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -16,7 +16,7 @@ const ArchivedOrders = () => {
   const dispatch = useDispatch()
   const stateMonthlyOperations = useSelector<State, MonthlyOperation[]>(state => state.monthlyOperations)
   const stateArchivedOrders = useSelector<State, Order[]>(state => state.archivedOrders)
-  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
+  const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
   const monthlyOperations = useMemo(() => stateMonthlyOperations.sort((t1, t2) => t2.id - t1.id), [stateMonthlyOperations])
   const lastMonth = useRef(0)
   const [message] = useIonToast()

@@ -81,22 +81,15 @@ export type Alarm = {
   quantity: number,
   time: Date
 }
-export type UserInfo = {
+export type Customer = {
   id: string,
   name: string,
   mobile: string,
-  storeName: string,
+  storeId: string,
   colors: string[],
   regionId: string,
-  time: Date
-}
-export type CustomerInfo = {
-  id: string,
-  name: string,
-  storeId: string,
-  storeName: string,
+  status: string,
   orderLimit: number,
-  isBlocked: boolean,
   address: string,
   deliveryFees: number,
   mapPosition: string,
@@ -311,14 +304,13 @@ export type State = {
   regions: Region[], 
   countries: Country[],
   stores: Store[], 
-  users: UserInfo[],
   purchases: Purchase[],
   orders: Order[],
   stockOperations: StockOperation[],
   products: Product[],
   packs: Pack[],
   passwordRequests: PasswordRequest[],
-  customers: CustomerInfo[],
+  customers: Customer[],
   spendings: Spending[],
   monthlyOperations: MonthlyOperation[],
   packPrices: PackPrice[],

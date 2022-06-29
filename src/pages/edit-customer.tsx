@@ -1,12 +1,12 @@
 import { useState, useMemo } from 'react'
 import { editCustomer, getMessage } from '../data/actions'
 import labels from '../data/labels'
-import { IonToggle, IonContent, IonSelect, IonSelectOption, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
+import { IonContent, IonSelect, IonSelectOption, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
 import { useHistory, useLocation, useParams } from 'react-router'
 import Header from './header'
 import Footer from './footer'
 import { checkmarkOutline } from 'ionicons/icons'
-import { CustomerInfo, Err, Region, State, Store, UserInfo } from '../data/types'
+import { Customer, Err, Region, State } from '../data/types'
 import { useSelector } from 'react-redux'
 
 type Params = {
@@ -14,31 +14,26 @@ type Params = {
 }
 const EditCustomer = () => {
   const params = useParams<Params>()
-  const stateCustomers = useSelector<State, CustomerInfo[]>(state => state.customers)
-  const stateUsers = useSelector<State, UserInfo[]>(state => state.users)
+  const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
   const stateRegions = useSelector<State, Region[]>(state => state.regions)
-  const stateStores = useSelector<State, Store[]>(state => state.stores)
-  const [customer] = useState(() => stateCustomers.find(c => c.id === params.id)!)
-  const [userInfo] = useState(() => stateUsers.find(u => u.id === params.id)!)
-  const [name, setName] = useState(userInfo.name)
+  const customer = useMemo(() => stateCustomers.find(c => c.id === params.id)!, [stateCustomers, params.id])
+  const [name, setName] = useState(customer.name)
   const [address, setAddress] = useState(customer.address)
-  const [regionId, setRegionId] = useState(userInfo.regionId)
+  const [regionId, setRegionId] = useState(customer.regionId)
   const [mapPosition, setMapPosition] = useState(customer.mapPosition)
-  const [isBlocked, setIsBlocked] = useState(customer.isBlocked)
   const [deliveryFees, setDeliveryFees] = useState((customer.deliveryFees / 100).toFixed(2))
   const [orderLimit, setOrderLimit] = useState((customer.orderLimit / 100).toFixed(2))
   const regions= useMemo(() => stateRegions.sort((l1, l2) => l1.name > l2.name ? 1 : -1), [stateRegions])
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-  const hasChanged = useMemo(() => (name !== userInfo.name)
+  const hasChanged = useMemo(() => (name !== customer.name)
   || (address !== customer.address)
-  || (regionId !== userInfo.regionId)
+  || (regionId !== customer.regionId)
   || (mapPosition !== customer.mapPosition)
-  || (isBlocked !== customer.isBlocked)
   || (+deliveryFees * 100 !== customer.deliveryFees)
   || (+orderLimit * 100 !== customer.orderLimit)
-  , [customer, userInfo, name, address, regionId, mapPosition, isBlocked, deliveryFees, orderLimit])
+  , [customer, name, address, regionId, mapPosition, deliveryFees, orderLimit])
   const handleSubmit = () => {
     try{
       if (Number(deliveryFees) < 0 || Number(deliveryFees) !== Number(Number(deliveryFees).toFixed(2))) {
@@ -51,11 +46,10 @@ const EditCustomer = () => {
         ...customer,
         address,
         mapPosition,
-        isBlocked,
         deliveryFees: +deliveryFees * 100,
         orderLimit: +orderLimit * 100,
       }
-      editCustomer(newCustomer, name, regionId, userInfo.mobile, customer.storeId, stateStores)
+      editCustomer(newCustomer)
       message(labels.editSuccess, 3000)
       history.goBack()    
     } catch(error) {
@@ -136,10 +130,6 @@ const EditCustomer = () => {
               clearInput
               onIonChange={e => setAddress(e.detail.value!)} 
             />
-          </IonItem>
-          <IonItem>
-            <IonLabel color="primary">{labels.isBlocked}</IonLabel>
-            <IonToggle checked={isBlocked} onIonChange={() => setIsBlocked(s => !s)}/>
           </IonItem>
         </IonList>
       </IonContent>

@@ -102,7 +102,7 @@ const labels: Label = {
   editCustomer: 'تعديل بيانات عميل',
   type: 'التصنيف',
   store: 'المحل',
-  newUsers: 'عملاء جدد',
+  newCustomers: 'عملاء جدد',
   approveSuccess: 'تم اﻻعتماد',
   approveUser: 'اعتماد عميل جديد',
   alarms: 'الاشعارات',
@@ -267,7 +267,6 @@ const labels: Label = {
   approveMergeRequest: 'تم اعتماد طلبك بدمج طلبي شراء',
   approveEditRequest: 'تم اعتماد طلبك بتعديل طلب الشراء',
   approveInvitation: 'تم اعتماد دعوتك لصديق، سوف تحصل على خصم بمجرد تسجيله معنا',
-  customerHasBeenBlocked: 'تم للاسف حظر التعامل معك لعدم استلامك لطلبك الاخير',
   noArchiveBeforeMothlyOperations: 'لا يمكن الارشفة قبل اثبات الحركات الشهرية',
   operations: 'حركات',
   purchasePlan: 'خطة الشراء',
@@ -377,7 +376,9 @@ const labels: Label = {
   timing: 'تحديد موعد التسليم',
   yes: 'موافق',
   setImage: 'حمل الصورة',
-  parentCategory: 'التصنيف الرئيس'
+  parentCategory: 'التصنيف الرئيس',
+  save: 'حفظ',
+  block: 'حظر'
 }
 
 export default labels
