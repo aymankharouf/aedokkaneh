@@ -30,7 +30,9 @@ const ProductPacks = () => {
   const history = useHistory()
   const [alert] = useIonAlert()
   const packs = useMemo(() => {
-    const packs = params.type === 'a' ? stateArchivedPacks.filter(p => p.productId === params.id) : statePacks.filter(p => p.productId === params.id)
+    const packs = params.type === 'a' ? stateArchivedPacks.filter(p => p.product.id === params.id) : statePacks.filter(p => p.product.id === params.id)
+    console.log('statePacks == ', statePacks)
+    console.log('packs === ', packs)
     return packs.sort((p1, p2) => p2.price - p1.price)
   }, [statePacks, stateArchivedPacks, params.id, params.type])
   const activePacks = useMemo(() => packs.filter(p => p.price > 0), [packs])
@@ -83,9 +85,8 @@ const ProductPacks = () => {
           {packs.map(p => 
             <IonItem key={p.id} routerLink={`/pack-details/${p.id}`}>
               <IonLabel>{p.name}</IonLabel>
-              {p.closeExpired && <IonBadge slot="end" color="danger">{labels.closeExpired}</IonBadge>}
-              {!p.isOffer && !p.offerEnd && p.price > 0 && <IonLabel slot="end" className="price">{(p.price / 100).toFixed(2)}</IonLabel>}
-              {(p.isOffer || p.offerEnd) && <IonBadge slot="end" color="success">{p.price > 0 ? (p.price / 100).toFixed(2) : labels.offer}</IonBadge>}
+              {!p.isOffer && p.price > 0 && <IonLabel slot="end" className="price">{(p.price / 100).toFixed(2)}</IonLabel>}
+              {p.isOffer && <IonBadge slot="end" color="success">{p.price > 0 ? (p.price / 100).toFixed(2) : labels.offer}</IonBadge>}
             </IonItem>
           )}
         </IonList>

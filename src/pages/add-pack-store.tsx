@@ -46,12 +46,10 @@ const AddPackStore = () => {
         packId: pack.id!,
         storeId,
         price: +price * 100,
-        offerEnd,
         isActive,
         time: new Date(),
         quantity: 0,
         weight: 0,
-        isAuto: false
       }
       addPackPrice(storePack, statePackPrices, statePacks)
       message(labels.addSuccess, 3000)
@@ -64,7 +62,7 @@ const AddPackStore = () => {
 
   return (
     <IonPage>
-      <Header title={`${labels.addPrice} ${pack.product.name} ${pack.name}${pack.closeExpired ? '(' + labels.closeExpired + ')' : ''}`} />
+      <Header title={`${labels.addPrice} ${pack.product.name} ${pack.name}`} />
       <IonContent fullscreen className="ion-padding">
         <IonList>
           <SmartSelect label={labels.store} data={stores} value={storeId} onChange={(v) => setStoreId(v)} />

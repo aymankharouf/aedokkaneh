@@ -71,7 +71,6 @@ import NewCustomers from './pages/new-customers'
 import ApproveCustomer from './pages/approve-customer'
 import Alarms from './pages/alarms'
 import AlarmDetails from './pages/alarm-details'
-import Offers from './pages/offers'
 import Spendings from './pages/spendings'
 import AddSpending from './pages/add-spending'
 import EditSpending from './pages/edit-spending'
@@ -129,21 +128,10 @@ const App = () => {
           id: doc.id,
           name: doc.data().name,
           product: doc.data().product,
-          productId: doc.data().productId,
-          categoryId: doc.data().categoryId,
-          trademark: doc.data().trademark,
-          countryId: doc.data().countryId,
-          sales: doc.data().sales,
-          rating: doc.data().rating,
-          ratingCount: doc.data().ratingCount,
           price: doc.data().price,
-          imageUrl: doc.data().imageUrl,
           subPackId: doc.data().subPackId,
-          specialImage: doc.data().specialImage,
           isOffer: doc.data().isOffer,
-          offerEnd: doc.data().offerEnd?.toDate() || null,
-          closeExpired: doc.data().closeExpired,
-          subQuantity: doc.data().subQuantity,
+          subCount: doc.data().subCount,
           unitsCount: doc.data().unitsCount,
           byWeight: doc.data().byWeight,
           isDivided: doc.data().isDivided,
@@ -159,12 +147,12 @@ const App = () => {
               weight: p.weight,
               price: p.price,
               isActive: p.isActive,
-              offerEnd: p.offerEnd?.toDate() || null,
               time: p.time.toDate()
             })
           })
         }
       })
+      console.log('packs .... ', packs)
       dispatch({type: 'SET_PACKS', payload: packs})
       dispatch({type: 'SET_PACK_PRICES', payload: packPrices})
     }, err => {
@@ -483,7 +471,6 @@ const App = () => {
             <Route path="/password-requests" exact={true} component={PasswordRequests} />
             <Route path="/alarms" exact={true} component={Alarms} />
             <Route path="/alarm-details/:id/:userId" exact={true} component={AlarmDetails} />
-            <Route path="/offers" exact={true} component={Offers} />
             <Route path="/countries" exact={true} component={Countries} />
             <Route path="/add-country" exact={true} component={AddCountry} />
             <Route path="/edit-country/:id" exact={true} component={EditCountry} />

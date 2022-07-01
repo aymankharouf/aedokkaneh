@@ -45,7 +45,7 @@ const RequestedPacks = () => {
 					: requestedPacks.map(p => 
 							<IonItem key={i++} routerLink={`/requested-pack-details/${p.packId}/quantity/${p.quantity}/price/${p.price}/order/${p.orderId}`}>
 								<IonThumbnail slot="start">
-									<img src={p.packInfo.imageUrl} alt={labels.noImage} />
+									<img src={p.packInfo.product.imageUrl} alt={labels.noImage} />
 								</IonThumbnail>
 								<IonLabel>
 									<IonText style={{color: colors[0].name}}>{p.packInfo.product.name}</IonText>
@@ -53,7 +53,6 @@ const RequestedPacks = () => {
 									<IonText style={{color: colors[2].name}}>{p.packInfo.name}</IonText>
 									<IonText style={{color: colors[3].name}}>{`${labels.quantity}: ${quantityText(p.quantity)}`}</IonText>
 								</IonLabel>
-								{p.packInfo.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
 								<IonLabel slot="end" className="price">{p.offerId ? '' : (p.price / 100).toFixed(2)}</IonLabel>
 								{p.offerId && <IonBadge slot="end" color="success">{(p.price / 100).toFixed(2)}</IonBadge>}
 							</IonItem>    

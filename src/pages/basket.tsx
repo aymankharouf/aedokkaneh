@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { quantityText } from '../data/actions'
 import labels from '../data/labels'
 import { Basket as BasketType, BasketPack, PackPrice, State, Store } from '../data/types'
-import { IonBadge, IonButton, IonButtons, IonContent, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
+import { IonButton, IonButtons, IonContent, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
 import Header from './header'
 import { addOutline, removeOutline } from 'ionicons/icons'
 import { colors } from '../data/config'
@@ -44,7 +44,6 @@ const Basket = () => {
                 <IonText style={{color: colors[3].name}}>{`${labels.unitPrice}: ${(p.price / 100).toFixed(2)}`}</IonText>
                 <IonText style={{color: colors[4].name}}>{`${labels.quantity}: ${quantityText(p.quantity, p.weight)}`}</IonText>
                 <IonText style={{color: colors[5].name}}>{`${labels.grossPrice}: ${(Math.round(p.price * (p.weight || p.quantity)) / 100).toFixed(2)}`}</IonText>
-                {p.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
               </IonLabel>
               {p.price > 0 && <>
                 <IonButtons slot="end" onClick={() => dispatch({type: 'DECREASE_QUANTITY', payload: p})}>

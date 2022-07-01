@@ -3,7 +3,7 @@ import { quantityText } from '../data/actions'
 import labels from '../data/labels'
 import { colors, stockOperationTypes } from '../data/config'
 import { Pack, State, StockOperation, Store } from '../data/types'
-import { IonBadge, IonContent, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
+import { IonContent, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useSelector } from 'react-redux'
@@ -34,7 +34,7 @@ const StockOperationDetails = (props: Props) => {
           {stockOperationBasket.map(p => 
             <IonItem key={p.packId}>
               <IonThumbnail slot="start">
-                <img src={p.packInfo.imageUrl} alt={labels.noImage} />
+                <img src={p.packInfo.product.imageUrl} alt={labels.noImage} />
               </IonThumbnail>
               <IonLabel>
                 <IonText style={{color: colors[0].name}}>{p.packInfo.product.name}</IonText>
@@ -42,7 +42,6 @@ const StockOperationDetails = (props: Props) => {
                 <IonText style={{color: colors[2].name}}>{p.packInfo.name}</IonText>
                 <IonText style={{color: colors[3].name}}>{`${labels.quantity}: ${quantityText(p.quantity, p.weight)}`}</IonText>
               </IonLabel>
-              {p.packInfo.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
               <IonLabel slot="end" className="price">{(Math.round(p.price * (p.weight || p.quantity)) / 100).toFixed(2)}</IonLabel>
             </IonItem>    
           )}

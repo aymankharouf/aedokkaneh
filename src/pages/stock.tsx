@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { quantityText } from '../data/actions'
 import labels from '../data/labels'
 import { Pack, PackPrice, State } from '../data/types'
-import { IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { colors } from '../data/config'
@@ -39,7 +39,7 @@ const Stock = () => {
           : stockPacks.map(p => 
               <IonItem key={i++} routerLink={`/stock-pack-operations/${p.packId}`}>
                 <IonThumbnail slot="start">
-                  <img src={p.packInfo.imageUrl} alt={labels.noImage} />
+                  <img src={p.packInfo.product.imageUrl} alt={labels.noImage} />
                 </IonThumbnail>
                 <IonLabel>
                   <IonText style={{color: colors[0].name}}>{p.packInfo.product.name}</IonText>
@@ -48,7 +48,6 @@ const Stock = () => {
                   <IonText style={{color: colors[3].name}}>{`${labels.quantity}: ${quantityText(p.quantity, p.weight)}`}</IonText>
                   <IonText style={{color: colors[4].name}}>{`${labels.gross}: ${(p.price * (p.weight || p.quantity)/ 100).toFixed(2)}`}</IonText>
                 </IonLabel>
-                {p.packInfo.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
                 <IonLabel slot="end" className="price">{(p.price / 100).toFixed(2)}</IonLabel>
               </IonItem>    
             )

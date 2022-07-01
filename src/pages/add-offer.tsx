@@ -1,8 +1,8 @@
-import { useState, useEffect, ChangeEvent, useRef, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { addPack, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { useHistory, useLocation, useParams } from 'react-router'
-import { IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, IonToggle, useIonToast } from '@ionic/react'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, IonToggle, useIonToast } from '@ionic/react'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
 import { Err, Pack, Product, State } from '../data/types'
@@ -16,92 +16,55 @@ const AddOffer = () => {
   const stateProducts = useSelector<State, Product[]>(state => state.products)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const [subPackId, setSubPackId] = useState('')
-  const [subQuantity, setSubQuantity] = useState('')
+  const [subCount, setSubCount] = useState('')
   const [withGift, setWithGift] = useState(false)
   const [gift, setGift] = useState('')
-  const [specialImage, setSpecialImage] = useState(false)
-  const [image, setImage] = useState<File>()
   const product = useMemo(() => stateProducts.find(p => p.id === params.id)!, [stateProducts, params.id])
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-  const inputEl = useRef<HTMLInputElement | null>(null)
-  const packs = useMemo(() => statePacks.filter(p => p.productId === params.id && !p.isOffer && !p.byWeight)
+  const packs = useMemo(() => statePacks.filter(p => p.product.id === params.id && !p.isOffer && !p.byWeight)
   .map(p => {
     return {
       id: p.id,
-      name: `${p.name} ${p.closeExpired ? '(' + labels.closeExpired + ')' : ''}`
+      name: p.name
     }
   }), [statePacks, params.id])
-  const [imageUrl, setImageUrl] = useState(product.imageUrl)
-  useEffect(() => {
-    setImageUrl(() => statePacks.find(p => p.id === subPackId)?.imageUrl || '')
-  }, [statePacks, subPackId])
   const name = useMemo(() => {
     let suggestedName = ''
-    if (subPackId && subQuantity) {
-      suggestedName = `${+subQuantity > 1 ? subQuantity + '×' : ''}${statePacks.find(p => p.id === subPackId)!.name}`
+    if (subPackId && subCount) {
+      suggestedName = `${+subCount > 1 ? subCount + '×' : ''}${statePacks.find(p => p.id === subPackId)!.name}`
     }
     if (withGift) {
       suggestedName += ' + ' + gift 
     }
     return suggestedName
-  }, [subPackId, subQuantity, withGift, gift, statePacks])
-  const onUploadClick = () => {
-    if (inputEl.current) inputEl.current.click();
-  }
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files || files.length === 0) return
-    const filename = files[0].name
-    if (filename.lastIndexOf('.') <= 0) {
-      throw new Error('invalidFile')
-    }
-    const fileReader = new FileReader()
-    fileReader.addEventListener('load', () => {
-      if (fileReader.result) setImageUrl(fileReader.result.toString())
-    })
-    fileReader.readAsDataURL(files[0])
-    setImage(files[0])
-  }
+  }, [subPackId, subCount, withGift, gift, statePacks])
   const handleSubmit = () => {
     try{
       const subPackInfo = statePacks.find(p => p.id === subPackId)!
-      if (statePacks.find(p => p.productId === params.id && p.name === name && p.closeExpired === subPackInfo.closeExpired)) {
+      if (statePacks.find(p => p.product.id === params.id && p.name === name)) {
         throw new Error('duplicateName')
       }
-      if (!withGift && Number(subQuantity) <= 1) {
+      if (!withGift && Number(subCount) <= 1) {
         throw new Error('invalidQuantity')
       }
       const pack = {
         name,
         product,
-        productId: product.id!,
-        productName: product.name,
-        productAlias: product.alias,
-        productDescription: product.description,
-        categoryId: product.categoryId,
-        countryId: product.countryId,
-        trademark: product.trademark,
-        sales: product.sales,
-        rating: product.rating,
-        ratingCount: product.ratingCount,
         isOffer: true,
         subPackId,
-        subQuantity: +subQuantity,
+        subCount: +subCount,
         withGift,
         gift,
-        unitsCount: +subQuantity * subPackInfo.unitsCount,
+        unitsCount: +subCount * subPackInfo.unitsCount,
         isDivided: subPackInfo.isDivided,
         byWeight: subPackInfo.byWeight,
-        closeExpired: subPackInfo.closeExpired,
         price: 0,
         isArchived: false,
-        imageUrl: product.imageUrl,
         specialImage: false,
-        offerEnd: null
       }
-      addPack(pack, image, subPackInfo)
+      addPack(pack)
       message(labels.addSuccess, 3000)
       history.goBack()
     } catch(error) {
@@ -142,10 +105,10 @@ const AddOffer = () => {
               {labels.quantity}
             </IonLabel>
             <IonInput 
-              value={subQuantity} 
+              value={subCount} 
               type="number" 
               clearInput
-              onIonChange={e => setSubQuantity(e.detail.value!)} 
+              onIonChange={e => setSubCount(e.detail.value!)} 
             />
           </IonItem>
           <IonItem>
@@ -165,30 +128,9 @@ const AddOffer = () => {
                 />
             </IonItem>
           }
-          <IonItem>
-            <IonLabel color="primary">{labels.specialImage}</IonLabel>
-            <IonToggle checked={specialImage} onIonChange={() => setSpecialImage(s => !s)}/>
-          </IonItem>
-          {specialImage && <>
-            <input 
-              ref={inputEl}
-              type="file" 
-              accept="image/*" 
-              style={{display: "none"}}
-              onChange={e => handleFileChange(e)}
-            />
-            <IonButton 
-              expand="block" 
-              fill="clear" 
-              onClick={onUploadClick}
-            >
-              {labels.setImage}
-            </IonButton>
-            <IonImg src={imageUrl} alt={labels.noImage} />
-          </>}
         </IonList>
       </IonContent>
-      {name && subPackId && subQuantity && (!withGift || gift) &&
+      {name && subPackId && subCount && (!withGift || gift) &&
         <IonFab vertical="top" horizontal="end" slot="fixed">
           <IonFabButton onClick={handleSubmit} color="success">
             <IonIcon ios={checkmarkOutline} />

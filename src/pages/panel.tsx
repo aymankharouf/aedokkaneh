@@ -4,7 +4,7 @@ import labels from '../data/labels'
 import { IonBadge, IonContent, IonItem, IonLabel, IonList, IonMenu, IonMenuToggle } from '@ionic/react'
 import { useHistory } from 'react-router'
 import { useSelector, useDispatch } from 'react-redux'
-import { Alarm, Customer, Order, PackPrice, PasswordRequest, Rating, State } from '../data/types'
+import { Alarm, Customer, Order, PasswordRequest, Rating, State } from '../data/types'
 import firebase from '../data/firebase'
 
 const Panel = () => {
@@ -15,7 +15,6 @@ const Panel = () => {
   const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
   const stateRatings = useSelector<State, Rating[]>(state => state.ratings)
   const statePasswordRequests = useSelector<State, PasswordRequest[]>(state => state.passwordRequests)
-  const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const menuEl = useRef<HTMLIonMenuElement | null>(null)
   const history = useHistory()
   const approvalsCount = useMemo(() => {
@@ -27,9 +26,6 @@ const Panel = () => {
     const passwordRequests = statePasswordRequests.length
     return newOrders + orderRequests + newCustomers + alarms + ratings + passwordRequests
   }, [stateOrders, stateCustomers, statePasswordRequests, stateAlarms, stateRatings])
-  const today = (new Date()).setHours(0, 0, 0, 0)
-  const offersCount = useMemo(() => statePackPrices.filter(p => p.offerEnd && p.offerEnd.setHours(0, 0, 0, 0) <= today).length, [statePackPrices, today])
-
   const handleLogout = () => {
     logout()
     history.push('/')
@@ -58,10 +54,6 @@ const Panel = () => {
             <IonItem routerLink="/approvals" style={{marginBottom: '0px', marginTop: '0px'}}>
               <IonLabel>{labels.approvals}</IonLabel>
               {approvalsCount > 0 && <IonBadge color="danger">{approvalsCount}</IonBadge>}
-            </IonItem>
-            <IonItem routerLink="/offers" style={{marginBottom: '0px', marginTop: '0px'}}>
-              <IonLabel>{labels.offers}</IonLabel>
-              {offersCount > 0 && <IonBadge color="danger">{offersCount}</IonBadge>}
             </IonItem>
             <IonItem routerLink="/monthly-operation-call" style={{marginBottom: '0px', marginTop: '0px'}}>
               <IonLabel>{labels.monthlyOperations}</IonLabel>

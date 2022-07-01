@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { confirmPurchase, stockOut, getMessage, quantityText } from '../data/actions'
 import labels from '../data/labels'
-import { IonBadge, IonButton, IonContent, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
+import { IonButton, IonContent, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
 import Header from './header'
 import { useHistory, useLocation } from 'react-router'
 import { colors } from '../data/config'
@@ -61,7 +61,6 @@ const ConfirmPurchase = () => {
                 <IonText style={{color: colors[3].name}}>{`${labels.unitPrice}: ${(p.price / 100).toFixed(2)}`}</IonText>
                 <IonText style={{color: colors[4].name}}>{`${labels.quantity}: ${quantityText(p.quantity, p.weight)}`}</IonText>
               </IonLabel>
-              {p.packInfo.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
               <IonLabel slot="end" className="price">{((p.price * (p.weight || p.quantity)) / 100).toFixed(2)}</IonLabel>
             </IonItem>   
         

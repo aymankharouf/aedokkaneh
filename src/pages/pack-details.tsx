@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react'
 import { getPackStores, deleteStorePack, refreshPackPrice, deletePack, changeStorePackStatus, getMessage, quantityText } from '../data/actions'
-import moment from 'moment'
 import labels from '../data/labels'
 import { Basket, Err, Order, Pack, PackPrice, Purchase, State, Store } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
@@ -130,9 +129,6 @@ const PackDetails = () => {
   }
   const handlePurchase = () => {
 		try{
-      if (currentStorePack?.packPrice.offerEnd && new Date() > currentStorePack.packPrice.offerEnd) {
-        throw new Error('offerEnded')
-      }
 			if (stateBasket?.storeId && stateBasket.storeId !== currentStorePack?.packPrice.storeId){
 				throw new Error('twoDiffStores')
       }
@@ -198,12 +194,12 @@ const PackDetails = () => {
           <IonGrid>
             <IonRow>
               <IonCol className="card-title">
-                {`${pack.name} ${pack.closeExpired ? '(' + labels.closeExpired + ')' : ''}`}
+                {pack.name}
               </IonCol>
             </IonRow>
             <IonRow>
               <IonCol>
-                <IonImg src={pack.imageUrl} alt={labels.noImage} />
+                <IonImg src={pack.product.imageUrl} alt={labels.noImage} />
               </IonCol>
             </IonRow>
             <IonRow>
@@ -221,7 +217,6 @@ const PackDetails = () => {
                 <IonText style={{color: colors[2].name}}>{s.packId === pack.id ? '' : s.packInfo.name}</IonText>
                 <IonText style={{color: colors[3].name}}>{`${labels.price}: ${(s.price / 100).toFixed(2)}${s.price === s.unitPrice ? '' : '(' + (s.unitPrice / 100).toFixed(2) + ')'}`}</IonText>
                 <IonText style={{color: colors[4].name}}>{s.subQuantity ? `${labels.quantity}: ${s.subQuantity}` : ''}</IonText>
-                {s.packPrice.offerEnd && <IonText style={{color: colors[5].name}}>{labels.offerUpTo}: {moment(s.packPrice.offerEnd).format('Y/M/D')}</IonText>}
                 {!s.packPrice.isActive && <IonBadge color="danger">{labels.inActive}</IonBadge>}
                 {s.packPrice.quantity > 0 && <IonText style={{color: colors[6].name}}>{`${labels.balance}: ${quantityText(s.packPrice.quantity, s.packPrice.weight)}`}</IonText>}
               </IonLabel>

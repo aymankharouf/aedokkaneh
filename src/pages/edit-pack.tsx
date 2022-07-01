@@ -1,8 +1,8 @@
-import { useState, useEffect, ChangeEvent, useRef, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { editPack, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { useHistory, useLocation, useParams } from 'react-router'
-import { IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage, IonToggle, useIonToast } from '@ionic/react'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonToggle, useIonToast } from '@ionic/react'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
 import { Err, Pack, State } from '../data/types'
@@ -19,47 +19,22 @@ const EditPack = () => {
   const [unitsCount, setUnitsCount] = useState(pack.unitsCount.toString())
   const [isDivided, setIsDivided] = useState(pack.isDivided)
   const [byWeight, setByWeight] = useState(pack.byWeight)
-  const [closeExpired, setCloseExpired] = useState(pack.closeExpired)
-  const [specialImage, setSpecialImage] = useState(pack.specialImage)
-  const [image, setImage] = useState<File>()
-  const [imageUrl, setImageUrl] = useState(pack.imageUrl)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-  const inputEl = useRef<HTMLInputElement | null>(null)
   const hasChanged = useMemo(() => (name !== pack.name)
     || (+unitsCount !== pack.unitsCount)
     || (isDivided !== pack.isDivided)
     || (byWeight !== pack.byWeight)
-    || (closeExpired !== pack.closeExpired)
-    || (specialImage !== pack.specialImage)
-    || (imageUrl !== pack.imageUrl)
-  , [pack, name, unitsCount, isDivided, byWeight, closeExpired, specialImage, imageUrl])
+  , [pack, name, unitsCount, isDivided, byWeight])
   useEffect(() => {
     if (isDivided) {
       setByWeight(true)
     }
   }, [isDivided])
-  const onUploadClick = () => {
-    if (inputEl.current) inputEl.current.click();
-  }
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files || files.length === 0) return
-    const filename = files[0].name
-    if (filename.lastIndexOf('.') <= 0) {
-      throw new Error('invalidFile')
-    }
-    const fileReader = new FileReader()
-    fileReader.addEventListener('load', () => {
-      if (fileReader.result) setImageUrl(fileReader.result.toString())
-    })
-    fileReader.readAsDataURL(files[0])
-    setImage(files[0])
-  }
   const handleSubmit = () => {
     try{
-      if (statePacks.find(p => p.id !== pack.id && p.productId === params.id && p.name === name && p.closeExpired === closeExpired)) {
+      if (statePacks.find(p => p.id !== pack.id && p.product.id === params.id && p.name === name)) {
         throw new Error('duplicateName')
       }
       const newPack = {
@@ -68,9 +43,8 @@ const EditPack = () => {
         unitsCount: +unitsCount,
         isDivided,
         byWeight,
-        closeExpired
       }
-      editPack(newPack, pack, statePacks, image)
+      editPack(newPack, statePacks)
       message(labels.editSuccess, 3000)
       history.goBack()
     } catch(error) {
@@ -113,31 +87,6 @@ const EditPack = () => {
             <IonLabel color="primary">{labels.byWeight}</IonLabel>
             <IonToggle checked={byWeight} disabled={isDivided} onIonChange={() => setByWeight(s => !s)}/>
           </IonItem>
-          <IonItem>
-            <IonLabel color="primary">{labels.closeExpired}</IonLabel>
-            <IonToggle checked={closeExpired} onIonChange={() => setCloseExpired(s => !s)}/>
-          </IonItem>
-          <IonItem>
-            <IonLabel color="primary">{labels.specialImage}</IonLabel>
-            <IonToggle checked={specialImage} onIonChange={() => setSpecialImage(s => !s)}/>
-          </IonItem>
-          {specialImage && <>
-            <input 
-              ref={inputEl}
-              type="file" 
-              accept="image/*" 
-              style={{display: "none"}}
-              onChange={e => handleFileChange(e)}
-            />
-            <IonButton 
-              expand="block" 
-              fill="clear" 
-              onClick={onUploadClick}
-            >
-              {labels.setImage}
-            </IonButton>
-            <IonImg src={imageUrl} alt={labels.noImage} />
-          </>}
         </IonList>
       </IonContent>
       {name && unitsCount && hasChanged &&

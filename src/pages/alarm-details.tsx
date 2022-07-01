@@ -36,9 +36,9 @@ const AlarmDetails = () => {
     const packs = statePacks.filter(p => p.id !== pack.id)
     let result: Pack[] = []
     if (alarm.type === 'go') {
-      result = packs.filter(p => p.productId === pack.productId && p.isOffer)
+      result = packs.filter(p => p.product.id === pack.product.id && p.isOffer)
     } else if (alarm.type === 'eo') {
-      result = packs.filter(p => p.productId === pack.productId && p.isOffer && p.closeExpired)
+      result = packs.filter(p => p.product.id === pack.product.id && p.isOffer)
     }
     return result.map(p => {
       return {

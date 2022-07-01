@@ -30,7 +30,7 @@ const Products = () => {
       dispatch({type: 'CLEAR_SEARCH'})
     }
   }, [dispatch])
-  const products = useMemo(() => stateProducts.filter(p => params.id === '-1' ? !statePacks.find(pa => pa.productId === p.id) || statePacks.filter(pa => pa.productId === p.id).length === statePacks.filter(pa => pa.productId === p.id && pa.price === 0).length : params.id === '0' || p.categoryId === params.id)
+  const products = useMemo(() => stateProducts.filter(p => params.id === '-1' ? !statePacks.find(pa => pa.product.id === p.id) || statePacks.filter(pa => pa.product.id === p.id).length === statePacks.filter(pa => pa.product.id === p.id && pa.price === 0).length : params.id === '0' || p.categoryId === params.id)
   .map(p => {
     const categoryInfo = stateCategories.find(c => c.id === p.categoryId)!
     const countryInfo = stateCountries.find(c => c.id === p.countryId)!

@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import labels from '../data/labels'
 import { getMessage, quantityText } from '../data/actions'
 import { Err, Order, Pack, Purchase, ReturnBasket, State, StockPack } from '../data/types'
-import { IonBadge, IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonToast } from '@ionic/react'
+import { IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useLocation, useParams } from 'react-router'
@@ -75,7 +75,7 @@ const PurchaseDetails = () => {
           : purchaseBasket.map(p => 
               <IonItem key={i++}>
                 <IonThumbnail slot="start">
-                  <img src={p.packInfo.imageUrl} alt={labels.noImage} />
+                  <img src={p.packInfo.product.imageUrl} alt={labels.noImage} />
                 </IonThumbnail>
                 <IonLabel>
                   <IonText style={{color: colors[0].name}}>{p.packInfo.product.name}</IonText>
@@ -85,7 +85,6 @@ const PurchaseDetails = () => {
                   <IonText style={{color: colors[4].name}}>{`${labels.quantity}: ${quantityText(p.quantity, p.weight)}`}</IonText>
                   <IonText style={{color: colors[5].name}}>{`${labels.price}: ${(Math.round(p.price * (p.weight || p.quantity)) / 100).toFixed(2)}`}</IonText>
                 </IonLabel>
-                {p.packInfo.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
                 {params.type === 'n' &&
                   <IonIcon 
                     ios={refreshOutline} 

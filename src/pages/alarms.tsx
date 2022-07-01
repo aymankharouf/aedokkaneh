@@ -37,7 +37,7 @@ const Alarms = () => {
           : alarms.map(a => 
               <IonItem key={a.id} routerLink={`/alarm-details/${a.id}/user/${a.customer.id}`}>
                 <IonThumbnail slot="start">
-                  <IonImg src={a.pack.imageUrl} alt={labels.noImage} />
+                  <IonImg src={a.pack.product.imageUrl} alt={labels.noImage} />
                 </IonThumbnail>
                 <IonLabel>
                   <IonText style={{color: colors[0].name}}>{alarmTypes.find(t => t.id === a.type)?.name}</IonText>
