@@ -26,7 +26,7 @@ const RequestedPacks = () => {
 					const basketStock = stateBasket?.storeId === 's' ? stateBasket.packs.find(bp => bp.packId === p.packId || statePacks.find(pa => pa.id === bp.packId && pa.subPackId === p.packId)) : undefined
 					const basketStockQuantity = ((basketStock?.quantity || 0) * (basketStock?.refQuantity || 0)) || 0
 					const packStores = getPackStores(p.packInfo, statePackPrices, statePacks, basketStockQuantity)
-					return packStores.find(ps => ps.storeId === params.id)
+					return packStores.find(ps => ps.packPrice.storeId === params.id)
 				})	
 				return result
 			}
@@ -48,8 +48,8 @@ const RequestedPacks = () => {
 									<img src={p.packInfo.imageUrl} alt={labels.noImage} />
 								</IonThumbnail>
 								<IonLabel>
-									<IonText style={{color: colors[0].name}}>{p.packInfo.productName}</IonText>
-									<IonText style={{color: colors[1].name}}>{p.packInfo.productAlias}</IonText>
+									<IonText style={{color: colors[0].name}}>{p.packInfo.product.name}</IonText>
+									<IonText style={{color: colors[1].name}}>{p.packInfo.product.alias}</IonText>
 									<IonText style={{color: colors[2].name}}>{p.packInfo.name}</IonText>
 									<IonText style={{color: colors[3].name}}>{`${labels.quantity}: ${quantityText(p.quantity)}`}</IonText>
 								</IonLabel>

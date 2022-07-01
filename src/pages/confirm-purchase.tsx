@@ -55,8 +55,8 @@ const ConfirmPurchase = () => {
           {basket?.map(p => 
             <IonItem key={i++}>
               <IonLabel>
-                <IonText style={{color: colors[0].name}}>{p.packInfo.productName}</IonText>
-                <IonText style={{color: colors[1].name}}>{p.packInfo.productAlias}</IonText>
+                <IonText style={{color: colors[0].name}}>{p.packInfo.product.name}</IonText>
+                <IonText style={{color: colors[1].name}}>{p.packInfo.product.alias}</IonText>
                 <IonText style={{color: colors[2].name}}>{p.packInfo.name}</IonText>
                 <IonText style={{color: colors[3].name}}>{`${labels.unitPrice}: ${(p.price / 100).toFixed(2)}`}</IonText>
                 <IonText style={{color: colors[4].name}}>{`${labels.quantity}: ${quantityText(p.quantity, p.weight)}`}</IonText>

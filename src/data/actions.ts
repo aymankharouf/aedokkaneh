@@ -303,7 +303,7 @@ export const getPackStores = (pack: Pack, packPrices: PackPrice[], packs: Pack[]
       isOffer = true
     }
     return {
-      ...s,
+      packPrice: s,
       packId,
       price,
       subQuantity,
@@ -785,8 +785,8 @@ export const confirmPurchase = (basket: BasketPack[], orders: Order[], storeId: 
             quantity: remaining * (packInfo.subQuantity || 0),
             actual: Math.round(pack.actual / (packInfo.subQuantity || 0)),
             exceedPriceType: pack.exceedPriceType,
-            productName: packInfo.productName,
-            productAlias: packInfo.productAlias,
+            productName: packInfo.product.name,
+            productAlias: packInfo.product.alias,
             packName: packInfo.name,
             imageUrl: packInfo.imageUrl,
             price: Math.round(p.price / (packInfo.subQuantity || 0)),
@@ -1535,10 +1535,8 @@ export const getArchivedPacks = async () => {
       packs.push({
         id: doc.id,
         name: doc.data().name,
+        product: doc.data().product,
         productId: doc.data().productId,
-        productName: doc.data().productName,
-        productAlias: doc.data().productAlias,
-        productDescription: doc.data().productDescription,
         categoryId: doc.data().categoryId,
         trademark: doc.data().trademark,
         countryId: doc.data().countryId,

@@ -42,7 +42,7 @@ const Alarms = () => {
                 <IonLabel>
                   <IonText style={{color: colors[0].name}}>{alarmTypes.find(t => t.id === a.type)?.name}</IonText>
                   <IonText style={{color: colors[1].name}}>{a.customer.name}</IonText>
-                  <IonText style={{color: colors[2].name}}>{`${a.pack.productName} ${a.pack.name}`}</IonText>
+                  <IonText style={{color: colors[2].name}}>{`${a.pack.product.name} ${a.pack.name}`}</IonText>
                   <IonText style={{color: colors[3].name}}>{moment(a.time).fromNow()}</IonText>
                 </IonLabel>
               </IonItem>

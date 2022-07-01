@@ -51,7 +51,7 @@ const PrepareOrdersList = () => {
   }
   return(
     <IonPage>
-      <Header title={`${pack.productName} ${pack.name}`} />
+      <Header title={`${pack.product.name} ${pack.name}`} />
       <IonContent fullscreen className="ion-padding">
         <IonList>
           {orders.length === 0 ? 

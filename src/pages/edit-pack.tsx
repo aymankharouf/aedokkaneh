@@ -80,7 +80,7 @@ const EditPack = () => {
   }
   return (
     <IonPage>
-      <Header title={`${labels.editPack} ${pack.productName}`} />
+      <Header title={`${labels.editPack} ${pack.product.name}`} />
       <IonContent fullscreen className="ion-padding">
         <IonList>
         <IonItem>

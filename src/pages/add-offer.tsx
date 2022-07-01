@@ -75,6 +75,7 @@ const AddOffer = () => {
       }
       const pack = {
         name,
+        product,
         productId: product.id!,
         productName: product.name,
         productAlias: product.alias,

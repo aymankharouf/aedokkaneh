@@ -56,11 +56,10 @@ const AddPack = () => {
         throw new Error('duplicateName')
       }
       const pack = {
+        product,
         name,
         productId: product.id!,
         productName: product.name,
-        productAlias: product.alias,
-        productDescription: product.description,
         categoryId: product.categoryId,
         countryId: product.countryId,
         trademark: product.trademark,

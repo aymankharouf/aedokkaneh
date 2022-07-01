@@ -43,7 +43,7 @@ const AlarmDetails = () => {
     return result.map(p => {
       return {
         id: p.id,
-        name: `${p.productName} ${p.name}`
+        name: `${p.product.name} ${p.name}`
       }
     })
     .sort((p1, p2) => p1.name > p2.name ? 1 : -1)
@@ -88,7 +88,7 @@ const AlarmDetails = () => {
               {labels.product}
             </IonLabel>
             <IonInput 
-              value={pack.productName} 
+              value={pack.product.name} 
               readonly
             />
           </IonItem>

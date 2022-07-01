@@ -117,7 +117,7 @@ const StockPackOperations = () => {
   let i = 0
   return(
     <IonPage>
-      <Header title={`${pack.productName} ${pack.name}`} />
+      <Header title={`${pack.product.name} ${pack.name}`} />
       <IonContent fullscreen>
         <IonList>
           {packOperations.length === 0 ? 

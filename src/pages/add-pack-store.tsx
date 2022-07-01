@@ -64,7 +64,7 @@ const AddPackStore = () => {
 
   return (
     <IonPage>
-      <Header title={`${labels.addPrice} ${pack.productName} ${pack.name}${pack.closeExpired ? '(' + labels.closeExpired + ')' : ''}`} />
+      <Header title={`${labels.addPrice} ${pack.product.name} ${pack.name}${pack.closeExpired ? '(' + labels.closeExpired + ')' : ''}`} />
       <IonContent fullscreen className="ion-padding">
         <IonList>
           <SmartSelect label={labels.store} data={stores} value={storeId} onChange={(v) => setStoreId(v)} />

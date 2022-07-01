@@ -30,7 +30,7 @@ const PurchasePlan = () => {
 			const basketStock = stateBasket?.storeId === 's' ? stateBasket.packs.find(bp => bp.packId === p.packId) : undefined
 			const packStores = getPackStores(p.packInfo, statePackPrices, statePacks, (basketStock?.quantity || 0))
 			packStores.forEach(ps => {
-				const found = storesArray.findIndex(s => s.id === ps.storeId)
+				const found = storesArray.findIndex(s => s.id === ps.packPrice.storeId)
 				if (found > -1) {
 					if (storesArray[found].lastPack !== p.packId) {
 						storesArray.splice(found, 1, {
@@ -40,8 +40,8 @@ const PurchasePlan = () => {
 						})
 					}
 				} else {
-					const storeInfo = stateStores.find(s => s.id === ps.storeId)!
-					const storePurchases = statePurchases.filter(pu => pu.storeId === ps.storeId && pu.time >= today)
+					const storeInfo = stateStores.find(s => s.id === ps.packPrice.storeId)!
+					const storePurchases = statePurchases.filter(pu => pu.storeId === ps.packPrice.storeId && pu.time >= today)
 					storesArray.push({
 						...storeInfo,
 						sales: storePurchases.reduce((sum, pu) => sum + pu.total, 0),

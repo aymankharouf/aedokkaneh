@@ -128,10 +128,8 @@ const App = () => {
         packs.push({
           id: doc.id,
           name: doc.data().name,
+          product: doc.data().product,
           productId: doc.data().productId,
-          productName: doc.data().productName,
-          productAlias: doc.data().productAlias,
-          productDescription: doc.data().productDescription,
           categoryId: doc.data().categoryId,
           trademark: doc.data().trademark,
           countryId: doc.data().countryId,

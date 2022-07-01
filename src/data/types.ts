@@ -17,10 +17,8 @@ export type Err = {
 export type Pack = {
   id?: string,
   name: string,
+  product: Product,
   productId: string,
-  productName: string,
-  productAlias: string,
-  productDescription: string,
   categoryId: string,
   trademark: string,
   countryId: string,

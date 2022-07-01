@@ -17,7 +17,8 @@ type Params = {
   quantity: string,
   price: string
 }
-type ExtendedPackPrice = PackPrice & {
+type ExtendedPackPrice = {
+  packPrice: PackPrice
   subQuantity: number,
   unitPrice: number,
   isOffer: boolean,
@@ -47,7 +48,7 @@ const RequestedPackDetails = () => {
     const today = new Date()
     today.setDate(today.getDate() - 30)
     return packStores.map(p => {
-        const storeInfo = stateStores.find(s => s.id === p.storeId)!
+        const storeInfo = stateStores.find(s => s.id === p.packPrice.storeId)!
         const packInfo = statePacks.find(pp => pp.id === p.packId)!
         return {
           ...p,
@@ -58,8 +59,8 @@ const RequestedPackDetails = () => {
       .sort((s1, s2) => 
       {
         if (s1.unitPrice === s2.unitPrice) {
-          const store1Purchases = statePurchases.filter(p => p.storeId === s1.storeId && p.time >= today)
-          const store2Purchases = statePurchases.filter(p => p.storeId === s2.storeId && p.time >= today)
+          const store1Purchases = statePurchases.filter(p => p.storeId === s1.packPrice.storeId && p.time >= today)
+          const store2Purchases = statePurchases.filter(p => p.storeId === s2.packPrice.storeId && p.time >= today)
           const store1Sales = store1Purchases.reduce((sum, p) => sum + p.total, 0)
           const store2Sales = store2Purchases.reduce((sum, p) => sum + p.total, 0)
           return store1Sales - store2Sales
@@ -70,7 +71,7 @@ const RequestedPackDetails = () => {
   }, [pack, stateStores, statePackPrices, statePurchases, basketStockQuantity, statePacks])
   const handleAddWithWeight = (packStore: ExtendedPackPrice, exceedPriceType: string, weight: number) => {
     try{
-      if (packStore.packInfo.isDivided && packStore.storeId === 's' && packStore.quantity < Number(weight)) {
+      if (packStore.packInfo.isDivided && packStore.packPrice.storeId === 's' && packStore.packPrice.quantity < Number(weight)) {
         throw new Error('quantityNotAvaliable')
       }
       const basketItem = {
@@ -111,8 +112,8 @@ const RequestedPackDetails = () => {
         } else {
           quantity = Number(params.quantity)
         }
-        if (packStore.storeId === 's') {
-          quantity = Math.min(quantity, packStore.quantity)
+        if (packStore.packPrice.storeId === 's') {
+          quantity = Math.min(quantity, packStore.packPrice.quantity)
         }
         basketItem = {
           pack: packStore.packInfo,
@@ -134,10 +135,10 @@ const RequestedPackDetails = () => {
   }
 	const handlePurchase = (packStore: ExtendedPackPrice) => {
     try{
-      if (stateBasket?.storeId && stateBasket.storeId !== packStore.storeId){
+      if (stateBasket?.storeId && stateBasket.storeId !== packStore.packPrice.storeId){
         throw new Error('twoDiffStores')
       }
-      const packInfo = statePacks.find(p => p.id === packStore.packId)!
+      const packInfo = statePacks.find(p => p.id === packStore.packPrice.packId)!
       if (packInfo.byWeight){
         if (stateBasket?.packs?.find(p => p.packId === packInfo.id && p.orderId === params.orderId)) {
           throw new Error('alreadyInBasket')
@@ -198,7 +199,7 @@ const RequestedPackDetails = () => {
   let i = 0
   return (
     <IonPage>
-      <Header title={pack.productName} />
+      <Header title={pack.product.name} />
       <IonContent fullscreen>
         <IonCard>
         <IonGrid>
@@ -233,15 +234,15 @@ const RequestedPackDetails = () => {
             <IonItem key={i++}>
               <IonLabel>
                 <IonText style={{color: colors[0].name}}>{s.storeInfo.name}</IonText>
-                <IonText style={{color: colors[1].name}}>{s.packId === pack.id ? '' : `${s.packInfo.productName}${s.packInfo.productAlias ? '-' + s.packInfo.productAlias : ''}`}</IonText>
+                <IonText style={{color: colors[1].name}}>{s.packId === pack.id ? '' : `${s.packInfo.product.name}${s.packInfo.product.alias ? '-' + s.packInfo.product.alias : ''}`}</IonText>
                 <IonText style={{color: colors[2].name}}>{s.packId === pack.id ? '' : s.packInfo.name}</IonText>
                 <IonText style={{color: colors[3].name}}>{`${labels.price}: ${(s.price / 100).toFixed(2)}${s.price === s.unitPrice ? '' : '(' + (s.unitPrice / 100).toFixed(2) + ')'}`}</IonText>
                 <IonText style={{color: colors[4].name}}>{s.subQuantity ? `${labels.quantity}: ${s.subQuantity}` : ''}</IonText>
-                {s.offerEnd && <IonText style={{color: colors[5].name}}>{labels.offerUpTo}: {moment(s.offerEnd).format('Y/M/D')}</IonText>}
-                <IonText style={{color: colors[6].name}}>{addQuantity(s.quantity, -1 * basketStockQuantity) > 0 ? `${labels.balance}: ${addQuantity(s.quantity, -1 * basketStockQuantity)}` : ''}</IonText>
-                {!s.isActive && <IonBadge color="danger">{labels.inActive}</IonBadge>}
+                {s.packPrice.offerEnd && <IonText style={{color: colors[5].name}}>{labels.offerUpTo}: {moment(s.packPrice.offerEnd).format('Y/M/D')}</IonText>}
+                <IonText style={{color: colors[6].name}}>{addQuantity(s.packPrice.quantity, -1 * basketStockQuantity) > 0 ? `${labels.balance}: ${addQuantity(s.packPrice.quantity, -1 * basketStockQuantity)}` : ''}</IonText>
+                {!s.packPrice.isActive && <IonBadge color="danger">{labels.inActive}</IonBadge>}
               </IonLabel>
-              {s.isActive &&
+              {s.packPrice.isActive &&
                 <IonIcon 
                   ios={checkmarkOutline}
                   slot="end" 

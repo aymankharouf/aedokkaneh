@@ -62,7 +62,7 @@ const EditPrice = () => {
               {labels.product}
             </IonLabel>
             <IonInput 
-              value={pack.productName} 
+              value={pack.product.name} 
               readonly
             />
           </IonItem>

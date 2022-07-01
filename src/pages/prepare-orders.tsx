@@ -60,8 +60,8 @@ const PrepareOrders = () => {
 									<img src={p.packInfo.imageUrl} alt={labels.noImage} />
 								</IonThumbnail>
 								<IonLabel>
-									<IonText style={{color: colors[0].name}}>{p.packInfo.productName}</IonText>
-									<IonText style={{color: colors[1].name}}>{p.packInfo.productAlias}</IonText>
+									<IonText style={{color: colors[0].name}}>{p.packInfo.product.name}</IonText>
+									<IonText style={{color: colors[1].name}}>{p.packInfo.product.alias}</IonText>
 									<IonText style={{color: colors[2].name}}>{p.packInfo.name}</IonText>
 									<IonText style={{color: colors[3].name}}>{`${labels.quantity}: ${quantityText(p.quantity, p.weight)}`}</IonText>
 								</IonLabel>

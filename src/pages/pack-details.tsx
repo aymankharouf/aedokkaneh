@@ -14,8 +14,10 @@ import { useSelector, useDispatch } from 'react-redux'
 type Params = {
   id: string
 }
-type ExtendedPackPrice = PackPrice & {
+type ExtendedPackPrice = {
+  packPrice: PackPrice,
   subQuantity: number,
+  price: number,
   unitPrice: number,
   isOffer: boolean,
   packInfo: Pack,
@@ -43,30 +45,30 @@ const PackDetails = () => {
   }, [pack, stateOrders, statePackPrices])
   const packStores = useMemo(() => {
     const packStores = getPackStores(pack, statePackPrices, statePacks)
-      const result = packStores.map(p => {
-        const packInfo = statePacks.find(pp => pp.id === p.packId)!
-        const storeInfo = stateStores.find(s => s.id === p.storeId)!
-        return {
-          ...p,
-          packInfo,
-          storeInfo
-        }
-      })
-      const today = new Date()
-      today.setDate(today.getDate() - 30)
-      return result.sort((s1, s2) => 
-      {
-        if (s1.unitPrice === s2.unitPrice) {
-          const store1Purchases = statePurchases.filter(p => p.storeId === s1.storeId && p.time < today)
-          const store2Purchases = statePurchases.filter(p => p.storeId === s2.storeId && p.time < today)
-          const store1Sales = store1Purchases.reduce((sum, p) => sum + p.total, 0)
-          const store2Sales = store2Purchases.reduce((sum, p) => sum + p.total, 0)
-          return store1Sales - store2Sales
-        } else {
-          return s1.unitPrice - s2.unitPrice
-        }
-      })
-    }, [pack, stateStores, statePackPrices, statePurchases, statePacks])
+    const result = packStores.map(p => {
+      const packInfo = statePacks.find(pp => pp.id === p.packId)!
+      const storeInfo = stateStores.find(s => s.id === p.packPrice.storeId)!
+      return {
+        ...p,
+        packInfo,
+        storeInfo
+      }
+    })
+    const today = new Date()
+    today.setDate(today.getDate() - 30)
+    return result.sort((s1, s2) => 
+    {
+      if (s1.unitPrice === s2.unitPrice) {
+        const store1Purchases = statePurchases.filter(p => p.storeId === s1.packPrice.storeId && p.time < today)
+        const store2Purchases = statePurchases.filter(p => p.storeId === s2.packPrice.storeId && p.time < today)
+        const store1Sales = store1Purchases.reduce((sum, p) => sum + p.total, 0)
+        const store2Sales = store2Purchases.reduce((sum, p) => sum + p.total, 0)
+        return store1Sales - store2Sales
+      } else {
+        return s1.unitPrice - s2.unitPrice
+      }
+    })
+  }, [pack, stateStores, statePackPrices, statePurchases, statePacks])
   const handleRefreshPrice = () => {
     try{
       refreshPackPrice(pack, statePackPrices)
@@ -104,7 +106,7 @@ const PackDetails = () => {
         {text: labels.yes, handler: () => {
           try{
             if (!currentStorePack) return
-            deleteStorePack(currentStorePack, statePackPrices, statePacks)
+            deleteStorePack(currentStorePack.packPrice, statePackPrices, statePacks)
             message(labels.deleteSuccess, 3000)
           } catch(error) {
             const err = error as Err
@@ -128,10 +130,10 @@ const PackDetails = () => {
   }
   const handlePurchase = () => {
 		try{
-      if (currentStorePack?.offerEnd && new Date() > currentStorePack.offerEnd) {
+      if (currentStorePack?.packPrice.offerEnd && new Date() > currentStorePack.packPrice.offerEnd) {
         throw new Error('offerEnded')
       }
-			if (stateBasket?.storeId && stateBasket.storeId !== currentStorePack?.storeId){
+			if (stateBasket?.storeId && stateBasket.storeId !== currentStorePack?.packPrice.storeId){
 				throw new Error('twoDiffStores')
       }
       if (stateBasket?.packs?.find(p => p.packId === pack.id)) {
@@ -171,7 +173,7 @@ const PackDetails = () => {
   const handleChangeStatus = () => {
     try{
       if (!currentStorePack) return
-      changeStorePackStatus(currentStorePack, statePackPrices, statePacks)
+      changeStorePackStatus(currentStorePack.packPrice, statePackPrices, statePacks)
       message(labels.editSuccess, 3000)
     } catch(error) {
       const err = error as Err
@@ -190,7 +192,7 @@ const PackDetails = () => {
   let i = 0
   return (
     <IonPage>
-      <Header title={`${pack.productName}${pack.productAlias ? '-' + pack.productAlias : ''}`} />
+      <Header title={`${pack.product.name}${pack.product.alias ? '-' + pack.product.alias : ''}`} />
       <IonContent fullscreen>
         <IonCard>
           <IonGrid>
@@ -212,16 +214,16 @@ const PackDetails = () => {
         </IonCard>
         <IonList>
           {packStores.map(s => 
-            <IonItem key={i++} className={currentStorePack?.storeId === s.storeId && currentStorePack?.packId === s.packId ? 'selected' : ''}>
+            <IonItem key={i++} className={currentStorePack?.packPrice.storeId === s.packPrice.storeId && currentStorePack?.packPrice.packId === s.packId ? 'selected' : ''}>
               <IonLabel>
                 <IonText style={{color: colors[0].name}}>{s.storeInfo.name}</IonText>
-                <IonText style={{color: colors[1].name}}>{s.packId === pack.id ? '' : `${s.packInfo.productName}${s.packInfo.productAlias ? '-' + s.packInfo.productAlias : ''}`}</IonText>
+                <IonText style={{color: colors[1].name}}>{s.packId === pack.id ? '' : `${s.packInfo.product.name}${s.packInfo.product.alias ? '-' + s.packInfo.product.alias : ''}`}</IonText>
                 <IonText style={{color: colors[2].name}}>{s.packId === pack.id ? '' : s.packInfo.name}</IonText>
                 <IonText style={{color: colors[3].name}}>{`${labels.price}: ${(s.price / 100).toFixed(2)}${s.price === s.unitPrice ? '' : '(' + (s.unitPrice / 100).toFixed(2) + ')'}`}</IonText>
                 <IonText style={{color: colors[4].name}}>{s.subQuantity ? `${labels.quantity}: ${s.subQuantity}` : ''}</IonText>
-                {s.offerEnd && <IonText style={{color: colors[5].name}}>{labels.offerUpTo}: {moment(s.offerEnd).format('Y/M/D')}</IonText>}
-                {!s.isActive && <IonBadge color="danger">{labels.inActive}</IonBadge>}
-                {s.quantity > 0 && <IonText style={{color: colors[6].name}}>{`${labels.balance}: ${quantityText(s.quantity, s.weight)}`}</IonText>}
+                {s.packPrice.offerEnd && <IonText style={{color: colors[5].name}}>{labels.offerUpTo}: {moment(s.packPrice.offerEnd).format('Y/M/D')}</IonText>}
+                {!s.packPrice.isActive && <IonBadge color="danger">{labels.inActive}</IonBadge>}
+                {s.packPrice.quantity > 0 && <IonText style={{color: colors[6].name}}>{`${labels.balance}: ${quantityText(s.packPrice.quantity, s.packPrice.weight)}`}</IonText>}
               </IonLabel>
               {s.packId === pack.id &&
                 <IonIcon 
@@ -266,23 +268,23 @@ const PackDetails = () => {
         onDidDismiss={() => setActionOpened(false)}
         buttons={[
           {
-            text: currentStorePack?.isActive ? labels.deactivate : labels.activate,
-            cssClass: currentStorePack?.storeId !== 's' ? colors[i++ % 10].name : 'ion-hide',
+            text: currentStorePack?.packPrice.isActive ? labels.deactivate : labels.activate,
+            cssClass: currentStorePack?.packPrice.storeId !== 's' ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleChangeStatus()
           },
           {
             text: labels.editPrice,
-            cssClass: currentStorePack?.storeId !== 's' || currentStorePack?.quantity > 0 ? colors[i++ % 10].name : 'ion-hide',
-            handler: () => history.push(`/edit-price/${currentStorePack?.packId}/${currentStorePack?.storeId}`)
+            cssClass: currentStorePack?.packPrice.storeId !== 's' || currentStorePack?.packPrice.quantity > 0 ? colors[i++ % 10].name : 'ion-hide',
+            handler: () => history.push(`/edit-price/${currentStorePack?.packPrice.packId}/${currentStorePack?.packPrice.storeId}`)
           },
           {
             text: labels.delete,
-            cssClass: currentStorePack?.storeId !== 's' ? colors[i++ % 10].name : 'ion-hide',
+            cssClass: currentStorePack?.packPrice.storeId !== 's' ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleDeletePrice()
           },
           {
             text: labels.purchase,
-            cssClass: currentStorePack?.storeId !== 's' ? colors[i++ % 10].name : 'ion-hide',
+            cssClass: currentStorePack?.packPrice.storeId !== 's' ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handlePurchase()
           },
         ]}

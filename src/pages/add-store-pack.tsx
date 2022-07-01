@@ -27,7 +27,7 @@ const AddStorePack = () => {
   const packs = useMemo(() => statePacks.map(p => {
                                 return {
                                   id: p.id,
-                                  name: `${p.productName}-${p.productAlias} ${p.name}`
+                                  name: `${p.product.name}-${p.product.alias} ${p.name}`
                                 }
                               })
                               .sort((p1, p2) => p1.name > p2.name ? 1 : -1)

@@ -101,7 +101,7 @@ const EditOffer = () => {
   }
   return (
     <IonPage>
-      <Header title={`${labels.editOffer} ${pack.productName}`} />
+      <Header title={`${labels.editOffer} ${pack.product.name}`} />
       <IonContent fullscreen className="ion-padding">
         <IonList>
           <IonItem>
