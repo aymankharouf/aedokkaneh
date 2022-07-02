@@ -30,18 +30,9 @@ const EditPrice = () => {
       if (Number(price) !== Number(Number(price).toFixed(2))) {
         throw new Error('invalidPrice')
       }
-      if (offerDays && Number(offerDays) <= 0) {
-        throw new Error('invalidPeriod')
-      }
-      let offerEnd = null
-      if (offerDays) {
-        offerEnd = new Date()
-        offerEnd.setDate(offerEnd.getDate() + Number(offerDays))
-      }
       const newStorePack = {
         ...storePack,
         price : +price * 100,
-        offerEnd,
         time: new Date()
       }
       editPrice(newStorePack, storePack.price, statePackPrices, statePacks)

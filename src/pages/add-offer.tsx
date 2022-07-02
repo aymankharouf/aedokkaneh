@@ -92,6 +92,7 @@ const AddOffer = () => {
               {labels.pack}
             </IonLabel>
             <IonSelect 
+              interface="action-sheet"
               ok-text={labels.ok} 
               cancel-text={labels.cancel} 
               value={subPackId}

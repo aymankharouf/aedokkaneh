@@ -1,6 +1,6 @@
 import firebase from './firebase'
 import labels from './labels'
-import { Advert, Alarm, Basket, BasketPack, Category, Customer, Region, Log, MonthlyOperation, Notification, Order, OrderBasketPack, Pack, PackPrice, Product, Purchase, Rating, RequestedPack, ReturnBasket, Spending, StockPack, StockOperation, Store, StorePayment, Country, Err } from "./types"
+import { Advert, Basket, BasketPack, Category, Customer, Region, Log, MonthlyOperation, Notification, Order, OrderBasketPack, Pack, PackPrice, Product, Purchase, Rating, RequestedPack, ReturnBasket, Spending, StockPack, StockOperation, Store, StorePayment, Country, Err } from "./types"
 import { setup } from './config'
 
 export const getMessage = (path: string, error: Err) => {
@@ -395,9 +395,7 @@ export const deletePack = (packId: string) => {
 }
 
 export const addPack = async (pack: Pack) => {
-  firebase.firestore().collection('packs').doc().set({
-    pack
-  })
+  firebase.firestore().collection('packs').doc().set(pack)
 }
 
 export const editPack = async (newPack: Pack, packs: Pack[]) => {
@@ -1229,53 +1227,6 @@ export const editOrder = (order: Order, basket: OrderBasketPack[], packPrices: P
   }
 }
 
-export const approveAlarm = (alarm: Alarm, alarms: Alarm[], newPackId: string, customer: Customer, packPrices: PackPrice[], packs: Pack[]) => {
-  const batch = firebase.firestore().batch()
-  const otherAlarms = alarms.filter(a => a.id !== alarm.id && a.userId === alarm.userId)
-  otherAlarms.push({
-    ...alarm,
-    status: 'a',
-    storeId: customer.storeId,
-    newPackId
-  })
-  const newAlarms = otherAlarms.map(a => {
-    const {userId, ...others} = a
-    return others
-  })
-  const customerRef = firebase.firestore().collection('customers').doc(alarm.userId)
-  batch.update(customerRef, {
-    alarms: newAlarms
-  })
-  const storePack = packPrices.find(p => p.storeId === customer.storeId && p.packId === (newPackId || alarm.packId))!
-  let offerEnd = null
-  if (alarm.offerDays) {
-    offerEnd = alarm.time
-    offerEnd.setDate(offerEnd.getDate() + alarm.offerDays)
-  }
-  const newStorePack = { 
-    packId: newPackId || alarm.packId, 
-    storeId: customer.storeId,
-    price: alarm.price,
-    offerEnd,
-    isActive: true,
-    quantity: 0,
-    weight: 0,
-    isAuto: false,
-    time: new Date()
-  }
-  if (alarm.type === 'cp') {
-    const oldPrice = storePack.price || 0
-    editPrice(newStorePack, oldPrice, packPrices, packs, batch)
-    sendNotification(alarm.userId, labels.approval, labels.approveOwnerChangePrice, batch)
-  } else if (alarm.type === 'ua') {
-    deleteStorePack(storePack, packPrices, packs, batch)
-    sendNotification(alarm.userId, labels.approval, labels.approveOwnerDelete, batch)
-  } else {
-    addPackPrice(newStorePack, packPrices, packs, batch)
-    sendNotification(alarm.userId, labels.approval, labels.approveOwnerAddPack, batch)
-  }
-  batch.commit()
-}
 
 export const addStorePayment = (payment: StorePayment, stores: Store[]) => {
   const batch = firebase.firestore().batch()

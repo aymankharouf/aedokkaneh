@@ -196,8 +196,6 @@ const reducer = (state: State = initState, action: Action) => {
         return {...state, trademarks: action.payload}
       case 'SET_NOTIFICATIONS':
         return {...state, notifications: action.payload}
-      case 'SET_ALARMS':
-        return {...state, alarms: action.payload}
       case 'SET_RATINGS':
         return {...state, ratings: action.payload}
       case 'SET_STORES':

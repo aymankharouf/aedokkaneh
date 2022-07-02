@@ -31,8 +31,6 @@ const ProductPacks = () => {
   const [alert] = useIonAlert()
   const packs = useMemo(() => {
     const packs = params.type === 'a' ? stateArchivedPacks.filter(p => p.product.id === params.id) : statePacks.filter(p => p.product.id === params.id)
-    console.log('statePacks == ', statePacks)
-    console.log('packs === ', packs)
     return packs.sort((p1, p2) => p2.price - p1.price)
   }, [statePacks, stateArchivedPacks, params.id, params.type])
   const activePacks = useMemo(() => packs.filter(p => p.price > 0), [packs])
@@ -97,6 +95,7 @@ const ProductPacks = () => {
         </IonFabButton>
       </IonFab>
       <IonActionSheet
+        mode='ios'
         isOpen={actionOpened}
         onDidDismiss={() => setActionOpened(false)}
         buttons={[

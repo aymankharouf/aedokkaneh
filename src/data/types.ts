@@ -53,20 +53,6 @@ export type Rating = {
   value: number,
   status: string
 }
-export type Alarm = {
-  id?: string,
-  userId: string,
-  packId: string,
-  storeId: string,
-  newPackId: string,
-  type: string,
-  status: string,
-  offerDays: number,
-  price: number,
-  alternative: string,
-  quantity: number,
-  time: Date
-}
 export type Customer = {
   id: string,
   name: string,
@@ -307,7 +293,6 @@ export type State = {
   archivedProducts: Product[],
   archivedPacks: Pack[],
   notifications: Notification[],
-  alarms: Alarm[],
   ratings: Rating[],
   storePayments: StorePayment[],
   basket?: Basket,

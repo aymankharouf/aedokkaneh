@@ -4,14 +4,13 @@ import labels from '../data/labels'
 import { IonBadge, IonContent, IonItem, IonLabel, IonList, IonMenu, IonMenuToggle } from '@ionic/react'
 import { useHistory } from 'react-router'
 import { useSelector, useDispatch } from 'react-redux'
-import { Alarm, Customer, Order, PasswordRequest, Rating, State } from '../data/types'
+import { Customer, Order, PasswordRequest, Rating, State } from '../data/types'
 import firebase from '../data/firebase'
 
 const Panel = () => {
   const dispatch = useDispatch()
   const stateUser = useSelector<State, firebase.User | undefined>(state => state.user)
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
-  const stateAlarms = useSelector<State, Alarm[]>(state => state.alarms)
   const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
   const stateRatings = useSelector<State, Rating[]>(state => state.ratings)
   const statePasswordRequests = useSelector<State, PasswordRequest[]>(state => state.passwordRequests)
@@ -21,11 +20,10 @@ const Panel = () => {
     const newOrders = stateOrders.filter(o => o.status === 'n').length
     const orderRequests = stateOrders.filter(r => r.requestType).length
     const newCustomers = stateCustomers.filter(c => c.status === 'n').length
-    const alarms = stateAlarms.filter(a => a.status === 'n').length
     const ratings = stateRatings.filter(r => r.status === 'n').length
     const passwordRequests = statePasswordRequests.length
-    return newOrders + orderRequests + newCustomers + alarms + ratings + passwordRequests
-  }, [stateOrders, stateCustomers, statePasswordRequests, stateAlarms, stateRatings])
+    return newOrders + orderRequests + newCustomers + ratings + passwordRequests
+  }, [stateOrders, stateCustomers, statePasswordRequests, stateRatings])
   const handleLogout = () => {
     logout()
     history.push('/')

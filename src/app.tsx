@@ -2,7 +2,7 @@ import { IonApp, IonRouterOutlet, IonSplitPane } from '@ionic/react'
 import { IonReactRouter } from '@ionic/react-router'
 import { Route } from 'react-router-dom'
 import firebase from './data/firebase'
-import { Advert, Alarm, Customer, Log, MonthlyOperation, Notification, Order, Pack, PackPrice, PasswordRequest, Product, Purchase, Rating, Spending, StockOperation, Store, StorePayment } from './data/types'
+import { Advert, Customer, Log, MonthlyOperation, Notification, Order, Pack, PackPrice, PasswordRequest, Product, Purchase, Rating, Spending, StockOperation, Store, StorePayment } from './data/types'
 import { useDispatch } from 'react-redux';
 
 
@@ -69,8 +69,6 @@ import CustomerDetails from './pages/customer-details'
 import EditCustomer from './pages/edit-customer'
 import NewCustomers from './pages/new-customers'
 import ApproveCustomer from './pages/approve-customer'
-import Alarms from './pages/alarms'
-import AlarmDetails from './pages/alarm-details'
 import Spendings from './pages/spendings'
 import AddSpending from './pages/add-spending'
 import EditSpending from './pages/edit-spending'
@@ -152,7 +150,6 @@ const App = () => {
           })
         }
       })
-      console.log('packs .... ', packs)
       dispatch({type: 'SET_PACKS', payload: packs})
       dispatch({type: 'SET_PACK_PRICES', payload: packPrices})
     }, err => {
@@ -256,7 +253,6 @@ const App = () => {
         const unsubscribeCustomers = firebase.firestore().collection('customers').onSnapshot(docs => {
           const customers: Customer[] = []
           const notifications: Notification[] = []
-          const alarms: Alarm[] = []
           const ratings: Rating[] = []
           docs.forEach(doc => {
             customers.push({
@@ -289,24 +285,6 @@ const App = () => {
                 })
               })
             }
-            if (doc.data().alarms) {
-              doc.data().alarms.forEach((a: any) => {
-                alarms.push({
-                  userId: doc.id,
-                  id: a.id,
-                  packId: a.packId,
-                  storeId: a.storeId,
-                  newPackId: a.newPackId,
-                  type: a.type,
-                  status: a.status,
-                  offerDays: a.offerDays,
-                  price: a.price,
-                  alternative: a.alternative,
-                  quantity: a.quantity,
-                  time: a.time.toDate()
-                })
-              })
-            }
             if (doc.data().ratings) {
               doc.data().ratings.forEach((r: any) => {
                 ratings.push({...r, userId: doc.id})
@@ -315,7 +293,6 @@ const App = () => {
           })
           dispatch({type: 'SET_CUSTOMERS', payload: customers})
           dispatch({type: 'SET_NOTIFICATIONS', payload: notifications})
-          dispatch({type: 'SET_ALARMS', payload: alarms})
           dispatch({type: 'SET_RATINGS', payload: ratings})
         }, err => {
           unsubscribeCustomers()
@@ -469,8 +446,6 @@ const App = () => {
             <Route path="/edit-customer/:id" exact={true} component={EditCustomer} />
             <Route path="/store-details/:id" exact={true} component={StoreDetails} />
             <Route path="/password-requests" exact={true} component={PasswordRequests} />
-            <Route path="/alarms" exact={true} component={Alarms} />
-            <Route path="/alarm-details/:id/:userId" exact={true} component={AlarmDetails} />
             <Route path="/countries" exact={true} component={Countries} />
             <Route path="/add-country" exact={true} component={AddCountry} />
             <Route path="/edit-country/:id" exact={true} component={EditCountry} />
