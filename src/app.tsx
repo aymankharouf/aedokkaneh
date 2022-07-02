@@ -2,7 +2,7 @@ import { IonApp, IonRouterOutlet, IonSplitPane } from '@ionic/react'
 import { IonReactRouter } from '@ionic/react-router'
 import { Route } from 'react-router-dom'
 import firebase from './data/firebase'
-import { Advert, Customer, Log, MonthlyOperation, Notification, Order, Pack, PackPrice, PasswordRequest, Product, Purchase, Rating, Spending, StockOperation, Store, StorePayment } from './data/types'
+import { Advert, Customer, Log, MonthlyOperation, Notification, Order, Pack, PackPrice, PasswordRequest, Product, Purchase, Rating, Spending, StockOperation, Store, StorePayment, StoreTrans as StoreTransType } from './data/types'
 import { useDispatch } from 'react-redux';
 
 
@@ -110,6 +110,7 @@ import ReturnBasket from './pages/return-basket'
 import StoreBalance from './pages/store-balance'
 import StoreBalanceOperations from './pages/store-balance-operations'
 import { useEffect } from 'react'
+import StoreTrans from './pages/store-trans'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -414,6 +415,22 @@ const App = () => {
         }, err => {
           unsubscribeLogs()
         })  
+        const unsubscribeStoreTrans = firebase.firestore().collection('store-trans').onSnapshot(docs => {
+          let storeTrans: StoreTransType[] = []
+          docs.forEach(doc => {
+            storeTrans.push({
+              id: doc.id,
+              storeId: doc.data().storeId,
+              packId: doc.data().packId,
+              oldPrice: doc.data().oldPrice,
+              newPrice: doc.data().newPrice,
+              time: doc.data().time.toDate()
+            })
+          })
+          dispatch({type: 'SET_STORE_TRANS', payload: storeTrans})
+        }, err => {
+          unsubscribeStoreTrans()
+        })  
       } else {
         dispatch({type: 'LOGOUT'})
       }
@@ -509,6 +526,7 @@ const App = () => {
             <Route path="/return-basket" exact={true} component={ReturnBasket} />
             <Route path="/store-balance/:id" exact={true} component={StoreBalance} />
             <Route path="/store-balance-operations/:storeId/:month" exact={true} component={StoreBalanceOperations} />
+            <Route path="/store-trans/:id" exact={true} component={StoreTrans} />
           </IonRouterOutlet>
         </IonSplitPane>
       </IonReactRouter>

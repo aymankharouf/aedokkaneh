@@ -4,7 +4,7 @@ import labels from '../data/labels'
 import { IonBadge, IonContent, IonItem, IonLabel, IonList, IonMenu, IonMenuToggle } from '@ionic/react'
 import { useHistory } from 'react-router'
 import { useSelector, useDispatch } from 'react-redux'
-import { Customer, Order, PasswordRequest, Rating, State } from '../data/types'
+import { Customer, Log, Order, PasswordRequest, Rating, State, StoreTrans } from '../data/types'
 import firebase from '../data/firebase'
 
 const Panel = () => {
@@ -13,6 +13,8 @@ const Panel = () => {
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
   const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
   const stateRatings = useSelector<State, Rating[]>(state => state.ratings)
+  const stateStoreTrans = useSelector<State, StoreTrans[]>(state => state.storeTrans)
+  const stateLogs = useSelector<State, Log[]>(state => state.logs)
   const statePasswordRequests = useSelector<State, PasswordRequest[]>(state => state.passwordRequests)
   const menuEl = useRef<HTMLIonMenuElement | null>(null)
   const history = useHistory()
@@ -58,6 +60,11 @@ const Panel = () => {
             </IonItem>
             <IonItem routerLink="/logs" style={{marginBottom: '0px', marginTop: '0px'}}>
               <IonLabel>{labels.logs}</IonLabel>
+              {stateLogs.length > 0 && <IonBadge color="danger">{stateLogs.length}</IonBadge>}
+            </IonItem>
+            <IonItem routerLink="/store-trans/0" style={{marginBottom: '0px', marginTop: '0px'}}>
+              <IonLabel>{labels.storeTrans}</IonLabel>
+              {stateStoreTrans.length > 0 && <IonBadge color="danger">{stateStoreTrans.length}</IonBadge>}
             </IonItem>
           </> : 
             <IonItem routerLink='/login'>

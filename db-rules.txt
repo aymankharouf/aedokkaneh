@@ -13,7 +13,9 @@ service cloud.firestore {
     }
     match /packs/{id} {
     	allow read;
-    	allow write: if request.auth.token.name == 'a';
+    	allow create: if request.auth.token.name == 'a';
+      allow update: if request.auth.uid != null;
+      allow delete: if request.auth.token.name == 'a';
     }
     match /purchases/{id} {
     	allow read, write: if request.auth.token.name == 'a';
@@ -51,6 +53,11 @@ service cloud.firestore {
      match /adverts/{id} {
     	allow read;
       allow write: if request.auth.token.name == 'a';
+    }
+    match /store-trans/{id} {
+    	allow read: if request.auth.token.name == 'a';
+      allow create: if request.auth.uid != null;
+      allow update, delete: if request.auth.token.name == 'a';
     }
   }
 }

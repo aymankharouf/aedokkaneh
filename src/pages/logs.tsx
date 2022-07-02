@@ -18,7 +18,7 @@ const Logs = () => {
   const location = useLocation()
   const [alert] = useIonAlert()
   const logs = useMemo(() => stateLogs.map(l => {
-    const customer = stateCustomers.find(c => c.id === l.userId)!
+    const customer = stateCustomers.find(c => c.id === l.userId)
     return {
       ...l,
       customer
@@ -55,8 +55,8 @@ const Logs = () => {
           : logs.map(l => 
               <IonItem key={l.id}>
                 <IonLabel>
-                  <IonText style={{color: colors[0].name}}>{`${labels.user}: ${l.customer.name || l.userId}`}</IonText>
-                  <IonText style={{color: colors[1].name}}>{l.customer.mobile ? `${labels.mobile}: ${l.customer.mobile}` : ''}</IonText>
+                  <IonText style={{color: colors[0].name}}>{`${labels.user}: ${l.customer?.name || l.userId}`}</IonText>
+                  <IonText style={{color: colors[1].name}}>{l.customer?.mobile ? `${labels.mobile}: ${l.customer.mobile}` : ''}</IonText>
                   <IonText style={{color: colors[2].name}}>{l.page}</IonText>
                   <IonText style={{color: colors[3].name}}>{l.error}</IonText>
                   <IonText style={{color: colors[4].name}}>{moment(l.time).fromNow()}</IonText>

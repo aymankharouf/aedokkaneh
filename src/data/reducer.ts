@@ -31,7 +31,7 @@ const initState = {
   ratings: [],
   storePayments: [],
   searchText: '',
-  trademarks: []
+  storeTrans: []
 }
 
 const reducer = (state: State = initState, action: Action) => {
@@ -226,7 +226,9 @@ const reducer = (state: State = initState, action: Action) => {
         return {...state, packPrices: action.payload}
       case 'SET_LOGS':
         return {...state, logs: action.payload}
-      case 'ADD_ARCHIVED_ORDERS':
+      case 'SET_STORE_TRANS':
+        return {...state, storeTrans: action.payload}
+        case 'ADD_ARCHIVED_ORDERS':
         return {...state, archivedOrders: [...state.archivedOrders, ...action.payload]}
       case 'SET_ADVERTS':
         return {...state, adverts: action.payload}

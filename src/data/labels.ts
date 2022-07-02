@@ -374,11 +374,15 @@ const labels: Label = {
   reject: 'رفض',
   insert: 'استيداع',
   timing: 'تحديد موعد التسليم',
-  yes: 'موافق',
+  yes: 'نعم',
+  no: 'لا',
+  ok: 'موافق',
   setImage: 'حمل الصورة',
   parentCategory: 'التصنيف الرئيس',
   save: 'حفظ',
-  block: 'حظر'
+  block: 'حظر',
+  storeTrans: 'حركات المحلات',
+  newPrice: 'السعر الجديد'
 }
 
 export default labels

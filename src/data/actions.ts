@@ -65,6 +65,10 @@ export const deleteLog = (log: Log) => {
   firebase.firestore().collection('logs').doc(log.id).delete()
 }
 
+export const deleteStoreTrans = (transId: string) => {
+  firebase.firestore().collection('store-trans').doc(transId).delete()
+}
+
 export const addAdvert = async (advert: Advert, image?: File) => {
   const advertRef = firebase.firestore().collection('adverts').doc()
   let url = ''

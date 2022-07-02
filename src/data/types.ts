@@ -149,6 +149,14 @@ export type Store = {
   time: Date,
   balances: Balance[]
 }
+export type StoreTrans = {
+  id: string,
+  storeId: string,
+  packId: string,
+  oldPrice: number,
+  newPrice: number,
+  time: Date
+}
 export type Purchase = {
   id?: string,
   storeId: string,
@@ -299,6 +307,7 @@ export type State = {
   returnBasket?: ReturnBasket,
   orderBasket?: OrderBasketPack[],
   searchText: string,
+  storeTrans: StoreTrans[]
 }
 
 export type Action = {
