@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { approveCustomer, blockCustomer, getMessage } from '../data/actions'
+import { blockCustomer, editCustomer, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, useIonToast, useIonLoading, useIonAlert, IonActionSheet } from '@ionic/react'
 import { useHistory, useLocation, useParams } from 'react-router'
@@ -8,7 +8,7 @@ import Footer from './footer'
 import { chevronUpOutline } from 'ionicons/icons'
 import { Customer, Err, Region, State, Store } from '../data/types'
 import { useSelector } from 'react-redux'
-import { colors } from '../data/config'
+import { colors, setup } from '../data/config'
 
 type Params = {
   id: string
@@ -34,7 +34,24 @@ const ApproveCustomer = () => {
   const stores = useMemo(() => stateStores.filter(s => s.id !== 's').sort((s1, s2) => s1.name > s2.name ? 1 : -1), [stateStores]) 
   const handleSubmit = () => {
     try {
-      approveCustomer(params.id, name, mobile, regionId, storeId || '', address, regions)
+      const deliveryFees = regions.find(r => r.id === regionId)?.fees || 0
+      if (deliveryFees === 0) {
+        throw new Error('invalidDeliveryFees')
+      }
+      const newCustomer = {
+        ...customer,
+        name: `${name}:${mobile}`,
+        status: 'a',
+        regionId,
+        storeId,
+        orderLimit: setup.orderLimit,
+        address,
+        deliveryFees,
+        mapPosition: '',
+        ordersCount: 0,
+        deliveredOrdersCount: 0,
+      }
+      editCustomer(newCustomer)
       message(labels.approveSuccess)
       history.goBack()  
     } catch(error) {
@@ -143,7 +160,7 @@ const ApproveCustomer = () => {
         onDidDismiss={() => setActionOpened(false)}
         buttons={[
           {
-            text: labels.save,
+            text: labels.approve,
             cssClass: name && regionId && mobile ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleSubmit()
           },

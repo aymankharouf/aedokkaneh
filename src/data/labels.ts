@@ -382,7 +382,14 @@ const labels: Label = {
   save: 'حفظ',
   block: 'حظر',
   storeTrans: 'حركات المحلات',
-  newPrice: 'السعر الجديد'
+  newPrice: 'السعر الجديد',
+  stockPrice: 'سعر المستودع',
+  stockQuantity: 'كمية المستودع',
+  purchaseBasket: 'سلة المشتريات',
+  withLostPermission: 'هل تود البيع بخسارة؟',
+  unAvailableConfirmation: 'هل تود انهاء تجهيز هذه المادة دون استكمال الكمية المطلوبة؟',
+  orderTrans: 'حركات الطلب',
+  invalidDeliveryFees: 'لم نستطع تحديد رسوم التوصيل'
 }
 
 export default labels

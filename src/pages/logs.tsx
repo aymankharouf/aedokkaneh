@@ -18,12 +18,13 @@ const Logs = () => {
   const location = useLocation()
   const [alert] = useIonAlert()
   const logs = useMemo(() => stateLogs.map(l => {
-    const customer = stateCustomers.find(c => c.id === l.userId)
-    return {
-      ...l,
-      customer
-    }
-  })
+                                        const customer = stateCustomers.find(c => c.id === l.userId)
+                                        return {
+                                          ...l,
+                                          customer
+                                        }
+                                      })
+                                      .sort((l1, l2) => l1.time > l2.time ? -1 : 1)
   , [stateLogs, stateCustomers])
   const handleDelete = (log: Log) => {
     alert({

@@ -20,27 +20,20 @@ const ConfirmPurchase = () => {
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-  const basket = useMemo(() => stateBasket?.packs.map(p => {
-    const packInfo = statePacks.find(pa => pa.id === p.packId)!
-    return {
-      ...p,
-      packInfo,
-    }
-  }), [stateBasket, statePacks])
   const total = useMemo(() => stateBasket?.packs.reduce((sum, p) => sum + Math.round(p.price * (p.weight || p.quantity)), 0) || 0, [stateBasket])
   const handlePurchase = () => {
     try{
-      if (store.id === 's') {
-        stockOut(stateBasket?.packs!, stateOrders, statePackPrices, statePacks)
-        message(labels.purchaseSuccess, 3000)
-        history.push('/')
-        dispatch({type: 'CLEAR_BASKET'})    
-      } else {
+      // if (store.id === 's') {
+      //   stockOut(stateBasket?.packs!, stateOrders, statePackPrices, statePacks)
+      //   message(labels.purchaseSuccess, 3000)
+      //   history.push('/')
+      //   dispatch({type: 'CLEAR_BASKET'})    
+      // } else {
         confirmPurchase(stateBasket?.packs!, stateOrders, store.id!, statePackPrices, statePacks, stateStores, total)
         message(labels.purchaseSuccess, 3000)
         history.push('/')
         dispatch({type: 'CLEAR_BASKET'})    
-      }  
+      // }  
     } catch(error) {
       const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
@@ -52,12 +45,12 @@ const ConfirmPurchase = () => {
       <Header title={`${labels.confirmPurchase} ${store.name}`} />
       <IonContent fullscreen className="ion-padding">
         <IonList>
-          {basket?.map(p => 
+          {stateBasket?.packs?.map(p => 
             <IonItem key={i++}>
               <IonLabel>
-                <IonText style={{color: colors[0].name}}>{p.packInfo.product.name}</IonText>
-                <IonText style={{color: colors[1].name}}>{p.packInfo.product.alias}</IonText>
-                <IonText style={{color: colors[2].name}}>{p.packInfo.name}</IonText>
+                <IonText style={{color: colors[0].name}}>{p.pack?.product.name}</IonText>
+                <IonText style={{color: colors[1].name}}>{p.pack?.product.alias}</IonText>
+                <IonText style={{color: colors[2].name}}>{p.pack?.name}</IonText>
                 <IonText style={{color: colors[3].name}}>{`${labels.unitPrice}: ${(p.price / 100).toFixed(2)}`}</IonText>
                 <IonText style={{color: colors[4].name}}>{`${labels.quantity}: ${quantityText(p.quantity, p.weight)}`}</IonText>
               </IonLabel>

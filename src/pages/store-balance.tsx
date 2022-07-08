@@ -14,7 +14,7 @@ const StoreBalance = () => {
   const params = useParams<Params>()
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const store = useMemo(() => stateStores.find(s => s.id === params.id)!, [stateStores, params.id])
-  const balances = useMemo(() => store.balances?.slice().sort((b1, b2) => b2.month - b1.month), [store])
+  const balances = useMemo(() => store.balances?.slice().sort((b1, b2) => b2.month - b1.month) || [], [store])
 
   return(
     <IonPage>

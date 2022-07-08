@@ -19,8 +19,7 @@ const Orders = () => {
       count: orders
     }
   }), [stateOrders])
-  const orderRequests = useMemo(() => stateOrders.filter(o => o.requestType).length, [stateOrders])
-  const finishedOrders = useMemo(() => stateOrders.filter(o => o.status === 'f').length, [stateOrders])
+  // const finishedOrders = useMemo(() => stateOrders.filter(o => o.status === 'f').length, [stateOrders])
   let i = 0
   if (!stateUser) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
   return(
@@ -28,14 +27,10 @@ const Orders = () => {
       <Header title={labels.orders} />
       <IonContent fullscreen>
 				<IonList>
-          <IonItem routerLink="/order-requests"> 
-            <IonLabel>{labels.orderRequests}</IonLabel>
-            <IonBadge color={colors[i++ % 10].name}>{orderRequests}</IonBadge>
-          </IonItem>
-          <IonItem routerLink="/prepare-orders"> 
+          {/* <IonItem routerLink="/prepare-orders"> 
             <IonLabel>{labels.prepareOrders}</IonLabel>
             <IonBadge color={colors[i++ % 10].name}>{finishedOrders}</IonBadge>
-          </IonItem>
+          </IonItem> */}
           {orderStatuses.map(s => 
             <IonItem key={s.id} routerLink={`/orders-list/${s.id}/s`}> 
               <IonLabel>{s.name}</IonLabel>

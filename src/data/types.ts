@@ -57,30 +57,30 @@ export type Customer = {
   id: string,
   name: string,
   mobile: string,
-  storeId: string,
   colors: string[],
   regionId: string,
   status: string,
-  orderLimit: number,
-  address: string,
-  deliveryFees: number,
-  mapPosition: string,
-  ordersCount: number,
-  deliveredOrdersCount: number,
-  returnedCount: number,
-  deliveredOrdersTotal: number,
+  storeId?: string,
+  orderLimit?: number,
+  address?: string,
+  deliveryFees?: number,
+  mapPosition?: string,
+  ordersCount?: number,
+  deliveredOrdersCount?: number,
   time: Date
 }
-export type OrderBasketPack = {
+export type OrderPack = {
+  pack?: Pack,
   packId: string,
   productName: string,
   productAlias: string,
   packName: string,
   storeId: string,
   price: number,
-  actual: number,
+  originPrice?: number,
+  actual?: number,
   quantity: number,
-  weight: number,
+  weight?: number,
   purchased: number,
   gross: number,
   status: string,
@@ -94,7 +94,12 @@ export type OrderBasketPack = {
   imageUrl: string,
   returned: number,
   offerId: string,
-  isAllocated: boolean
+  isAllocated: boolean,
+  isDone?: boolean
+}
+export type OrderTrans = {
+  type: string,
+  time: Date
 }
 export type Order = {
   id?: string,
@@ -106,11 +111,12 @@ export type Order = {
   deliveryFees: number,
   fraction: number,
   profit: number,
-  lastUpdate: Date | null,
   requestTime: Date | null,
+  lastUpdate: Date,
   time: Date,
-  basket: OrderBasketPack[],
-  requestBasket: OrderBasketPack[]
+  basket: OrderPack[],
+  requestBasket: OrderPack[],
+  trans?: OrderTrans[]
 }
 export type Advert = {
   id?: string,
@@ -143,11 +149,11 @@ export type Store = {
   name: string,
   isActive: boolean,
   mobile: string,
-  mapPosition: string,
-  openTime: string,
+  mapPosition?: string,
+  openTime?: string,
   address: string,
   time: Date,
-  balances: Balance[]
+  balances?: Balance[]
 }
 export type StoreTrans = {
   id: string,
@@ -239,29 +245,29 @@ export type ReturnBasket = {
   packs: StockPack[]
 }
 export type BasketPack = {
-  packId: string,
-  productName: string,
-  productAlias: string,
-  packName: string,
-  imageUrl: string,
+  pack?: Pack,
+  packId?: string,
+  productName?: string,
+  productAlias?: string,
+  packName?: string,
+  imageUrl?: string,
   price: number,
-  actual: number,
+  actual?: number,
   quantity: number,
-  weight: number,
-  requested: number,
-  orderId: string,
-  isOffer: boolean,
-  isDivided: boolean,
-  exceedPriceType: string,
-  refPackId: string,
-  refPackQuantity: number,
-  refQuantity: number
+  weight?: number,
+  requested?: number,
+  orderId?: string,
+  isOffer?: boolean,
+  isDivided?: boolean,
+  exceedPriceType?: string,
+  refPackId?: string,
+  refPackQuantity?: number,
+  refQuantity?: number
 }
 export type StockPack = {
   packId: string,
   quantity: number,
   price: number,
-  actual: number,
   weight: number
 }
 export type RequestedPack = {
@@ -305,7 +311,7 @@ export type State = {
   storePayments: StorePayment[],
   basket?: Basket,
   returnBasket?: ReturnBasket,
-  orderBasket?: OrderBasketPack[],
+  orderBasket?: OrderPack[],
   searchText: string,
   storeTrans: StoreTrans[]
 }

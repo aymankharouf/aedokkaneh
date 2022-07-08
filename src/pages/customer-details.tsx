@@ -4,7 +4,7 @@ import { IonToggle, IonList, IonItem, IonContent, IonFab, IonFabButton, IonFabLi
 import Header from './header'
 import Footer from './footer'
 import { useParams } from 'react-router'
-import { chevronDownOutline, pencilOutline, swapVerticalOutline } from 'ionicons/icons'
+import { checkmarkOutline, chevronDownOutline, pencilOutline, swapVerticalOutline } from 'ionicons/icons'
 import { useSelector } from 'react-redux'
 import { Customer, Region, State } from '../data/types'
 
@@ -44,7 +44,7 @@ const CustomerDetails = () => {
               {labels.orderLimit}
             </IonLabel>
             <IonInput 
-              value={(customer.orderLimit / 100).toFixed(2)} 
+              value={customer.orderLimit ? (customer.orderLimit / 100).toFixed(2) : ''} 
               readonly
             />
           </IonItem>
@@ -68,28 +68,10 @@ const CustomerDetails = () => {
           </IonItem>
           <IonItem>
             <IonLabel position="floating" color="primary">
-              {labels.deliveredOrdersTotal}
-            </IonLabel>
-            <IonInput 
-              value={(customer.deliveredOrdersTotal / 100).toFixed(2)} 
-              readonly
-            />
-          </IonItem>
-          <IonItem>
-            <IonLabel position="floating" color="primary">
-              {labels.returnedCount}
-            </IonLabel>
-            <IonInput 
-              value={customer.returnedCount} 
-              readonly
-            />
-          </IonItem>
-          <IonItem>
-            <IonLabel position="floating" color="primary">
               {labels.deliveryFees}
             </IonLabel>
             <IonInput 
-              value={(customer.deliveryFees / 100).toFixed(2)} 
+              value={customer.deliveryFees ? (customer.deliveryFees / 100).toFixed(2) : ''} 
               readonly
             />
           </IonItem>
@@ -117,19 +99,27 @@ const CustomerDetails = () => {
           </IonItem>
         </IonList>
       </IonContent>
-      <IonFab horizontal="end" vertical="top" slot="fixed">
-        <IonFabButton>
-          <IonIcon ios={chevronDownOutline} />
-        </IonFabButton>
-        <IonFabList>
-          <IonFabButton color="success" routerLink={`/edit-customer/${params.id}`}>
-            <IonIcon ios={pencilOutline} />
+      {customer.status === 'n' ?
+        <IonFab vertical="top" horizontal="end" slot="fixed">
+          <IonFabButton routerLink={`/approve-customer/${customer.id}`}>
+            <IonIcon ios={checkmarkOutline} />
           </IonFabButton>
-          <IonFabButton color="danger" routerLink={`/orders-list/${params.id}/u`}>
-            <IonIcon ios={swapVerticalOutline} />
+        </IonFab>
+      :    
+        <IonFab horizontal="end" vertical="top" slot="fixed">
+          <IonFabButton>
+            <IonIcon ios={chevronDownOutline} />
           </IonFabButton>
-        </IonFabList>
-      </IonFab>
+          <IonFabList>
+            <IonFabButton color="success" routerLink={`/edit-customer/${params.id}`}>
+              <IonIcon ios={pencilOutline} />
+            </IonFabButton>
+            <IonFabButton color="danger" routerLink={`/orders-list/${params.id}/u`}>
+              <IonIcon ios={swapVerticalOutline} />
+            </IonFabButton>
+          </IonFabList>
+        </IonFab>
+      }
       <Footer />
     </IonPage>
   )

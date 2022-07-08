@@ -1,76 +1,44 @@
 import { useMemo } from 'react'
-import { allocateOrderPack, getMessage } from '../data/actions'
+import moment from 'moment'
+import 'moment/locale/ar'
 import labels from '../data/labels'
-import { Customer, Err, Order, OrderBasketPack, Pack, State } from '../data/types'
-import { IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
+import { orderStatus, colors } from '../data/config'
+import { Customer, Order, State } from '../data/types'
+import { IonContent, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
-import { useHistory, useLocation, useParams } from 'react-router'
-import { colors } from '../data/config'
-import { checkmarkOutline } from 'ionicons/icons'
 import { useSelector } from 'react-redux'
 
-type Params = {
-  packId: string,
-  orderId: string
-}
-type ExtendedOrder = Order & {
-  customer: Customer,
-  basketInfo: OrderBasketPack
-}
 const PrepareOrdersList = () => {
-  const params = useParams<Params>()
-  const statePacks = useSelector<State, Pack[]>(state => state.packs)
-  const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
-  const pack = useMemo(() => statePacks.find(p => p.id === params.packId)!, [statePacks, params.packId])
-  const [message] = useIonToast()
-  const location = useLocation()
-  const history = useHistory()
-  const orders = useMemo(() => stateOrders.filter(o => o.id === params.orderId || (params.orderId === '0' && o.status === 'f' && o.basket.find(p => p.packId === params.packId && !p.isAllocated)))
-                                          .map(o => {
-                                              const customer = stateCustomers.find(c => c.id === o.userId)!
-                                              const basketInfo = o.basket.find(p => p.packId === params.packId)!
-                                              return {
-                                                ...o,
-                                                customer,
-                                                basketInfo
-                                              }
-                                            })
-                                            .sort((o1, o2) => o2.time > o1.time ? 1 : -1)
-  , [stateOrders, stateCustomers, params.orderId, params.packId])
-  const handleAllocate = (order: ExtendedOrder) => {
-    try{
-      allocateOrderPack(order, pack)
-      message(labels.editSuccess, 3000)
-      history.goBack()
-    } catch(error) {
-      const err = error as Err
-			message(getMessage(location.pathname, err), 3000)
-		}
-  }
+  const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
+  const orders = useMemo(() => stateOrders.filter(o => ['n', 'a', 'e', 's', 'f'].includes(o.status))
+                                                  .map(r => {
+                                                    const customer = stateCustomers.find(c => c.id === r.userId)!
+                                                    return {
+                                                      ...r,
+                                                      customer
+                                                    }
+                                                  })
+                                                  .sort((o1, o2) => o2.lastUpdate > o1.lastUpdate ? 1 : -1)
+  , [stateOrders, stateCustomers])
   return(
     <IonPage>
-      <Header title={`${pack.product.name} ${pack.name}`} />
-      <IonContent fullscreen className="ion-padding">
+      <Header title={labels.prepareOrders} />
+      <IonContent fullscreen>
         <IonList>
           {orders.length === 0 ? 
             <IonItem> 
               <IonLabel>{labels.noData}</IonLabel>
-            </IonItem>
-          : orders.map(o => 
-              <IonItem key={o.id}>
+            </IonItem> 
+          : orders.map(r => 
+              <IonItem key={r.id} routerLink={`/prepare-order/${r.id}`}>
                 <IonLabel>
-                  <IonText style={{color: colors[0].name}}>{o.customer.name}</IonText>
-                  <IonText style={{color: colors[1].name}}>{`${labels.quantity}: ${o.basketInfo.weight || o.basketInfo.quantity}`}</IonText>
+                  <IonText style={{color: colors[0].name}}>{r.customer.name}</IonText>
+                  <IonText style={{color: colors[1].name}}>{orderStatus.find(s => s.id === r.status)?.name}</IonText>
+                  <IonText style={{color: colors[2].name}}>{moment(r.time).fromNow()}</IonText>
                 </IonLabel>
-                <IonIcon 
-                  ios={checkmarkOutline} 
-                  slot="end" 
-                  color="success"
-                  style={{fontSize: '20px', marginRight: '10px'}} 
-                  onClick={()=> handleAllocate(o)}
-                />
+                <IonLabel slot="end" className="price">{(r.total / 100).toFixed(2)}</IonLabel>
               </IonItem>    
             )
           }

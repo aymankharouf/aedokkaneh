@@ -1,5 +1,7 @@
 export const setup = {
   orderLimit: 2000,
+  stockName: 'المستودع',
+  mobile: '0799982800'
 }
 
 export const randomColors = [
@@ -19,15 +21,10 @@ export const orderStatus = [
   {id: 'n', name: 'قيد الموافقة'},
   {id: 'a', name: 'تمت الموافقة'},
   {id: 's', name: 'معلق'},
-  {id: 'r', name: 'مرفوض'},
   {id: 'e', name: 'قيد التنفيذ'},
   {id: 'f', name: 'تم التنفيذ'},
-  {id: 'p', name: 'جاهز'},
   {id: 'd', name: 'مستلم'},
   {id: 'c', name: 'ملغي'},
-  {id: 'u', name: 'غير متوفر'},
-  {id: 'i', name: 'استيداع'},
-  {id: 'm', name: 'مدمج'}
 ]  
 
 export const stockOperationTypes = [
@@ -59,31 +56,10 @@ export const orderPackStatus = [
   {id: 'pr', name: 'مرتجع جزئي'}
 ]
 
-export const alarmTypes = [
-  {id: 'cp', name: 'الابلاغ عن تغيير السعر', isAvailable: 1},
-  {id: 'av', name: 'الابلاغ عن توفر هذا المنتج/العرض', isAvailable: -1},
-  {id: 'ua', name: 'الابلاغ عن عدم توفر هذا المنتج/العرض', isAvailable: 1},
-  {id: 'aa', name: 'الابلاغ عن توفر بديل', isAvailable: 0},
-  {id: 'eo', name: 'الابلاغ عن عرض لقرب انتهاء الصلاحية', isAvailable: 0},
-  {id: 'go', name: 'الابلاغ عن عرض لمجموعة', isAvailable: 0},
-]
-
-export const orderRequestTypes = [
-  {id: 'e', name: 'تعديل'},
-  {id: 'm', name: 'دمج'},
-  {id: 'c', name: 'الغاء'}
-]
 
 export const advertType = [
   {id: 'a', name: 'اعلان'},
   {id: 'n', name: 'تنويه'}
-]
-
-export const friendStatus = [
-  {id: 'n', name: 'قيد الموافقة'},
-  {id: 's', name: 'ارسلت الدعوة'},
-  {id: 'o', name: 'مدعو سابقا'},
-  {id: 'r', name: 'مستخدم فعلي'}
 ]
 
 export const paymentTypes = [

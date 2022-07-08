@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import { updateOrderStatus, editOrder, getMessage, quantityDetails, returnOrder } from '../data/actions'
 import labels from '../data/labels'
-import { Customer, Err, Order, OrderBasketPack, Pack, PackPrice, Region, State } from '../data/types'
+import { Customer, Err, Order, OrderPack, Pack, PackPrice, Region, State } from '../data/types'
 import { IonButton, IonButtons, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import { addOutline, removeOutline, trashOutline } from 'ionicons/icons'
@@ -13,7 +13,7 @@ type Props = {
   id: string,
   type: string
 }
-type ExtendedOrderBasketPack = OrderBasketPack & {
+type ExtendedOrderBasketPack = OrderPack & {
   packInfo: Pack
 }
 const EditOrder = (props: Props) => {
@@ -23,7 +23,7 @@ const EditOrder = (props: Props) => {
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
   const stateRegions = useSelector<State, Region[]>(state => state.regions)
-  const stateOrderBasket = useSelector<State, OrderBasketPack[] | undefined>(state => state.orderBasket)
+  const stateOrderBasket = useSelector<State, OrderPack[] | undefined>(state => state.orderBasket)
   const order = useMemo(() => stateOrders.find(o => o.id === props.id)!, [stateOrders, props.id])
   const hasChanged = useMemo(() => stateOrderBasket?.find(p => p.oldQuantity !== p.quantity) ? true : false, [stateOrderBasket])
   const [message] = useIonToast()
@@ -60,7 +60,7 @@ const EditOrder = (props: Props) => {
         {text: labels.yes, handler: () => {
           try{
             const type = ['f', 'p', 'e'].includes(order.status) ? 'i' : 'c'
-            updateOrderStatus(order, type, statePackPrices, statePacks, false)
+            updateOrderStatus(order, type, statePackPrices, statePacks)
             message(labels.deleteSuccess, 3000)
             dispatch({type: 'CLEAR_ORDER_BASKET'})
             history.goBack()

@@ -20,7 +20,6 @@ const EditPrice = () => {
   const pack = useMemo(() => statePacks.find(p => p.id === params.packId)!, [statePacks, params.packId])
   const store = useMemo(() => stateStores.find(s => s.id === params.storeId)!, [stateStores, params.storeId])
   const storePack = useMemo(() => statePackPrices.find(p => p.packId === params.packId && p.storeId === params.storeId)!, [statePackPrices, params.packId, params.storeId])
-  const [offerDays, setOfferDays] = useState('')
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
@@ -35,7 +34,7 @@ const EditPrice = () => {
         price : +price * 100,
         time: new Date()
       }
-      editPrice(newStorePack, storePack.price, statePackPrices, statePacks)
+      editPrice(newStorePack, statePackPrices)
       message(labels.editSuccess, 3000)
       history.goBack()
     } catch(error) {
@@ -84,17 +83,6 @@ const EditPrice = () => {
               type="number" 
               clearInput
               onIonChange={e => setPrice(e.detail.value!)} 
-            />
-          </IonItem>
-          <IonItem>
-            <IonLabel position="floating" color="primary">
-              {labels.offerDays}
-            </IonLabel>
-            <IonInput 
-              value={offerDays} 
-              type="number" 
-              clearInput
-              onIonChange={e => setOfferDays(e.detail.value!)} 
             />
           </IonItem>
         </IonList>

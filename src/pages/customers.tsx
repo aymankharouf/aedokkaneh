@@ -30,8 +30,9 @@ const Customers = () => {
                 <IonLabel>
                   <IonText style={{color: colors[0].name}}>{c.name}</IonText>
                   <IonText style={{color: colors[1].name}}>{moment(c.time).fromNow()}</IonText>
-                  {c.status === 'b' && <IonBadge color="danger">{labels.isBlocked}</IonBadge>}
                 </IonLabel>
+                {c.status === 'b' && <IonBadge color="danger">{labels.isBlocked}</IonBadge>}
+                {c.status === 'n' && <IonBadge color="success">{labels.new}</IonBadge>}
               </IonItem>    
             )
           }

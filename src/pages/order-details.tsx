@@ -1,13 +1,13 @@
 import { useState, useMemo } from 'react'
-import { updateOrderStatus, getMessage, quantityDetails, mergeOrder, setDeliveryTime } from '../data/actions'
+import { updateOrderStatus, getMessage, quantityDetails, setDeliveryTime } from '../data/actions'
 import labels from '../data/labels'
 import { colors, orderPackStatus } from '../data/config'
 import { Customer, Err, Order, Pack, PackPrice, State, Store } from '../data/types'
-import { IonActionSheet, IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
+import { IonActionSheet, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useHistory, useLocation, useParams } from 'react-router'
-import { constructOutline } from 'ionicons/icons'
+import { ellipsisVerticalOutline } from 'ionicons/icons'
 import { useSelector } from 'react-redux'
 
 type Params = {
@@ -40,54 +40,10 @@ const OrderDetails = () => {
       }
     })
   , [order, stateStores])
-  const lastOrder = useMemo(() => {
-      const userOrders = stateOrders.filter(o => o.id !== order.id && o.userId === order.userId && !['c', 'm', 'r'].includes(o.status))
-                                    .sort((o1, o2) => o2.time > o1.time ? 1 : -1)
-      return ['a', 'e'].includes(userOrders[0]?.status) ? userOrders[0] : undefined
-  }, [stateOrders, order])
-  const confirmMerge = () => {
-    try{
-      let found
-      for (let p of order.basket) {
-        found = lastOrder!.basket.find(bp => bp.packId === p.packId)
-        if (found && found.price !== p.price) {
-          throw new Error('samePackWithDiffPrice')
-        }
-        if (found && found.weight > 0 && statePacks.find(pa => pa.id === p.packId)?.isDivided) {
-          throw new Error('samePackPurchasedByWeight')
-        }
-      }
-      mergeOrder(lastOrder!, order.basket, order.id!)
-      message(labels.mergeSuccess, 3000)
-      history.goBack()
-    } catch(error) {
-      const err = error as Err
-      message(getMessage(location.pathname, err), 3000)
-    }
-  }
-  const rejectMerge = (actionId: string) => {
-    try{
-      updateOrderStatus(order, actionId, statePackPrices, statePacks, false)
-      message(labels.editSuccess, 3000)
-      history.goBack()
-    } catch(error) {
-      const err = error as Err
-      message(getMessage(location.pathname, err), 3000)
-    }
-  }
   const handleAction = (actionId: string) => {
     try{
-    if (actionId === 'a' && !stateCustomers.find(c => c.id === order.userId)){
+      if (actionId === 'a' && stateCustomers.find(c => c.id === order.userId)?.status === 'n'){
         throw new Error('notApprovedUser')
-      } else if (actionId === 'a' && lastOrder) {
-        alert({
-          header: labels.confirmationTitle,
-          message: labels.confirmMergeText,
-          buttons: [
-            {text: labels.cancel, handler: () => rejectMerge(actionId)},
-            {text: labels.yes, handler: () => confirmMerge()},
-          ],
-        })
       } else if (actionId === 'i') {
         alert({
           header: labels.confirmationTitle,
@@ -96,7 +52,7 @@ const OrderDetails = () => {
             {text: labels.cancel},
             {text: labels.yes, handler: () => {
               try{
-                updateOrderStatus(order, actionId, statePackPrices, statePacks, false)
+                updateOrderStatus(order, actionId, statePackPrices, statePacks)
                 message(labels.editSuccess, 3000)
                 history.goBack()
               } catch(error) {
@@ -107,7 +63,7 @@ const OrderDetails = () => {
           ],
         })
       } else if (actionId === 'd') {
-        updateOrderStatus(order, 'd', statePackPrices, statePacks, false)
+        updateOrderStatus(order, 'd', statePackPrices, statePacks)
         message(labels.editSuccess, 3000)
         history.goBack()
       } else if (actionId === 't') {
@@ -129,7 +85,7 @@ const OrderDetails = () => {
           ],
         })
       } else {
-        updateOrderStatus(order, actionId, statePackPrices, statePacks, false)
+        updateOrderStatus(order, actionId, statePackPrices, statePacks)
         message(labels.editSuccess, 3000)
         history.goBack()
       }  
@@ -145,17 +101,16 @@ const OrderDetails = () => {
       <IonContent fullscreen>
         <IonList>
           {orderBasket.map(p => 
-            <IonItem key={p.packId}>
+            <IonItem key={p.pack?.id}>
               <IonLabel>
-                <IonText style={{color: colors[0].name}}>{p.productName}</IonText>
-                <IonText style={{color: colors[1].name}}>{p.productAlias}</IonText>
-                <IonText style={{color: colors[2].name}}>{p.packName}</IonText>
+                <IonText style={{color: colors[0].name}}>{p.pack?.product.name}</IonText>
+                <IonText style={{color: colors[1].name}}>{p.pack?.product.alias}</IonText>
+                <IonText style={{color: colors[2].name}}>{p.pack?.name}</IonText>
                 <IonText style={{color: colors[3].name}}>{p.priceNote}</IonText>
                 <IonText style={{color: colors[4].name}}>{quantityDetails(p)}</IonText>
                 <IonText style={{color: colors[5].name}}>{p.storeId ? `${labels.storeName}: ${p.storeName}` : ''}</IonText>
                 <IonText style={{color: colors[6].name}}>{`${labels.status}: ${p.statusNote}`}</IonText>
               </IonLabel>
-              {p.closeExpired && <IonBadge color="danger">{labels.closeExpired}</IonBadge>}
               <IonLabel slot="end" className="price">{(p.gross / 100).toFixed(2)}</IonLabel>
             </IonItem>    
           )}
@@ -185,10 +140,11 @@ const OrderDetails = () => {
       </IonContent>
       <IonFab vertical="top" horizontal="end" slot="fixed">
         <IonFabButton onClick={() => setActionsOpened(true)} color="success">
-          <IonIcon ios={constructOutline} /> 
+          <IonIcon ios={ellipsisVerticalOutline} /> 
         </IonFabButton>
       </IonFab>
       <IonActionSheet
+        mode='ios'
         isOpen={actionsOpened}
         onDidDismiss={() => setActionsOpened(false)}
         buttons={[

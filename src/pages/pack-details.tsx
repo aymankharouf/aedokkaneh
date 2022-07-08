@@ -15,12 +15,11 @@ type Params = {
 }
 type ExtendedPackPrice = {
   packPrice: PackPrice,
-  subQuantity: number,
-  price: number,
+  subCount: number,
   unitPrice: number,
   isOffer: boolean,
-  packInfo: Pack,
-  storeInfo: Store
+  pack: Pack,
+  store: Store
 }
 const PackDetails = () => {
   const params = useParams<Params>()
@@ -45,12 +44,12 @@ const PackDetails = () => {
   const packStores = useMemo(() => {
     const packStores = getPackStores(pack, statePackPrices, statePacks)
     const result = packStores.map(p => {
-      const packInfo = statePacks.find(pp => pp.id === p.packId)!
-      const storeInfo = stateStores.find(s => s.id === p.packPrice.storeId)!
+      const pack = statePacks.find(pp => pp.id === p.packPrice.packId)!
+      const store = stateStores.find(s => s.id === p.packPrice.storeId)!
       return {
         ...p,
-        packInfo,
-        storeInfo
+        pack,
+        store
       }
     })
     const today = new Date()
@@ -120,7 +119,7 @@ const PackDetails = () => {
       pack,
       packStore: currentStorePack,
       quantity : pack.isDivided ? weight : 1,
-      price: currentStorePack?.price,
+      price: currentStorePack?.packPrice.price,
       weight,
     }
     dispatch({type: 'ADD_TO_BASKET', payload: params})
@@ -150,7 +149,7 @@ const PackDetails = () => {
           pack, 
           packStore: currentStorePack,
           quantity: 1,
-          price: currentStorePack?.price,
+          price: currentStorePack?.packPrice.price,
           weight: 0,
           orderId: '',
           refPackId: '',
@@ -210,17 +209,17 @@ const PackDetails = () => {
         </IonCard>
         <IonList>
           {packStores.map(s => 
-            <IonItem key={i++} className={currentStorePack?.packPrice.storeId === s.packPrice.storeId && currentStorePack?.packPrice.packId === s.packId ? 'selected' : ''}>
+            <IonItem key={i++} className={currentStorePack?.packPrice.storeId === s.packPrice.storeId && currentStorePack?.packPrice.packId === s.packPrice.packId ? 'selected' : ''}>
               <IonLabel>
-                <IonText style={{color: colors[0].name}}>{s.storeInfo.name}</IonText>
-                <IonText style={{color: colors[1].name}}>{s.packId === pack.id ? '' : `${s.packInfo.product.name}${s.packInfo.product.alias ? '-' + s.packInfo.product.alias : ''}`}</IonText>
-                <IonText style={{color: colors[2].name}}>{s.packId === pack.id ? '' : s.packInfo.name}</IonText>
-                <IonText style={{color: colors[3].name}}>{`${labels.price}: ${(s.price / 100).toFixed(2)}${s.price === s.unitPrice ? '' : '(' + (s.unitPrice / 100).toFixed(2) + ')'}`}</IonText>
-                <IonText style={{color: colors[4].name}}>{s.subQuantity ? `${labels.quantity}: ${s.subQuantity}` : ''}</IonText>
+                <IonText style={{color: colors[0].name}}>{s.store.name}</IonText>
+                <IonText style={{color: colors[1].name}}>{s.packPrice.packId === pack.id ? '' : `${s.pack.product.name}${s.pack.product.alias ? '-' + s.pack.product.alias : ''}`}</IonText>
+                <IonText style={{color: colors[2].name}}>{s.packPrice.packId === pack.id ? '' : s.pack.name}</IonText>
+                <IonText style={{color: colors[3].name}}>{`${labels.price}: ${(s.packPrice.price / 100).toFixed(2)}${s.packPrice.price === s.unitPrice ? '' : '(' + (s.unitPrice / 100).toFixed(2) + ')'}`}</IonText>
+                <IonText style={{color: colors[4].name}}>{s.subCount ? `${labels.quantity}: ${s.subCount}` : ''}</IonText>
                 {!s.packPrice.isActive && <IonBadge color="danger">{labels.inActive}</IonBadge>}
                 {s.packPrice.quantity > 0 && <IonText style={{color: colors[6].name}}>{`${labels.balance}: ${quantityText(s.packPrice.quantity, s.packPrice.weight)}`}</IonText>}
               </IonLabel>
-              {s.packId === pack.id &&
+              {s.packPrice.packId === pack.id &&
                 <IonIcon 
                   ios={ellipsisVerticalOutline}
                   slot="end" 

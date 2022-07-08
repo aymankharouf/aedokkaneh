@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { quantityText } from '../data/actions'
 import labels from '../data/labels'
 import { Basket as BasketType, BasketPack, PackPrice, State, Store } from '../data/types'
-import { IonButton, IonButtons, IonContent, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
+import { IonButton, IonButtons, IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
 import Header from './header'
 import { addOutline, removeOutline } from 'ionicons/icons'
 import { colors } from '../data/config'
@@ -13,53 +13,56 @@ const Basket = () => {
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const stateBasket = useSelector<State, BasketType | undefined>(state => state.basket)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
-  const [store] = useState(() => stateStores.find(s => s.id === stateBasket?.storeId))
+  const store = useMemo(() => stateStores.find(s => s.id === stateBasket?.storeId), [stateStores, stateBasket])
   const basket = useMemo(() => stateBasket?.packs || [], [stateBasket])
   const totalPrice = useMemo(() => stateBasket?.packs?.reduce((sum, p) => sum + Math.round(p.price * (p.weight || p.quantity)), 0) || 0, [stateBasket])
-  const handleIncrease = (pack: BasketPack) => {
-    if (store?.id === 's') {
-      const stock = statePackPrices.find(p => p.packId === pack.packId && p.storeId === 's')
-      if (pack.quantity === pack.requested) return
-      if (pack.quantity === stock?.quantity) return
-    }
-    if (pack.isDivided) return
-    if (pack.orderId && pack.quantity === pack.requested) return
-    dispatch({type: 'INCREASE_QUANTITY', payload: pack})
-  }
+  // const handleIncrease = (pack: BasketPack) => {
+  //   // if (store?.id === 's') {
+  //   //   const stock = statePackPrices.find(p => p.packId === pack.packId && p.storeId === 's')
+  //   //   if (pack.quantity === pack.requested) return
+  //   //   if (pack.quantity === stock?.quantity) return
+  //   // }
+  //   if (pack.isDivided) return
+  //   // if (pack.orderId && pack.quantity === pack.requested) return
+  //   dispatch({type: 'INCREASE_QUANTITY', payload: pack})
+  // }
   let i = 0  
   return (
     <IonPage>
-      <Header title={`${labels.basketFrom} ${store?.name}`} />
+      <Header title={store ? `${labels.basketFrom} ${store.name}` : labels.purchaseBasket} />
       <IonContent fullscreen>
         <IonList className="ion-padding">
-          {basket.map(p => 
+          {basket.length === 0 ? 
+            <IonItem> 
+              <IonLabel>{labels.noData}</IonLabel>
+            </IonItem> 
+          : basket.map(p => 
             <IonItem key={i++}>
-              <IonThumbnail slot="start">
-                <IonImg src={p.imageUrl} alt={labels.noImage} />
-              </IonThumbnail>
               <IonLabel>
-                <IonText style={{color: colors[0].name}}>{p.productName}</IonText>
-                <IonText style={{color: colors[1].name}}>{p.productAlias}</IonText>
-                <IonText style={{color: colors[2].name}}>{p.packName}</IonText>
+                <IonText style={{color: colors[0].name}}>{p.pack?.product.name}</IonText>
+                <IonText style={{color: colors[1].name}}>{p.pack?.product.alias}</IonText>
+                <IonText style={{color: colors[2].name}}>{p.pack?.name}</IonText>
                 <IonText style={{color: colors[3].name}}>{`${labels.unitPrice}: ${(p.price / 100).toFixed(2)}`}</IonText>
                 <IonText style={{color: colors[4].name}}>{`${labels.quantity}: ${quantityText(p.quantity, p.weight)}`}</IonText>
                 <IonText style={{color: colors[5].name}}>{`${labels.grossPrice}: ${(Math.round(p.price * (p.weight || p.quantity)) / 100).toFixed(2)}`}</IonText>
               </IonLabel>
               {p.price > 0 && <>
-                <IonButtons slot="end" onClick={() => dispatch({type: 'DECREASE_QUANTITY', payload: p})}>
+                <IonButtons slot="end" onClick={() => dispatch({type: 'DECREASE_QUANTITY', payload: p.pack?.id})}>
                   <IonIcon 
                     ios={removeOutline} 
                     color="primary" 
                     style={{fontSize: '25px', marginRight: '5px'}} 
                   />
                 </IonButtons>
-                <IonButtons slot="end" onClick={() => handleIncrease(p)}>
-                  <IonIcon 
-                    ios={addOutline} 
-                    color="primary" 
-                    style={{fontSize: '25px', marginRight: '5px'}} 
-                  />
-                </IonButtons>
+                {!p.weight &&
+                  <IonButtons slot="end" onClick={() => dispatch({type: 'INCREASE_QUANTITY', payload: p.pack?.id})}>
+                    <IonIcon 
+                      ios={addOutline} 
+                      color="primary" 
+                      style={{fontSize: '25px', marginRight: '5px'}} 
+                    />
+                  </IonButtons>
+                }
               </>}
             </IonItem>
           )}

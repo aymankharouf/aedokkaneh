@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { IonApp, IonRouterOutlet, IonSplitPane } from '@ionic/react'
 import { IonReactRouter } from '@ionic/react-router'
 import { Route } from 'react-router-dom'
@@ -48,8 +49,6 @@ import Settings from './pages/settings'
 import Categories from './pages/categories'
 import AddCategory from './pages/add-category'
 import Orders from './pages/orders'
-import RequestedPacks from './pages/requested-packs'
-import RequestedPackDetails from './pages/requested-pack-details'
 import ConfirmPurchase from './pages/confirm-purchase'
 import Purchases from './pages/purchases'
 import PurchaseDetails from './pages/purchase-details'
@@ -67,7 +66,6 @@ import EditCategory from './pages/edit-category'
 import EditStore from './pages/edit-store'
 import CustomerDetails from './pages/customer-details'
 import EditCustomer from './pages/edit-customer'
-import NewCustomers from './pages/new-customers'
 import ApproveCustomer from './pages/approve-customer'
 import Spendings from './pages/spendings'
 import AddSpending from './pages/add-spending'
@@ -84,10 +82,8 @@ import Ratings from './pages/ratings'
 import Approvals from './pages/approvals'
 import PackOperations from './pages/pack-operations'
 import AddPackStore from './pages/add-pack-store'
-import OrderRequests from './pages/order-requests'
 import Logs from './pages/logs'
 import StoreDetails from './pages/store-details'
-import PrepareOrders from './pages/prepare-orders'
 import PrepareOrdersList from './pages/prepare-orders-list'
 import ProductDetails from './pages/product-details'
 import AddOffer from './pages/add-offer'
@@ -96,12 +92,10 @@ import Notifications from './pages/notifications'
 import AddNotification from './pages/add-notification'
 import ArchivedOrders from './pages/archived-orders'
 import StoreOperations from './pages/store-operations'
-import PurchasePlan from './pages/purchase-plan'
 import Adverts from './pages/adverts'
 import AddAdvert from './pages/add-advert'
 import AdvertDetails from './pages/advert-details'
 import EditAdvert from './pages/edit-advert'
-import OrderRequestDetails from './pages/order-request-details'
 import Register from './pages/register'
 import ArchivedPurchases from './pages/archived-purchases'
 import ArchivedStockOperations from './pages/archived-stock-operations'
@@ -109,8 +103,11 @@ import ArchivedProducts from './pages/archived-products'
 import ReturnBasket from './pages/return-basket'
 import StoreBalance from './pages/store-balance'
 import StoreBalanceOperations from './pages/store-balance-operations'
-import { useEffect } from 'react'
 import StoreTrans from './pages/store-trans'
+import OrderPackStores from './pages/prepare-order-pack'
+import PrepareOrderPack from './pages/prepare-order-pack'
+import PrepareOrder from './pages/prepare-order'
+import OrderTrans from './pages/order-trans'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -240,11 +237,12 @@ const App = () => {
               deliveryFees: doc.data().deliveryFees,
               fraction: doc.data().fraction,
               profit: doc.data().profit,
-              lastUpdate: doc.data().lastUpdate?.toDate() || null,
-              requestTime: doc.data().requestTime?.toDate() || null,
+              requestTime: doc.data().requestTime?.toDate(),
               basket: doc.data().basket,
               requestBasket: doc.data().requestBasket,
-              time: doc.data().time.toDate()
+              lastUpdate: doc.data().lastUpdate.toDate(),
+              time: doc.data().lastUpdate.toDate(),
+              trans: doc.data().trans
             })
           })
           dispatch({type: 'SET_ORDERS', payload: orders})
@@ -270,8 +268,6 @@ const App = () => {
               mapPosition: doc.data().mapPosition,
               ordersCount: doc.data().ordersCount,
               deliveredOrdersCount: doc.data().deliveredOrdersCount,
-              returnedCount: doc.data().returnedCount,
-              deliveredOrdersTotal: doc.data().deliveredOrdersTotal,
               time: doc.data().time.toDate()
             })
             if (doc.data().notifications) {
@@ -457,7 +453,6 @@ const App = () => {
             <Route path="/stores" exact={true} component={Stores} />
             <Route path="/add-store" exact={true} component={AddStore} />
             <Route path="/customers" exact={true} component={Customers} />
-            <Route path="/new-customers" exact={true} component={NewCustomers} />
             <Route path="/approve-customer/:id" exact={true} component={ApproveCustomer} />
             <Route path="/customer-details/:id" exact={true} component={CustomerDetails} />
             <Route path="/edit-customer/:id" exact={true} component={EditCustomer} />
@@ -488,8 +483,7 @@ const App = () => {
             <Route path="/orders-list/:id/:type" exact={true} component={OrdersList} />
             <Route path="/order-details/:id/:type" exact={true} component={OrderDetails} />
             <Route path="/edit-order/:id/:type" exact={true} component={EditOrder} />
-            <Route path="/requested-packs" exact={true} component={RequestedPacks} />
-            <Route path="/requested-pack-details/:packId/:quantity/:price/:orderId" exact={true} component={RequestedPackDetails} />
+            <Route path="/order-pack-stores/:packId/:quantity/:price" exact={true} component={OrderPackStores} />
             <Route path="/purchases" exact={true} component={Purchases} />
             <Route path="/purchase-details/:id/:type" exact={true} component={PurchaseDetails} />
             <Route path="/stock" exact={true} component={Stock} />
@@ -505,21 +499,18 @@ const App = () => {
             <Route path="/ratings" exact={true} component={Ratings} />
             <Route path="/approvals" exact={true} component={Approvals} />
             <Route path="/pack-operations/:id" exact={true} component={PackOperations} />
-            <Route path="/order-requests" exact={true} component={OrderRequests} />
             <Route path="/logs" exact={true} component={Logs} />
-            <Route path="/prepare-orders" exact={true} component={PrepareOrders} />
-            <Route path="/prepare-orders-list/:packId/:orderId" exact={true} component={PrepareOrdersList} />
+            <Route path="/prepare-orders-list" exact={true} component={PrepareOrdersList} />
+            <Route path="/prepare-order/:id" exact={true} component={PrepareOrder} />
+            <Route path="/prepare-order-pack/:orderId/:packId" exact={true} component={PrepareOrderPack} />
             <Route path="/notifications" exact={true} component={Notifications} />
             <Route path="/add-notification" exact={true} component={AddNotification} />
             <Route path="/archived-orders" exact={true} component={ArchivedOrders} />
             <Route path="/store-operations/:id" exact={true} component={StoreOperations} />
-            <Route path="/purchase-plan" exact={true} component={PurchasePlan} />
-            <Route path="/purchase-plan-details/:id" exact={true} component={PurchaseDetails} />
             <Route path="/adverts" exact={true} component={Adverts} />
             <Route path="/add-advert" exact={true} component={AddAdvert} />
             <Route path="/advert-details/:id" exact={true} component={AdvertDetails} />
             <Route path="/edit-advert/:id" exact={true} component={EditAdvert} />
-            <Route path="/order-request-details/:id" exact={true} component={OrderRequestDetails} />
             <Route path="/archived-purchases" exact={true} component={ArchivedPurchases} />
             <Route path="/archived-stock-operations" exact={true} component={ArchivedStockOperations} />
             <Route path="/archived-products" exact={true} component={ArchivedProducts} />
@@ -527,6 +518,7 @@ const App = () => {
             <Route path="/store-balance/:id" exact={true} component={StoreBalance} />
             <Route path="/store-balance-operations/:storeId/:month" exact={true} component={StoreBalanceOperations} />
             <Route path="/store-trans/:id" exact={true} component={StoreTrans} />
+            <Route path="/order-trans/:id" exact={true} component={OrderTrans} />
           </IonRouterOutlet>
         </IonSplitPane>
       </IonReactRouter>

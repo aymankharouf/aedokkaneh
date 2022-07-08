@@ -8,22 +8,14 @@ import { useSelector } from 'react-redux'
 import { Customer, Order, PasswordRequest, Rating, State } from '../data/types'
 
 const Approvals = () => {
-  const stateOrders = useSelector<State, Order[]>(state => state.orders)
-  const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
   const stateRatings = useSelector<State, Rating[]>(state => state.ratings)
   const statePasswordRequests = useSelector<State, PasswordRequest[]>(state => state.passwordRequests)
-  const newOrders = useMemo(() => stateOrders.filter(o => o.status === 'n').length, [stateOrders])
-  const orderRequests = useMemo(() => stateOrders.filter(r => r.requestType).length, [stateOrders])
-  const newCustomers = useMemo(() => stateCustomers.filter(c => c.status === 'n').length, [stateCustomers])
   const ratings = useMemo(() => stateRatings.filter(r => r.status === 'n').length, [stateRatings])
   const sections = useMemo(() => [
-      {id: '1', name: labels.orders, path: '/orders-list/n/s', count: newOrders},
-      {id: '2', name: labels.orderRequests, path: '/order-requests', count: orderRequests},
-      {id: '3', name: labels.newCustomers, path: '/new-customers', count: newCustomers},
-      {id: '4', name: labels.passwordRequests, path: '/password-requests', count: statePasswordRequests.length},
-      {id: '5', name: labels.ratings, path: '/ratings', count: ratings},
+      {id: '1', name: labels.passwordRequests, path: '/password-requests', count: statePasswordRequests.length},
+      {id: '2', name: labels.ratings, path: '/ratings', count: ratings},
     ]
-  , [newOrders, newCustomers, statePasswordRequests, ratings, orderRequests])
+  , [statePasswordRequests, ratings])
   let i = 0
   return(
     <IonPage>
