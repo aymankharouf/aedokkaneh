@@ -16,16 +16,17 @@ const OrderTrans = () => {
   const params = useParams<Params>()
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
   const order = useMemo(() => stateOrders.find(o => o.id === params.id)!, [stateOrders, params.id])
+  const trans = useMemo(() => order.trans.sort((t1, t2) => t2.time - t1.time), [order])
   let i = 0
   return(
     <IonPage>
       <Header title={labels.orderTrans} />
       <IonContent fullscreen>
         <IonList>
-          {order.trans?.map(t => 
+          {trans.map(t => 
             <IonItem key={i++}>
               <IonLabel>{orderStatus.find(s => s.id === t.type)?.name}</IonLabel>
-              <IonLabel slot="end">{moment(t.time).fromNow()}</IonLabel>
+              <IonLabel slot="end">{moment(new Date(t.time)).fromNow()}</IonLabel>
             </IonItem>    
           )}
         </IonList>

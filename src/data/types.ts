@@ -99,7 +99,7 @@ export type OrderPack = {
 }
 export type OrderTrans = {
   type: string,
-  time: Date
+  time: number
 }
 export type Order = {
   id?: string,
@@ -116,7 +116,7 @@ export type Order = {
   time: Date,
   basket: OrderPack[],
   requestBasket: OrderPack[],
-  trans?: OrderTrans[]
+  trans: OrderTrans[]
 }
 export type Advert = {
   id?: string,
@@ -169,7 +169,7 @@ export type Purchase = {
   total: number,
   time: Date,
   isArchived: boolean,
-  basket: StockPack[]
+  basket: PurchasePack[]
 }
 export type StockOperation = {
   id?: string,
@@ -177,7 +177,7 @@ export type StockOperation = {
   storeId: string,
   type: string,
   total: number,
-  basket: StockPack[],
+  basket: PurchasePack[],
   time: Date
 }
 export type Product = {
@@ -242,7 +242,7 @@ export type ReturnBasket = {
   storeId: string,
   purchaseId: string,
   type: string,
-  packs: StockPack[]
+  packs: Stock[]
 }
 export type BasketPack = {
   pack?: Pack,
@@ -264,11 +264,28 @@ export type BasketPack = {
   refPackQuantity?: number,
   refQuantity?: number
 }
-export type StockPack = {
+export type StockTrans = {
+  type: string,
+  quantity: number,
+  weight: number,
+  price: number,
+  refId?: string,
+  time: number
+}
+export type PurchasePack = {
   packId: string,
   quantity: number,
   price: number,
-  weight: number
+  weight: number,
+}
+export type Stock = {
+  id?: string,
+  packId: string,
+  quantity: number,
+  price: number,
+  weight: number,
+  trans?: StockTrans[],
+  isArchived?: boolean
 }
 export type RequestedPack = {
   packId: string,
@@ -291,6 +308,7 @@ export type State = {
   stores: Store[], 
   purchases: Purchase[],
   orders: Order[],
+  stocks: Stock[],
   stockOperations: StockOperation[],
   products: Product[],
   packs: Pack[],

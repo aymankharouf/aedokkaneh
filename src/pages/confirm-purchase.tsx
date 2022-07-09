@@ -5,7 +5,7 @@ import { IonButton, IonContent, IonItem, IonLabel, IonList, IonPage, IonText, us
 import Header from './header'
 import { useHistory, useLocation } from 'react-router'
 import { colors } from '../data/config'
-import { Basket, Err, Order, Pack, PackPrice, State, Store } from '../data/types'
+import { Basket, Err, Order, Pack, PackPrice, State, Stock, Store } from '../data/types'
 import { useSelector, useDispatch } from 'react-redux'
 
 
@@ -13,9 +13,7 @@ const ConfirmPurchase = () => {
   const dispatch = useDispatch()
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const stateBasket = useSelector<State, Basket | undefined>(state => state.basket)
-  const statePacks = useSelector<State, Pack[]>(state => state.packs)
-  const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
-  const stateOrders = useSelector<State, Order[]>(state => state.orders)
+  const stateStocks = useSelector<State, Stock[]>(state => state.stocks)
   const store = useMemo(() => stateStores.find(s => s.id === stateBasket?.storeId)!, [stateStores, stateBasket])
   const [message] = useIonToast()
   const location = useLocation()
@@ -23,17 +21,10 @@ const ConfirmPurchase = () => {
   const total = useMemo(() => stateBasket?.packs.reduce((sum, p) => sum + Math.round(p.price * (p.weight || p.quantity)), 0) || 0, [stateBasket])
   const handlePurchase = () => {
     try{
-      // if (store.id === 's') {
-      //   stockOut(stateBasket?.packs!, stateOrders, statePackPrices, statePacks)
-      //   message(labels.purchaseSuccess, 3000)
-      //   history.push('/')
-      //   dispatch({type: 'CLEAR_BASKET'})    
-      // } else {
-        confirmPurchase(stateBasket?.packs!, stateOrders, store.id!, statePackPrices, statePacks, stateStores, total)
-        message(labels.purchaseSuccess, 3000)
-        history.push('/')
-        dispatch({type: 'CLEAR_BASKET'})    
-      // }  
+      confirmPurchase(stateBasket?.packs!, store.id!, stateStocks, total)
+      message(labels.purchaseSuccess, 3000)
+      history.push('/')
+      dispatch({type: 'CLEAR_BASKET'})    
     } catch(error) {
       const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
@@ -42,7 +33,7 @@ const ConfirmPurchase = () => {
   let i = 0
   return(
     <IonPage>
-      <Header title={`${labels.confirmPurchase} ${store.name}`} />
+      <Header title={`${labels.confirmPurchase} ${stateBasket ? store.name : ''}`} />
       <IonContent fullscreen className="ion-padding">
         <IonList>
           {stateBasket?.packs?.map(p => 

@@ -11,6 +11,7 @@ const initState = {
   users: [],
   purchases: [],
   orders: [],
+  stocks: [],
   stockOperations: [],
   products: [],
   packs: [],
@@ -40,13 +41,13 @@ const reducer = (state: State = initState, action: Action) => {
     switch (action.type){
       case 'ADD_TO_BASKET':
         basketPack = {
-          pack: action.payload.packStore.pack,
-          price: action.payload.packStore.price,
-          quantity: action.payload.quantity,
+          pack: action.payload.pack,
+          price: action.payload.packPrice.price,
+          quantity: action.payload.pack.isDivided ? action.payload.weight : 1,
           weight: action.payload.weight,
         }
         if (!state.basket?.storeId) {
-          return {...state, basket: {storeId: action.payload.packStore.store.id, packs: [basketPack]}}
+          return {...state, basket: {storeId: action.payload.store.id, packs: [basketPack]}}
         } else {
           return {...state, basket: {...state.basket, packs: [...state.basket.packs, basketPack]}}
         }
@@ -195,6 +196,8 @@ const reducer = (state: State = initState, action: Action) => {
         return {...state, purchases: action.payload}
       case 'SET_ORDERS':
         return {...state, orders: action.payload}
+      case 'SET_STOCKS':
+        return {...state, stocks: action.payload}
       case 'SET_STOCK_OPERATIONS':
         return {...state, stockOperations: action.payload}
       case 'SET_PASSWORD_REQUESTS':
@@ -215,7 +218,7 @@ const reducer = (state: State = initState, action: Action) => {
         return {...state, logs: action.payload}
       case 'SET_STORE_TRANS':
         return {...state, storeTrans: action.payload}
-        case 'ADD_ARCHIVED_ORDERS':
+      case 'ADD_ARCHIVED_ORDERS':
         return {...state, archivedOrders: [...state.archivedOrders, ...action.payload]}
       case 'SET_ADVERTS':
         return {...state, adverts: action.payload}

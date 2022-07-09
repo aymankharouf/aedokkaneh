@@ -29,10 +29,6 @@ const PrepareOrder = () => {
     try{
       if (actionId === 'a' && stateCustomers.find(c => c.id === order.userId)?.status === 'n'){
         throw new Error('notApprovedUser')
-      } else if (actionId === 'd') {
-        updateOrderStatus(order, 'd', statePackPrices, statePacks)
-        message(labels.editSuccess, 3000)
-        history.goBack()
       } else if (actionId === 't') {
         alert({
           header: labels.enterDeliveryTime,
@@ -114,7 +110,7 @@ const PrepareOrder = () => {
           },
           {
             text: labels.suspend,
-            cssClass: ['n', 'a', 'e', 'f'].includes(order.status) ? colors[i++ % 10].name : 'ion-hide',
+            cssClass: ['n', 'a', 'e'].includes(order.status) ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleAction('s')
           },
           {
@@ -124,7 +120,7 @@ const PrepareOrder = () => {
           },
           {
             text: labels.timing,
-            cssClass: order.total > 0 && order.status === 'f' ? colors[i++ % 10].name : 'ion-hide',
+            cssClass: order.total > 0 && order.status === 'f' && !order.deliveryTime ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleAction('t')
           },
           {
@@ -135,12 +131,7 @@ const PrepareOrder = () => {
           {
             text: labels.edit,
             cssClass: order.status !== 'f' ? colors[i++ % 10].name : 'ion-hide',
-            handler: () => history.push(`/edit-order/${order.id}/e`)
-          },
-          {
-            text: labels.return,
-            cssClass: order.status === 'f' ? colors[i++ % 10].name : 'ion-hide',
-            handler: () => history.push(`/edit-order/${params.id}/r`)
+            handler: () => history.push(`/edit-order/${order.id}`)
           },
         ]}
       />

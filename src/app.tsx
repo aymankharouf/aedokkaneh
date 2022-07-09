@@ -3,7 +3,7 @@ import { IonApp, IonRouterOutlet, IonSplitPane } from '@ionic/react'
 import { IonReactRouter } from '@ionic/react-router'
 import { Route } from 'react-router-dom'
 import firebase from './data/firebase'
-import { Advert, Customer, Log, MonthlyOperation, Notification, Order, Pack, PackPrice, PasswordRequest, Product, Purchase, Rating, Spending, StockOperation, Store, StorePayment, StoreTrans as StoreTransType } from './data/types'
+import { Advert, Customer, Log, MonthlyOperation, Notification, Order, Pack, PackPrice, PasswordRequest, Product, Purchase, Rating, Spending, Stock as StockType, StockOperation, Store, StorePayment, StoreTrans as StoreTransType } from './data/types'
 import { useDispatch } from 'react-redux';
 
 
@@ -353,6 +353,22 @@ const App = () => {
         }, err => {
           unsubscribeStockOperations()
         })  
+        const unsubscribeStocks = firebase.firestore().collection('stocks').where('isArchived', '==', false).onSnapshot(docs => {
+          const stocks: StockType[] = []
+          docs.forEach(doc => {
+            stocks.push({
+              id: doc.id,
+              packId: doc.id,
+              quantity: doc.data().quantity,
+              price: doc.data().price,
+              weight: doc.data().weight,
+              trans: doc.data().trans
+            })
+          })
+          dispatch({type: 'SET_STOCKS', payload: stocks})
+        }, err => {
+          unsubscribeStocks()
+        })  
         const unsubscribeSpendings = firebase.firestore().collection('spendings').onSnapshot(docs => {
           let spendings: Spending[] = []
           docs.forEach(doc => {
@@ -482,7 +498,7 @@ const App = () => {
             <Route path="/orders" exact={true} component={Orders} />
             <Route path="/orders-list/:id/:type" exact={true} component={OrdersList} />
             <Route path="/order-details/:id/:type" exact={true} component={OrderDetails} />
-            <Route path="/edit-order/:id/:type" exact={true} component={EditOrder} />
+            <Route path="/edit-order/:id" exact={true} component={EditOrder} />
             <Route path="/order-pack-stores/:packId/:quantity/:price" exact={true} component={OrderPackStores} />
             <Route path="/purchases" exact={true} component={Purchases} />
             <Route path="/purchase-details/:id/:type" exact={true} component={PurchaseDetails} />

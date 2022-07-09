@@ -1,7 +1,6 @@
 import firebase from './firebase'
 import labels from './labels'
-import { Advert, Basket, BasketPack, Category, Customer, Region, Log, MonthlyOperation, Notification, Order, OrderPack, Pack, PackPrice, Product, Purchase, Rating, RequestedPack, ReturnBasket, Spending, StockPack, StockOperation, Store, StorePayment, Country, Err } from "./types"
-import { setup } from './config'
+import { Advert, Basket, BasketPack, Category, Customer, Region, Log, MonthlyOperation, Notification, Order, OrderPack, Pack, PackPrice, Product, Purchase, Rating, RequestedPack, ReturnBasket, Spending, Stock, StockOperation, Store, StorePayment, Country, Err, PurchasePack } from "./types"
 
 export const getMessage = (path: string, error: Err) => {
   const errorCode = error.code ? error.code.replace(/-|\//g, '_') : error.message
@@ -168,15 +167,6 @@ export const editCustomer = (customer: Customer) => {
   const { id, ...others } = customer
   firebase.firestore().collection('customers').doc(id).update({
     ...others,
-  })
-}
-
-export const addStock = () => {
-  firebase.firestore().collection('stores').doc('s').set({
-    name: setup.stockName,
-    isActive: true,
-    mobile: setup.mobile,
-    time: new Date()
   })
 }
 
@@ -633,46 +623,48 @@ const stockIn = (batch: firebase.firestore.WriteBatch, type: string, basket: Bas
       quantity: p.quantity,
       weight: p.weight || 0
     }
-    packStockIn(batch, stockPack, packPrices)
+    // packStockIn(batch, stockPack, packPrices)
   })
 }
 
-const packStockIn = (batch: firebase.firestore.WriteBatch, stockPack: StockPack, packPrices: PackPrice[]) => {
-  let stock = packPrices.find(p => p.packId === stockPack.packId && p.storeId === 's')
-  // const pack = packs.find(p => p.id === basketPack.packId)!
-  const otherPrices = packPrices.filter(p => p.packId === stockPack.packId && p.storeId !== 's')
-  let packRef, newStock, avgPrice
+const packStockIn = (batch: firebase.firestore.WriteBatch, stockPack: PurchasePack, stocks: Stock[], refId?: string) => {
+  const newBatch =  batch || firebase.firestore().batch()
+  let stock = stocks.find(s => s.id === stockPack.packId)
+  const stockRef = firebase.firestore().collection('stocks').doc(stockPack.packId)
+  let newStock: Stock
+  const newTrans = {
+    type: 'p',
+    quantity: stockPack.quantity, 
+    weight: stockPack.weight || 0,
+    price: stockPack.price, 
+    time: new Date().getTime(),
+    refId
+  }
   if (stock) {
-    avgPrice = Math.round((stock.quantity * stock.price + stockPack.quantity * stockPack.price) / addQuantity(stockPack.quantity, stock.quantity))
+    const avgPrice = Math.round((stock.quantity * stock.price + stockPack.quantity * stockPack.price) / addQuantity(stockPack.quantity, stock.quantity))
     newStock = {
       ...stock,
       price: avgPrice, 
       quantity: addQuantity(stockPack.quantity, stock.quantity), 
       weight: addQuantity(stockPack.weight || 0, stock.weight),
-      time: new Date()
+      trans: [...stock.trans!, newTrans]
     }
+    const { id, ...others } = newStock
+    newBatch.update(stockRef, others)
   } else {
     newStock = {
-      storeId: 's',
       packId: stockPack.packId,
       price: stockPack.price, 
       quantity: stockPack.quantity, 
-      isActive: false,
       weight: stockPack.weight || 0,
-      time: new Date()
+      trans: [newTrans],
+      isArchived: false
     }
+    newBatch.set(stockRef, newStock)
   }
-  otherPrices.push(newStock)
-  const prices = otherPrices.map(p => {
-    const {packId, ...others} = p
-    return others
-  })
-  const price = getMinPrice(newStock, packPrices, false)
-  packRef = firebase.firestore().collection('packs').doc(stockPack.packId)
-  batch.update(packRef, {
-    price,
-    prices
-  })
+  if (!batch) {
+    newBatch.commit()
+  }
 }
 
 export const confirmReturnBasket = (returnBasket: ReturnBasket, storeId: string, orders: Order[], stockOperations: StockOperation[], packPrices: PackPrice[], packs: Pack[], purchases: Purchase[], stores: Store[]) => {
@@ -715,7 +707,7 @@ export const confirmReturnBasket = (returnBasket: ReturnBasket, storeId: string,
   batch.commit()
 }
 
-export const returnPurchasePack = (batch: firebase.firestore.WriteBatch, purchase: Purchase, pack: StockPack, orders: Order[], stockOperations: StockOperation[], packPrices: PackPrice[], packs: Pack[]) => {
+export const returnPurchasePack = (batch: firebase.firestore.WriteBatch, purchase: Purchase, pack: Stock, orders: Order[], stockOperations: StockOperation[], packPrices: PackPrice[], packs: Pack[]) => {
   const purchaseQuantity = purchase.basket.find(p => p.packId === pack.packId && (!p.weight || p.weight === pack.weight))!.quantity
   if (purchaseQuantity === pack.quantity) {
     const affectedOrders = orders.filter(o => o.basket.find(p => p.lastPurchaseId === purchase.id))
@@ -846,7 +838,7 @@ export const unfoldStockPack = (stockPack: PackPrice, packPrices: PackPrice[], p
       weight: 0
     }]
   }
-  addStockOperation (batch, returnBasket, packPrices, packs, stores, 's')
+  // addStockOperation (batch, returnBasket, packPrices, packs, stores, 's')
   batch.commit()
 }
 
@@ -930,12 +922,11 @@ export const returnOrder = (order: Order, orderBasket: OrderPack[], regionFees: 
 export const updateOrderStatus = (order: Order, type: string, packPrices: PackPrice[], packs: Pack[], batch?: firebase.firestore.WriteBatch) => {
   const newBatch = batch || firebase.firestore().batch()
   const orderRef = firebase.firestore().collection('orders').doc(order.id)
-  const newTrans = order.trans ? order.trans.push({type, time: new Date()}) : [{type, time: new Date()}]
   newBatch.update(orderRef, {
     status: type,
-    trans: newTrans
+    trans: [...order.trans, {type, time: new Date().getTime()}]
   })
-  let customerRef, basket, userRef
+  let customerRef, basket
   if (type === 'a') {
     customerRef = firebase.firestore().collection('customers').doc(order.userId)
     newBatch.update(customerRef, {
@@ -943,23 +934,12 @@ export const updateOrderStatus = (order: Order, type: string, packPrices: PackPr
     }) 
     sendNotification(order.userId, labels.approval, labels.approveOrder, newBatch)
   } else if (type === 'd'){
-    basket = order.basket.filter(p => p.returned > 0)
-    if (basket.length > 0) {
-      basket = basket.map(p => {
-        return {
-          ...p,
-          quantity: p.returned
-        }
-      })
-      stockIn(newBatch, 'i', basket, packPrices, packs)  
-    }
     order.basket.forEach(p => {
-      const packInfo = packs.find(pa => pa.id === p.packId)!
-      const productRef = firebase.firestore().collection('products').doc(packInfo.product.id)
+      const productRef = firebase.firestore().collection('products').doc(p.pack?.product.id)
       newBatch.update(productRef, {
         sales: firebase.firestore.FieldValue.increment(p.purchased)
       })
-      const affectedPacks = packs.filter(pa => pa.product.id === packInfo.product.id)
+      const affectedPacks = packs.filter(pa => pa.product.id === p.pack?.product.id)
       affectedPacks.forEach(pa => {
         const packRef = firebase.firestore().collection('packs').doc(pa.id)
         newBatch.update(packRef, {
@@ -1156,13 +1136,13 @@ export const allocateOrderPack = (order: Order, pack: Pack) => {
   batch.commit()
 }
 
-export const packUnavailable = (pack: Pack, order: Order, packPrices: PackPrice[], stock?: PackPrice, weight?: number, overPricedPermission?: boolean) => {
+export const packUnavailable = (pack: Pack, order: Order, stock?: Stock, weight?: number, overPricedPermission?: boolean) => {
   const batch = firebase.firestore().batch()
   const basket = order.basket.slice()
   const orderPackIndex = basket.findIndex(p => p.pack?.id === pack.id)
   const price = overPricedPermission ? (stock?.price || 0) : basket[orderPackIndex].price
   const quantity = Math.min(basket[orderPackIndex].quantity, stock?.quantity || 0)
-  let status = 'e', fraction, profit, total
+  let status = 'e', fraction, profit = 0, total
   basket.splice(orderPackIndex, 1, {
     ...basket[orderPackIndex],
     price,
@@ -1173,12 +1153,14 @@ export const packUnavailable = (pack: Pack, order: Order, packPrices: PackPrice[
     actual: (stock?.price || 0),
     gross: price * (stock?.weight || stock?.quantity || 0),
   })
+  
   total = basket.reduce((sum, p) => sum + (p.gross || 0), 0)
   fraction = total - Math.floor(total / 5) * 5
   if (basket.length === basket.filter(p => p.isDone).length) {
     status = 'f'
     profit = basket.reduce((sum, p) => sum + Math.round(((p.actual || 0) - p.price) * (p.weight || p.purchased)), 0)
   }
+  const trans = status === 'f' ? [...order.trans, {type: 'f', time: new Date().getTime()}] : order.trans.slice()
   const orderRef = firebase.firestore().collection('orders').doc(order.id)
   batch.update(orderRef, {
     basket,
@@ -1186,15 +1168,16 @@ export const packUnavailable = (pack: Pack, order: Order, packPrices: PackPrice[
     total,
     fraction,
     status,
-    trans: status === 'f' ? order.trans?.push({type: 'f', time: new Date()}) : order.trans
+    trans
   })
+  console.log('before pack stock out')
   if (stock) {
-    packStockOut(batch, stock, pack, stock.quantity, stock.weight, packPrices)
+    packStockOut(batch, stock, pack, stock.quantity, stock.weight, order.id)
   }
   batch.commit()
 }
 
-export const returnPack = (pack: Pack, order: Order, packPrices: PackPrice[]) => {
+export const returnPack = (pack: Pack, order: Order, stocks: Stock[]) => {
   const batch = firebase.firestore().batch()
   const basket = order.basket.slice()
   const orderPackIndex = basket.findIndex(p => p.pack?.id === pack.id)
@@ -1222,7 +1205,7 @@ export const returnPack = (pack: Pack, order: Order, packPrices: PackPrice[]) =>
     total,
     fraction,
     status,
-    trans: order.trans?.push({type: 'r', time: new Date()})
+    // trans: order.trans?.push({type: 'r', time: new Date().getTime()})
   })
   const stockPack = {
     packId: pack.id!,
@@ -1230,42 +1213,45 @@ export const returnPack = (pack: Pack, order: Order, packPrices: PackPrice[]) =>
     quantity: basket[orderPackIndex].quantity,
     weight: basket[orderPackIndex].weight || 0
   }
-  packStockIn(batch, stockPack, packPrices)
+  packStockIn(batch, stockPack, stocks)
   batch.commit()
 }
 
-const packStockOut = (batch: firebase.firestore.WriteBatch, stockPack: PackPrice, pack: Pack, quantity: number, weight: number, packPrices: PackPrice[]) => {
-  const otherPrices = packPrices.filter(p => p.packId === stockPack.packId && p.storeId !== 's')
+const packStockOut = (batch: firebase.firestore.WriteBatch, stockPack: Stock, pack: Pack, quantity: number, weight: number, refId?: string) => {
   const newQuantity = addQuantity(stockPack?.quantity || 0, -1 * quantity)
   const newWeight = newQuantity === 0 ? 0 : addQuantity(stockPack?.weight || 0, -1 * weight)
   const newPrice = newQuantity === 0 ? 0 : stockPack.price
-  const packRef = firebase.firestore().collection('packs').doc(pack.id)
+  const stockRef = firebase.firestore().collection('stocks').doc(stockPack.id)
+  const newTrans = {
+    type: 'e',
+    quantity: -1 * quantity,
+    weight: -1 * weight,
+    price: stockPack.price,
+    time: new Date(),
+    refId
+  }
+  let newStockPack
   if (pack.byWeight) {
-    otherPrices.push({
+    newStockPack = {
       ...stockPack,
       quantity: newQuantity,
       weight: newWeight,
-      price: newPrice
-    })
+      price: newPrice,
+      trans: [...stockPack.trans!, newTrans]
+    }
   } else {
-    otherPrices.push({
+    newStockPack = {
       ...stockPack,
       price: newPrice,
-      quantity: newQuantity
-    })
+      quantity: newQuantity,
+      trans: [...stockPack.trans!, newTrans]
+    }
   }
-  const prices = otherPrices.map(p => {
-    const {packId, ...others} = p
-    return others
-  })
-  const price = getMinPrice(stockPack, packPrices, true)
-  batch.update(packRef, {
-    price,
-    prices
-  })
+  const { id, ...others } = newStockPack
+  batch.update(stockRef, others)
 }
 
-export const confirmPurchase = (basket: BasketPack[], orders: Order[], storeId: string, packPrices: PackPrice[], packs: Pack[], stores: Store[], total: number) => {
+export const confirmPurchase = (basket: BasketPack[], storeId: string, stocks: Stock[], total: number) => {
   const batch = firebase.firestore().batch()
   const purchaseRef = firebase.firestore().collection('purchases').doc()
   const purchaseBasket = basket.map(p => ({
@@ -1283,7 +1269,7 @@ export const confirmPurchase = (basket: BasketPack[], orders: Order[], storeId: 
     time: new Date()
   })
   purchaseBasket.forEach(p => {
-    packStockIn(batch, p, packPrices)
+    packStockIn(batch, p, stocks, purchaseRef.id)
   })
   batch.commit()
 }
@@ -1451,7 +1437,8 @@ export const getArchivedOrders = (month: number) => {
         requestTime: doc.data().requestTime?.toDate() || null,
         basket: doc.data().basket,
         requestBasket: doc.data().requestBasket,
-        time: doc.data().time.toDate()
+        time: doc.data().time.toDate(),
+        trans: doc.data().trans
       })
     })
   })

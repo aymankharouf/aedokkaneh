@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { updateOrderStatus, getMessage, quantityDetails, setDeliveryTime } from '../data/actions'
 import labels from '../data/labels'
-import { colors, orderPackStatus } from '../data/config'
+import { colors } from '../data/config'
 import { Customer, Err, Order, Pack, PackPrice, State, Store } from '../data/types'
 import { IonActionSheet, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
@@ -29,14 +29,10 @@ const OrderDetails = () => {
   const history = useHistory()
   const [alert] = useIonAlert()
   const orderBasket = useMemo(() => order.basket.map(p => {
-    const storeName = p.storeId ? (p.storeId === 'm' ? labels.multipleStores : stateStores.find(s => s.id === p.storeId)?.name || '') : ''
     const priceNote = p.actual && p.actual !== p.price ? `${labels.orderPrice}: ${(p.price / 100).toFixed(2)}, ${labels.currentPrice}: ${(p.actual / 100).toFixed(2)}` : `${labels.unitPrice}: ${(p.price / 100).toFixed(2)}`
-    const statusNote = `${orderPackStatus.find(s => s.id === p.status)?.name} ${p.overPriced ? labels.overPricedNote : ''}`
     return {
         ...p,
-        storeName,
         priceNote,
-        statusNote
       }
     })
   , [order, stateStores])
@@ -108,8 +104,6 @@ const OrderDetails = () => {
                 <IonText style={{color: colors[2].name}}>{p.pack?.name}</IonText>
                 <IonText style={{color: colors[3].name}}>{p.priceNote}</IonText>
                 <IonText style={{color: colors[4].name}}>{quantityDetails(p)}</IonText>
-                <IonText style={{color: colors[5].name}}>{p.storeId ? `${labels.storeName}: ${p.storeName}` : ''}</IonText>
-                <IonText style={{color: colors[6].name}}>{`${labels.status}: ${p.statusNote}`}</IonText>
               </IonLabel>
               <IonLabel slot="end" className="price">{(p.gross / 100).toFixed(2)}</IonLabel>
             </IonItem>    
@@ -122,15 +116,17 @@ const OrderDetails = () => {
             <IonLabel>{labels.deliveryFees}</IonLabel>
             <IonLabel slot="end" className="price">{(order.deliveryFees / 100).toFixed(2)}</IonLabel>
           </IonItem>
-          <IonItem>
-            <IonLabel>{labels.discount}</IonLabel>
-            <IonLabel slot="end" className="price">{(order.fraction / 100).toFixed(2)}</IonLabel>
-          </IonItem>
+          {order.fraction > 0 && 
+            <IonItem>
+              <IonLabel>{labels.discount}</IonLabel>
+              <IonLabel slot="end" className="price">{(order.fraction / 100).toFixed(2)}</IonLabel>
+            </IonItem>
+          }
           <IonItem>
             <IonLabel>{labels.net}</IonLabel>
             <IonLabel slot="end" className="price">{((order.total + order.deliveryFees - order.fraction ) / 100).toFixed(2)}</IonLabel>
           </IonItem>
-          {order.profit &&
+          {order.profit > 0 &&
             <IonItem>
               <IonLabel>{labels.profit}</IonLabel>
               <IonLabel slot="end" className="price">{(order.profit / 100).toFixed(2)}</IonLabel>
@@ -164,19 +160,9 @@ const OrderDetails = () => {
             handler: () => handleAction('s')
           },
           {
-            text: labels.reject,
-            cssClass: params.type === 'n' && ['n', 's'].includes(order.status) ? colors[i++ % 10].name : 'ion-hide',
-            handler: () => handleAction('r')
-          },
-          {
             text: labels.cancel,
             cssClass: params.type === 'n' && ['n', 's', 'a'].includes(order.status) ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleAction('c')
-          },
-          {
-            text: labels.insert,
-            cssClass: params.type === 'n' && ['f', 'e', 'p'].includes(order.status) ? colors[i++ % 10].name : 'ion-hide',
-            handler: () => handleAction('i')
           },
           {
             text: labels.timing,

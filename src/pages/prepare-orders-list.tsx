@@ -31,14 +31,15 @@ const PrepareOrdersList = () => {
             <IonItem> 
               <IonLabel>{labels.noData}</IonLabel>
             </IonItem> 
-          : orders.map(r => 
-              <IonItem key={r.id} routerLink={`/prepare-order/${r.id}`}>
+          : orders.map(o => 
+              <IonItem key={o.id} routerLink={`/prepare-order/${o.id}`}>
                 <IonLabel>
-                  <IonText style={{color: colors[0].name}}>{r.customer.name}</IonText>
-                  <IonText style={{color: colors[1].name}}>{orderStatus.find(s => s.id === r.status)?.name}</IonText>
-                  <IonText style={{color: colors[2].name}}>{moment(r.time).fromNow()}</IonText>
+                  <IonText style={{color: colors[0].name}}>{o.customer.name}</IonText>
+                  <IonText style={{color: colors[1].name}}>{o.deliveryTime}</IonText>
+                  <IonText style={{color: colors[1].name}}>{orderStatus.find(s => s.id === o.status)?.name}</IonText>
+                  <IonText style={{color: colors[2].name}}>{moment(o.lastUpdate).fromNow()}</IonText>
                 </IonLabel>
-                <IonLabel slot="end" className="price">{(r.total / 100).toFixed(2)}</IonLabel>
+                <IonLabel slot="end" className="price">{(o.total / 100).toFixed(2)}</IonLabel>
               </IonItem>    
             )
           }

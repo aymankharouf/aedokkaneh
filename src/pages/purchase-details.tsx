@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import labels from '../data/labels'
 import { getMessage, quantityText } from '../data/actions'
-import { Err, Order, Pack, Purchase, ReturnBasket, State, StockPack } from '../data/types'
+import { Err, Order, Pack, Purchase, ReturnBasket, State, Stock } from '../data/types'
 import { IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -14,7 +14,7 @@ type Params = {
   id: string,
   type: string
 }
-type ExtendedStockPack = StockPack & {
+type ExtendedStockPack = Stock & {
   packInfo: Pack
 }
 const PurchaseDetails = () => {

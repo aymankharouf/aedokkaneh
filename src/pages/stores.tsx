@@ -1,10 +1,8 @@
 import { useMemo } from 'react'
-import { addStock, getMessage } from '../data/actions'
 import labels from '../data/labels'
-import { Err, Purchase, State, Store } from '../data/types'
-import { IonBadge, IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
+import { Purchase, State, Store } from '../data/types'
+import { IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
 import Header from './header'
-import { useHistory, useLocation } from 'react-router'
 import { addOutline } from 'ionicons/icons'
 import Footer from './footer'
 import { useSelector } from 'react-redux'
@@ -12,10 +10,6 @@ import { useSelector } from 'react-redux'
 const Stores = () => {
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const statePurchases = useSelector<State, Purchase[]>(state => state.purchases)
-  const history = useHistory()
-  const location = useLocation()
-  const [message] = useIonToast()
-  const stock = useMemo(() => stateStores.find(s => s.id === 's'), [stateStores])
   const stores = useMemo(() => {
     const today = new Date()
     today.setDate(today.getDate() - 30)
@@ -30,16 +24,6 @@ const Stores = () => {
     })
     .sort((s1, s2) => s1.sales - s2.sales)
   }, [stateStores, statePurchases])
-  const handleAddStock = () => {
-    try{
-      addStock()
-      message(labels.addSuccess, 3000)
-      history.goBack()  
-    } catch(error) {
-      const err = error as Err
-			message(getMessage(location.pathname, err), 3000)
-		}
-  }
   return (
     <IonPage>
       <Header title={labels.stores} />
@@ -63,18 +47,6 @@ const Stores = () => {
           <IonIcon ios={addOutline} /> 
         </IonFabButton>
       </IonFab>
-      {!stock &&
-        <div className="ion-padding" style={{textAlign: 'center'}}>
-          <IonButton
-            fill="solid" 
-            shape="round"
-            style={{width: '10rem'}}
-            onClick={handleAddStock}
-          >
-            {labels.stockName}
-          </IonButton>
-        </div>
-      }
       <Footer />
     </IonPage>
   )

@@ -26,6 +26,9 @@ service cloud.firestore {
       allow update: if request.auth.uid == resource.data.userId || request.auth.token.name == 'a';
       allow delete: if request.auth.token.name == 'a';
     }
+		match /stocks/{id} {
+			allow read, write: if request.auth.token.name == 'a';
+		}
 		match /stock-operations/{id} {
 			allow read, write: if request.auth.token.name == 'a';
 		}

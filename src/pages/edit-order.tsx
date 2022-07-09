@@ -11,7 +11,6 @@ import { useSelector, useDispatch } from 'react-redux'
 
 type Props = {
   id: string,
-  type: string
 }
 type ExtendedOrderBasketPack = OrderPack & {
   packInfo: Pack
@@ -32,15 +31,9 @@ const EditOrder = (props: Props) => {
   const [alert] = useIonAlert()
   
   useEffect(() => {
-    const basket = order.basket.map(p => {
-      return {
-        ...p,
-        quantity: props.type === 'e' ? p.quantity : p.purchased,
-        oldQuantity: props.type === 'e' ? p.quantity : p.purchased
-      }
-    })
+    const basket = order.basket.filter(p => !p.isDone)
     dispatch({type: 'LOAD_ORDER_BASKET', payload: basket})
-  }, [dispatch, order, props.type])
+  }, [dispatch, order])
   const orderBasket = useMemo(() => stateOrderBasket?.filter(p => p.quantity > 0)
                                                       .map(p => {
                                                         const packInfo = statePacks.find(pa => pa.id === p.packId)!
@@ -74,13 +67,7 @@ const EditOrder = (props: Props) => {
   }
   const handleSubmit = () => {
     try{
-      if (props.type === 'e') {
-        editOrder(order, stateOrderBasket!, statePackPrices, statePacks)
-      } else {
-        const userRegion = stateCustomers.find(c => c.id === order.userId)?.regionId
-        const regionFees = stateRegions.find(r => r.id === userRegion)?.fees || 0
-        returnOrder(order, stateOrderBasket!, regionFees, statePackPrices, statePacks)
-      }
+      editOrder(order, stateOrderBasket!, statePackPrices, statePacks)
       message(labels.editSuccess, 3000)
       dispatch({type: 'CLEAR_ORDER_BASKET'})
       history.goBack()
@@ -90,20 +77,14 @@ const EditOrder = (props: Props) => {
 		}
   }
   const handleIncrease = (pack: ExtendedOrderBasketPack) => {
-    if (props.type === 'e' || (props.type === 'r' && pack.quantity < pack.oldQuantity)) {
-      dispatch({type: 'INCREASE_ORDER_QUANTITY', payload: pack})
-    }
+    dispatch({type: 'INCREASE_ORDER_QUANTITY', payload: pack})
   }
   const handleDecrease = (pack: ExtendedOrderBasketPack) => {
-    const params = {
-      type: props.type,
-      pack
-    }
-    dispatch({type: 'DECREASE_ORDER_QUANTITY', payload: params})
+    dispatch({type: 'DECREASE_ORDER_QUANTITY', payload: pack})
   }
   return (
     <IonPage>
-      <Header title={props.type === 'e' ? labels.editOrder : labels.returnOrder} />
+      <Header title={labels.editOrder} />
       <IonContent fullscreen>
         <IonList className="ion-padding">
           {orderBasket?.length === 0 ? 

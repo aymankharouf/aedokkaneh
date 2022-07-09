@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { packUnavailable, getMessage, getPackStores, returnPack } from '../data/actions'
 import labels from '../data/labels'
-import { Basket, Err, Order, Pack, PackPrice, Purchase, State, Store } from '../data/types'
+import { Basket, Err, Order, Pack, PackPrice, Purchase, State, Stock, Store } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { IonBadge, IonCard, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonRow, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
@@ -32,10 +32,11 @@ const PrepareOrderPack = () => {
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const statePurchases = useSelector<State, Purchase[]>(state => state.purchases)
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
+  const stateStocks = useSelector<State, Stock[]>(state => state.stocks)
   const order = useMemo(() => stateOrders.find(o => o.id === params.orderId)!, [stateOrders, params.orderId])
   const pack = useMemo(() => statePacks.find(p => p.id === params.packId)!, [statePacks, params.packId])
   const orderPack = useMemo(() => order.basket.find(p => p.pack?.id === params.packId)!, [order, params.packId])
-  const stock = useMemo(() => statePackPrices.find(p => p.storeId === 's' && p.packId === pack.id), [statePackPrices, pack])
+  const stock = useMemo(() => stateStocks.find(s => s.id === pack.id), [stateStocks, pack])
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
@@ -66,20 +67,11 @@ const PrepareOrderPack = () => {
         }
       })
   }, [pack, stateStores, statePackPrices, statePurchases, statePacks])
-  const handleAddWithWeight = (packStore: ExtendedPackPrice, exceedPriceType: string, weight: number) => {
+  const handleAddWithWeight = (packStore: ExtendedPackPrice, weight: number) => {
     try{
-      // if (packStore.pack.isDivided && packStore.store.id === 's' && packStore.packPrice.quantity < Number(weight)) {
-      //   throw new Error('quantityNotAvaliable')
-      // }
       const basketItem = {
-        packStore,
-        // refPackId: params.packId,
-        // refPackQuantity: 1,
-        quantity: pack.isDivided ? Number(weight) : orderPack.quantity,
-        price: orderPack.price,
-        // requested: Number(params.quantity),
+        ...packStore,
         weight: Number(weight),
-        // exceedPriceType
       }
       dispatch({type: 'ADD_TO_BASKET', payload: basketItem})
       message(labels.addToBasketSuccess, 3000)
@@ -89,29 +81,19 @@ const PrepareOrderPack = () => {
       message(getMessage(location.pathname, err), 3000)
     }   
   }
-  const addToBasket = (packStore: ExtendedPackPrice, exceedPriceType: string) => {
+  const addToBasket = (packStore: ExtendedPackPrice) => {
     try {
-      let quantity, basketItem
       if (packStore.pack.byWeight) {
         alert({
           header: labels.enterWeight,
           inputs: [{name: 'weight', type: 'number'}],
           buttons: [
             {text: labels.cancel},
-            {text: labels.ok, handler: (e) => handleAddWithWeight(packStore, exceedPriceType, e.weight)}
+            {text: labels.ok, handler: (e) => handleAddWithWeight(packStore, e.weight)}
           ],
         })
       } else {
-        if (packStore.subCount) {
-          quantity = Math.ceil(orderPack.quantity / packStore.subCount)
-        } else {
-          quantity = orderPack.quantity
-        }
-        basketItem = {
-          packStore,
-          quantity,
-        }
-        dispatch({type: 'ADD_TO_BASKET', payload: basketItem})
+        dispatch({type: 'ADD_TO_BASKET', payload: packStore})
         message(labels.addToBasketSuccess, 3000)
         history.goBack()  
       }
@@ -128,11 +110,7 @@ const PrepareOrderPack = () => {
       if (stateBasket?.packs?.find(p => p.packId === packStore.packPrice.packId)) {
         throw new Error('alreadyInBasket')
       }
-      if (orderPack.price >= packStore.unitPrice) {
-        addToBasket(packStore, 'n')
-      } else {
-        if (await IonAlert(alert, labels.overPricedPermission)) addToBasket(packStore, 'p')
-      }
+      addToBasket(packStore)
     } catch(error) {
       const err = error as Err
       message(getMessage(location.pathname, err), 3000)
@@ -154,12 +132,12 @@ const PrepareOrderPack = () => {
             buttons: [
               {text: labels.cancel},
               {text: labels.ok, handler: (e) => {
-                packUnavailable(pack, order, statePackPrices, stock, e.weight, overPricedPermission)
+                packUnavailable(pack, order, stock, e.weight, overPricedPermission)
               }}
             ],
           })
         } else {
-          packUnavailable(pack, order, statePackPrices, stock, undefined, overPricedPermission)
+          packUnavailable(pack, order, stock, 0, overPricedPermission)
         }  
         message(labels.executeSuccess, 3000)
         history.goBack() 
@@ -172,7 +150,7 @@ const PrepareOrderPack = () => {
   const handleReturn = async () => {
     try {
       if (await IonAlert(alert, labels.confirmationText)) {
-        returnPack(pack, order, statePackPrices)
+        returnPack(pack, order, stateStocks)
       }
     } catch(error) {
       const err = error as Err
