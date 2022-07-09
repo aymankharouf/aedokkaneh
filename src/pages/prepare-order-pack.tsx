@@ -132,12 +132,12 @@ const PrepareOrderPack = () => {
             buttons: [
               {text: labels.cancel},
               {text: labels.ok, handler: (e) => {
-                packUnavailable(pack, order, stock, e.weight, overPricedPermission)
+                packUnavailable(pack, order, e.weight, overPricedPermission, stock)
               }}
             ],
           })
         } else {
-          packUnavailable(pack, order, stock, 0, overPricedPermission)
+          packUnavailable(pack, order, 0, overPricedPermission, stock)
         }  
         message(labels.executeSuccess, 3000)
         history.goBack() 
@@ -214,8 +214,8 @@ const PrepareOrderPack = () => {
       </IonContent>
       {['a', 'e', 's', 'f'].includes(order.status) &&
         <IonFab vertical="top" horizontal="end" slot="fixed">
-          <IonFabButton onClick={() => ['s', 'f'].includes(order.status) ? handleReturn() : (orderPack.isDone ? handleReturn() : handleApprove())} color="success">
-            <IonIcon ios={['s', 'f'].includes(order.status) ? reloadOutline : (orderPack.isDone ? reloadOutline : checkmarkOutline)} /> 
+          <IonFabButton onClick={() => ['s', 'f'].includes(order.status) ? handleReturn() : (orderPack.status === 'n' ? handleApprove() : handleReturn())} color="success">
+            <IonIcon ios={['s', 'f'].includes(order.status) ? reloadOutline : (orderPack.status === 'n' ? checkmarkOutline : reloadOutline)} /> 
           </IonFabButton>
         </IonFab>
       }

@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react'
-import { updateOrderStatus, editOrder, getMessage, quantityDetails, returnOrder } from '../data/actions'
+import { updateOrderStatus, editOrder, getMessage, quantityDetails } from '../data/actions'
 import labels from '../data/labels'
 import { Customer, Err, Order, OrderPack, Pack, PackPrice, Region, State } from '../data/types'
 import { IonButton, IonButtons, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonAlert, useIonToast } from '@ionic/react'
@@ -31,7 +31,7 @@ const EditOrder = (props: Props) => {
   const [alert] = useIonAlert()
   
   useEffect(() => {
-    const basket = order.basket.filter(p => !p.isDone)
+    const basket = order.basket.filter(p => p.status === 'n')
     dispatch({type: 'LOAD_ORDER_BASKET', payload: basket})
   }, [dispatch, order])
   const orderBasket = useMemo(() => stateOrderBasket?.filter(p => p.quantity > 0)

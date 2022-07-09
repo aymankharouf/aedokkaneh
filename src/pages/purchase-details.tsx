@@ -39,10 +39,10 @@ const PurchaseDetails = () => {
   , [statePacks, stateReturnBasket, purchase])
   const handleReturn = (pack: ExtendedStockPack) => {
     try{
-      const affectedOrders = stateOrders.filter(o => o.basket.find(p => p.packId === pack.packId && p.lastPurchaseId === purchase?.id) && ['p', 'd'].includes(o.status))
-      if (affectedOrders.length > 0) {
-        throw new Error('finishedOrdersAffected')
-      }
+      // const affectedOrders = stateOrders.filter(o => o.basket.find(p => p.packId === pack.packId && p.lastPurchaseId === purchase?.id) && ['p', 'd'].includes(o.status))
+      // if (affectedOrders.length > 0) {
+      //   throw new Error('finishedOrdersAffected')
+      // }
       if (stateReturnBasket && stateReturnBasket.purchaseId !== purchase?.id) {
         throw new Error('diffPurchaseInReturnBasket')
       }

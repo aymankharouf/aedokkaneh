@@ -8,7 +8,7 @@ import Footer from './footer'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { Customer, Err, Order, Pack, PackPrice, State } from '../data/types'
 import { useSelector } from 'react-redux'
-import { checkmarkOutline, ellipsisVerticalOutline } from 'ionicons/icons'
+import { ellipsisVerticalOutline, flashOffOutline, flashOutline } from 'ionicons/icons'
 
 type Params = {
   id: string
@@ -74,9 +74,9 @@ const PrepareOrder = () => {
                 <IonText style={{color: colors[4].name}}>{`${labels.price}: ${(p.price / 100).toFixed(2)}`}</IonText>
                 <IonText style={{color: colors[5].name}}>{`${labels.gross}: ${(p.gross / 100).toFixed(2)}`}</IonText>
               </IonLabel>
-              {p.isDone && 
+              {p.status !== 'n' && 
                 <IonLabel slot="end">
-                  <IonIcon ios={checkmarkOutline} size="large" />
+                  <IonIcon ios={p.status === 'e' ? flashOutline : flashOffOutline} size="large" />
                 </IonLabel>
               }
             </IonItem>    
