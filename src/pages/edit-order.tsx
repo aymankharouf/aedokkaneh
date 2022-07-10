@@ -1,109 +1,111 @@
-import { useEffect, useMemo } from 'react'
-import { updateOrderStatus, editOrder, getMessage, quantityDetails } from '../data/actions'
+import { useMemo, useState } from 'react'
+import { editOrder, getMessage, quantityDetails } from '../data/actions'
 import labels from '../data/labels'
-import { Customer, Err, Order, OrderPack, Pack, PackPrice, Region, State } from '../data/types'
-import { IonButton, IonButtons, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonAlert, useIonToast } from '@ionic/react'
+import { Err, Order, OrderPack, Pack, PackPrice, State } from '../data/types'
+import { IonButton, IonButtons, IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
 import Header from './header'
-import { addOutline, removeOutline, trashOutline } from 'ionicons/icons'
-import { useHistory, useLocation } from 'react-router'
+import { addOutline, removeOutline } from 'ionicons/icons'
+import { useHistory, useLocation, useParams } from 'react-router'
 import { colors } from '../data/config'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 
-type Props = {
+type Params = {
   id: string,
 }
-type ExtendedOrderBasketPack = OrderPack & {
-  packInfo: Pack
-}
-const EditOrder = (props: Props) => {
-  const dispatch = useDispatch()
+const EditOrder = () => {
+  const params = useParams<Params>()
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
-  const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
-  const stateRegions = useSelector<State, Region[]>(state => state.regions)
-  const stateOrderBasket = useSelector<State, OrderPack[] | undefined>(state => state.orderBasket)
-  const order = useMemo(() => stateOrders.find(o => o.id === props.id)!, [stateOrders, props.id])
-  const hasChanged = useMemo(() => stateOrderBasket?.find(p => p.oldQuantity !== p.quantity) ? true : false, [stateOrderBasket])
+  const order = useMemo(() => stateOrders.find(o => o.id === params.id)!, [stateOrders, params.id])
+  const [basket, setBasket] = useState(() => order.basket.map(p => ({...p, oldQuantity: p.quantity})))
+  const hasChanged = useMemo(() => !!basket.find(p => p.oldQuantity !== p.quantity), [basket])
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-  const [alert] = useIonAlert()
   
-  useEffect(() => {
-    const basket = order.basket.filter(p => p.status === 'n')
-    dispatch({type: 'LOAD_ORDER_BASKET', payload: basket})
-  }, [dispatch, order])
-  const orderBasket = useMemo(() => stateOrderBasket?.filter(p => p.quantity > 0)
-                                                      .map(p => {
-                                                        const packInfo = statePacks.find(pa => pa.id === p.packId)!
-                                                        return {
-                                                          ...p,
-                                                          packInfo
-                                                        }
-                                                      })
-  , [stateOrderBasket, statePacks])
-  const total = useMemo(() => orderBasket?.reduce((sum, p) => sum + p.gross, 0) || 0, [orderBasket])
-  const handleDelete = () => {
-    alert({
-      header: labels.confirmationTitle,
-      message: labels.confirmationText,
-      buttons: [
-        {text: labels.cancel},
-        {text: labels.yes, handler: () => {
-          try{
-            const type = ['f', 'p', 'e'].includes(order.status) ? 'i' : 'c'
-            updateOrderStatus(order, type, statePackPrices, statePacks)
-            message(labels.deleteSuccess, 3000)
-            dispatch({type: 'CLEAR_ORDER_BASKET'})
-            history.goBack()
-          } catch(error) {
-            const err = error as Err
-            message(getMessage(location.pathname, err), 3000)
-          }    
-        }},
-      ],
-    })
+  const total = useMemo(() => basket.reduce((sum, p) => sum + p.gross, 0), [basket])
+  const handleIncrease = (orderPack: OrderPack) => {
+    const increment = [0.125, 0.25, 0.5, 0.75, 1]
+    let nextQuantity, i, packIndex, basketPack
+    if (orderPack.pack?.isDivided) {
+      if (orderPack.quantity >= 1) {
+        nextQuantity = orderPack.quantity + 0.5
+      } else {
+        i = increment.indexOf(orderPack.quantity)
+        nextQuantity = increment[++i]  
+      }
+    } else {
+      nextQuantity = orderPack.quantity + 1
+    }
+    basketPack = {
+      ...orderPack,
+      quantity: nextQuantity,
+      gross: Math.round((orderPack.actual || orderPack.price) * nextQuantity)
+    }
+    const packs = basket.slice()
+    if (!packs) return
+    packIndex = packs.findIndex(p => p.pack?.id === orderPack.pack?.id)
+    packs.splice(packIndex, 1, basketPack)  
+    setBasket(packs)
   }
+  const handleDecrease = (orderPack: OrderPack) => {
+    const increment = [0.125, 0.25, 0.5, 0.75, 1]
+    let nextQuantity, i, packIndex, basketPack
+    if (orderPack.weight) {
+      nextQuantity = 0
+    } else if (orderPack.pack?.isDivided) {
+      if (orderPack.quantity > 1) {
+        nextQuantity = orderPack.quantity - 0.5
+      } else {
+        i = increment.indexOf(orderPack.quantity)
+        nextQuantity = i === 0 ? increment[0] : increment[--i]  
+      }
+    } else {
+      nextQuantity = orderPack.quantity - 1
+    }
+    basketPack = {
+      ...orderPack,
+      quantity: nextQuantity,
+      gross: Math.round((orderPack.actual || orderPack.price) * nextQuantity)
+    }  
+    const packs = basket.slice()
+    if (!packs) return
+    packIndex = packs.findIndex(p => p.pack?.id === orderPack.pack?.id)
+    packs.splice(packIndex, 1, basketPack)  
+    setBasket(packs)
+  }
+
   const handleSubmit = () => {
     try{
-      editOrder(order, stateOrderBasket!, statePackPrices, statePacks)
+      editOrder(order, basket, statePackPrices, statePacks)
       message(labels.editSuccess, 3000)
-      dispatch({type: 'CLEAR_ORDER_BASKET'})
       history.goBack()
     } catch(error) {
       const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
 		}
   }
-  const handleIncrease = (pack: ExtendedOrderBasketPack) => {
-    dispatch({type: 'INCREASE_ORDER_QUANTITY', payload: pack})
-  }
-  const handleDecrease = (pack: ExtendedOrderBasketPack) => {
-    dispatch({type: 'DECREASE_ORDER_QUANTITY', payload: pack})
-  }
   return (
     <IonPage>
       <Header title={labels.editOrder} />
       <IonContent fullscreen>
         <IonList className="ion-padding">
-          {orderBasket?.length === 0 ? 
+          {basket.length === 0 ? 
             <IonItem> 
               <IonLabel>{labels.noData}</IonLabel>
             </IonItem> 
-          :orderBasket?.map(p =>
-            <IonItem key={p.packId}>
-              <IonThumbnail slot="start">
-                <IonImg src={p.imageUrl} alt={labels.noImage} />
-              </IonThumbnail>
+          :basket.map(p =>
+            <IonItem key={p.pack?.id}>
               <IonLabel>
-                <IonText style={{color: colors[0].name}}>{p.productName}</IonText>
-                <IonText style={{color: colors[1].name}}>{p.productAlias}</IonText>
-                <IonText style={{color: colors[2].name}}>{p.packName}</IonText>
+                <IonText style={{color: colors[0].name}}>{p.pack?.product.name}</IonText>
+                <IonText style={{color: colors[1].name}}>{p.pack?.product.alias}</IonText>
+                <IonText style={{color: colors[2].name}}>{p.pack?.name}</IonText>
                 <IonText style={{color: colors[3].name}}>{`${labels.unitPrice}: ${((p.actual || p.price) / 100).toFixed(2)}`}</IonText>
                 <IonText style={{color: colors[4].name}}>{quantityDetails(p)}</IonText>
                 <IonText style={{color: colors[5].name}}>{`${labels.grossPrice}: ${(p.gross / 100).toFixed(2)}`}</IonText>
               </IonLabel>
+              {p.status === 'n' && <>
                 <IonButtons slot="end" onClick={() => handleDecrease(p)}>
                   <IonIcon 
                     ios={removeOutline} 
@@ -118,6 +120,7 @@ const EditOrder = (props: Props) => {
                     style={{fontSize: '25px', marginRight: '5px'}} 
                   />
                 </IonButtons>
+              </>}
             </IonItem>
           )}
         </IonList>
@@ -135,11 +138,6 @@ const EditOrder = (props: Props) => {
           </IonButton>
         </div>    
       }
-      <IonFab vertical="top" horizontal="end" slot="fixed">
-        <IonFabButton onClick={handleDelete} color="danger">
-          <IonIcon ios={trashOutline} /> 
-        </IonFabButton>
-      </IonFab>    
     </IonPage>
   )
 }

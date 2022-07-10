@@ -43,7 +43,7 @@ const reducer = (state: State = initState, action: Action) => {
         basketPack = {
           pack: action.payload.pack,
           price: action.payload.packPrice.price,
-          quantity: action.payload.pack.isDivided ? action.payload.weight : 1,
+          quantity: action.payload.pack.isDivided ? action.payload.weight : action.payload.quantity,
           weight: action.payload.weight,
         }
         if (!state.basket?.storeId) {
@@ -87,62 +87,6 @@ const reducer = (state: State = initState, action: Action) => {
         return {...state, basket: {...state.basket!, packs}}
       case 'CLEAR_BASKET':
         return {...state, basket: undefined}
-      case 'LOAD_ORDER_BASKET':
-        return {...state, orderBasket: action.payload}
-      case 'CLEAR_ORDER_BASKET':
-        return {...state, orderBasket: undefined}
-      case 'INCREASE_ORDER_QUANTITY':
-        if (action.payload.packInfo.isDivided) {
-          if (action.payload.quantity >= 1) {
-            nextQuantity = action.payload.quantity + 0.5
-          } else {
-            i = increment.indexOf(action.payload.quantity)
-            nextQuantity = increment[++i]  
-          }
-        } else {
-          nextQuantity = action.payload.quantity + 1
-        }
-        basketPack = {
-          ...action.payload,
-          quantity: nextQuantity,
-          gross: Math.round((action.payload.actual || action.payload.price) * nextQuantity)
-        }
-        packs = state.orderBasket?.slice()
-        if (!packs) return state
-        packIndex = packs.findIndex(p => p.packId === action.payload.packId)
-        packs.splice(packIndex, 1, basketPack)  
-        return {...state, orderBasket: packs}
-      case 'DECREASE_ORDER_QUANTITY':
-        if (action.payload.pack.weight) {
-          if (action.payload.type === 'r') {
-            nextQuantity = 0
-          } else {
-            if (action.payload.pack.quantity > action.payload.pack.purchased) {
-              nextQuantity = action.payload.pack.purchased
-            } else {
-              nextQuantity = 0
-            }  
-          }
-        } else if (action.payload.pack.packInfo.isDivided) {
-          if (action.payload.pack.quantity > 1) {
-            nextQuantity = action.payload.pack.quantity - 0.5
-          } else {
-            i = increment.indexOf(action.payload.pack.quantity)
-            nextQuantity = i === 0 ? increment[0] : increment[--i]  
-          }
-        } else {
-          nextQuantity = action.payload.pack.quantity - 1
-        }
-        basketPack = {
-          ...action.payload.pack,
-          quantity: nextQuantity,
-          gross: Math.round((action.payload.pack.actual || action.payload.pack.price) * nextQuantity)
-        }  
-        packs = state.orderBasket?.slice()
-        if (!packs) return state
-        packIndex = packs.findIndex(p => p.packId === action.payload.pack.packId)
-        packs.splice(packIndex, 1, basketPack)  
-        return {...state, orderBasket: packs}
       case 'ADD_TO_RETURN_BASKET':
         basketPack = {
           packId: action.payload.packId,

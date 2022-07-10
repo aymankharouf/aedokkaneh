@@ -269,7 +269,6 @@ const labels: Label = {
   approveInvitation: 'تم اعتماد دعوتك لصديق، سوف تحصل على خصم بمجرد تسجيله معنا',
   noArchiveBeforeMothlyOperations: 'لا يمكن الارشفة قبل اثبات الحركات الشهرية',
   operations: 'حركات',
-  purchasePlan: 'خطة الشراء',
   approve: 'اعتماد',
   inprocess: 'تنفيذ العملية',
   addAdvert: 'اضافة اعلان',
@@ -389,7 +388,8 @@ const labels: Label = {
   withLostPermission: 'هل تود البيع بخسارة؟',
   unAvailableConfirmation: 'هل تود انهاء تجهيز هذه المادة دون استكمال الكمية المطلوبة؟',
   orderTrans: 'حركات الطلب',
-  invalidDeliveryFees: 'لم نستطع تحديد رسوم التوصيل'
+  invalidDeliveryFees: 'لم نستطع تحديد رسوم التوصيل',
+  purchasePrice: 'سعر الشراء'
 }
 
 export default labels

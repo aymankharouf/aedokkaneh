@@ -242,14 +242,9 @@ export type BasketPack = {
   actual?: number,
   quantity: number,
   weight: number,
-  // requested?: number,
-  // orderId?: string,
   isOffer?: boolean,
   isDivided?: boolean,
   exceedPriceType?: string,
-  // refPackId?: string,
-  // refPackQuantity?: number,
-  // refQuantity?: number
 }
 export type StockTrans = {
   type: string,
@@ -316,7 +311,6 @@ export type State = {
   storePayments: StorePayment[],
   basket?: Basket,
   returnBasket?: ReturnBasket,
-  orderBasket?: OrderPack[],
   searchText: string,
   storeTrans: StoreTrans[]
 }

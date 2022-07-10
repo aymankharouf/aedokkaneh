@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { packUnavailable, getMessage, getPackStores, returnPack } from '../data/actions'
+import { packUnavailable, getMessage, getPackStores, returnPack, quantityDetails } from '../data/actions'
 import labels from '../data/labels'
 import { Basket, Err, Order, Pack, PackPrice, Purchase, State, Stock, Store } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
@@ -7,7 +7,7 @@ import { IonBadge, IonCard, IonCol, IonContent, IonFab, IonFabButton, IonGrid, I
 import Header from './header'
 import Footer from './footer'
 import { colors } from '../data/config'
-import { checkmarkOutline, reloadOutline } from 'ionicons/icons'
+import { cartOutline, checkmarkOutline, reloadOutline } from 'ionicons/icons'
 import { useSelector, useDispatch } from 'react-redux'
 import IonAlert from './ion-alert'
 
@@ -67,13 +67,9 @@ const PrepareOrderPack = () => {
         }
       })
   }, [pack, stateStores, statePackPrices, statePurchases, statePacks])
-  const handleAddWithWeight = (packStore: ExtendedPackPrice, weight: number) => {
+  const handleAddWithWeight = (packStore: ExtendedPackPrice, quantity: number, weight: number) => {
     try{
-      const basketItem = {
-        ...packStore,
-        weight: Number(weight),
-      }
-      dispatch({type: 'ADD_TO_BASKET', payload: basketItem})
+      dispatch({type: 'ADD_TO_BASKET', payload: {...packStore, quantity, weight}})
       message(labels.addToBasketSuccess, 3000)
       history.goBack()
     } catch(error) {
@@ -86,14 +82,17 @@ const PrepareOrderPack = () => {
       if (packStore.pack.byWeight) {
         alert({
           header: labels.enterWeight,
-          inputs: [{name: 'weight', type: 'number'}],
+          inputs: [
+            {name: 'quantity', type: 'number', label: labels.quantity},
+            {name: 'weight', type: 'number', label: labels.weight}
+          ],
           buttons: [
             {text: labels.cancel},
-            {text: labels.ok, handler: (e) => handleAddWithWeight(packStore, e.weight)}
+            {text: labels.ok, handler: (e) => handleAddWithWeight(packStore, Number(e.quantity), Number(e.weight))}
           ],
         })
       } else {
-        dispatch({type: 'ADD_TO_BASKET', payload: packStore})
+        dispatch({type: 'ADD_TO_BASKET', payload: {...packStore, quantity: orderPack.quantity - (stock?.quantity || 0), weight: 0}})
         message(labels.addToBasketSuccess, 3000)
         history.goBack()  
       }
@@ -176,12 +175,17 @@ const PrepareOrderPack = () => {
             </IonRow>
             <IonRow>
               <IonCol>{`${labels.orderPrice}: ${(orderPack.price / 100).toFixed(2)}`}</IonCol>
-              <IonCol className="ion-text-end">{`${labels.quantity}: ${orderPack.quantity}`}</IonCol>
+              <IonCol className="ion-text-end">{`${labels.stockPrice}: ${((stock?.price || 0) / 100).toFixed(2)}`}</IonCol>
             </IonRow>
             <IonRow>
-              <IonCol>{`${labels.stockPrice}: ${((stock?.price || 0) / 100).toFixed(2)}`}</IonCol>
+              <IonCol>{quantityDetails(orderPack)}</IonCol>
               <IonCol className="ion-text-end">{`${labels.stockQuantity}: ${stock?.quantity || 0}`}{stock?.weight ? `, ${labels.weight} : ${stock.weight}` : ''}</IonCol>
             </IonRow>
+            {orderPack.actual > 0 &&
+              <IonRow>
+                <IonCol>{`${labels.purchasePrice}: ${(orderPack.actual / 100).toFixed(2)}`}</IonCol>
+              </IonRow>
+            }
           </IonGrid>
         </IonCard>
         <IonList>
@@ -201,13 +205,15 @@ const PrepareOrderPack = () => {
                   <IonText style={{color: colors[5].name}}>{`${labels.stockQuantity}: ${s.packPrice.weight || s.packPrice.quantity}`}</IonText>
                 }
               </IonLabel>
-              <IonIcon 
-                ios={checkmarkOutline}
-                slot="end" 
-                color="danger"
-                style={{fontSize: '20px', marginRight: '10px'}} 
-                onClick={()=> handlePurchase(s)}
+              {orderPack.status === 'n' && 
+                <IonIcon 
+                  ios={cartOutline}
+                  slot="end" 
+                  color="danger"
+                  style={{fontSize: '20px', marginRight: '10px'}} 
+                  onClick={()=> handlePurchase(s)}
                 />
+              }
             </IonItem>   
           )}
         </IonList>

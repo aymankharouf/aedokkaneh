@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import labels from '../data/labels'
-import { orderStatus } from '../data/config'
+import { orderTransTypes } from '../data/config'
 import { Order, State } from '../data/types'
 import { IonContent, IonItem, IonLabel, IonList, IonPage } from '@ionic/react'
 import Header from './header'
@@ -25,7 +25,7 @@ const OrderTrans = () => {
         <IonList>
           {trans.map(t => 
             <IonItem key={i++}>
-              <IonLabel>{orderStatus.find(s => s.id === t.type)?.name}</IonLabel>
+              <IonLabel>{orderTransTypes.find(tt => tt.id === t.type)?.name}</IonLabel>
               <IonLabel slot="end">{moment(new Date(t.time)).fromNow()}</IonLabel>
             </IonItem>    
           )}

@@ -25,7 +25,16 @@ export const orderStatus = [
   {id: 'f', name: 'تم التنفيذ'},
   {id: 'd', name: 'مستلم'},
   {id: 'c', name: 'ملغي'},
-]  
+] 
+
+export const orderTransTypes = [
+  {id: 'n', name: 'استحداث'},
+  {id: 'a', name: 'اعتماد'},
+  {id: 's', name: 'تعليق'},
+  {id: 'u', name: 'تعديل'},
+  {id: 'f', name: 'انهاء'},
+  {id: 'd', name: 'تسليم'},
+]
 
 export const stockOperationTypes = [
   {id: 'p', name: 'شراء'},
