@@ -1,39 +1,49 @@
 import { useState, ChangeEvent, useRef, useMemo } from 'react'
-import { addProduct, getMessage } from '../data/actions'
+import { editProduct, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
 import { useHistory, useLocation, useParams } from 'react-router'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
-import SmartSelect from './smart-select'
-import { Category, Country, Err, Product, State } from '../data/types'
+import { Category, Country, Err, Pack, Product, State } from '../data/types'
 import { useSelector } from 'react-redux'
+import SmartSelect from './smart-select'
 
 type Params = {
   id: string
 }
-const AddProduct = () => {
+const EditProduct = () => {
   const params = useParams<Params>()
-  const stateCategories = useSelector<State, Category[]>(state => state.categories)
-  const stateCountries = useSelector<State, Country[]>(state => state.countries)
   const stateProducts = useSelector<State, Product[]>(state => state.products)
-  const [name, setName] = useState('')
-  const [alias, setAlias] = useState('')
-  const [description, setDescription] = useState('')
-  const [categoryId, setCategoryId] = useState(params.id === '0' ? '' : params.id)
-  const [trademark, setTrademark] = useState('')
-  const [countryId, setCountryId] = useState('')
-  const [imageUrl, setImageUrl] = useState('')
+  const statePacks = useSelector<State, Pack[]>(state => state.packs)
+  const stateCountries = useSelector<State, Country[]>(state => state.countries)
+  const stateCategories = useSelector<State, Category[]>(state => state.categories)
+  const [product] = useState(() => stateProducts.find(p => p.id === params.id)!)
+  const [name, setName] = useState(product.name)
+  const [alias, setAlias] = useState(product.alias)
+  const [description, setDescription] = useState(product.description)
+  const [categoryId, setCategoryId] = useState(product.categoryId)
+  const [trademark, setTrademark] = useState(product.trademark)
+  const [countryId, setCountryId] = useState(product.countryId)
+  const [imageUrl, setImageUrl] = useState(product.imageUrl)
   const [image, setImage] = useState<File>()
+  const categories = useMemo(() => stateCategories.filter(c => c.level === 2).sort((c1, c2) => c1.name > c2.name ? 1 : -1), [stateCategories])
+  const countries = useMemo(() => stateCountries.sort((c1, c2) => c1.name > c2.name ? 1 : -1), [stateCountries])
   const inputEl = useRef<HTMLInputElement | null>(null)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
+  const hasChanged = useMemo(() => (name !== product.name)
+  || (alias !== product.alias)
+  || (description !== product.description)
+  || (countryId !== product.countryId)
+  || (categoryId !== product.categoryId)
+  || (trademark !== product.trademark)
+  || (imageUrl !== product.imageUrl)
+  , [product, name, alias, description, countryId, categoryId, trademark, imageUrl])
   const onUploadClick = () => {
     if (inputEl.current) inputEl.current.click()
   }
-  const categories = useMemo(() => stateCategories.filter(c => c.level === 2).sort((c1, c2) => c1.name > c2.name ? 1 : -1), [stateCategories])
-  const countries = useMemo(() => stateCountries.sort((c1, c2) => c1.name > c2.name ? 1 : -1), [stateCountries])
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return
@@ -50,24 +60,20 @@ const AddProduct = () => {
   }
   const handleSubmit = () => {
     try{
-      if (stateProducts.find(p => p.categoryId === categoryId && p.countryId === countryId && p.name === name && p.alias === alias)) {
+      if (stateProducts.find(p => p.id !== product.id && p.categoryId === categoryId && p.countryId === countryId && p.name === name && p.alias === alias)) {
         throw new Error('duplicateProduct')
       }
-      const product = {
+      const newProduct = {
+        ...product,
+        categoryId,
         name,
         alias,
         description,
-        categoryId,
         trademark,
         countryId,
-        sales: 0,
-        rating: 0,
-        ratingCount: 0,
-        isArchived: false,
-        imageUrl
       }
-      addProduct(product, image)
-      message(labels.addSuccess, 3000)
+      editProduct(newProduct, product.name, statePacks, image)
+      message(labels.editSuccess, 3000)
       history.goBack()
     } catch(error) {
       const err = error as Err
@@ -76,7 +82,7 @@ const AddProduct = () => {
   }
   return (
     <IonPage>
-      <Header title={labels.addProduct} />
+      <Header title={labels.editProduct} />
       <IonContent fullscreen className="ion-padding">
         <IonList>
           <IonItem>
@@ -124,27 +130,26 @@ const AddProduct = () => {
               onIonChange={e => setTrademark(e.detail.value!)} 
             />
           </IonItem>
-
           <SmartSelect label={labels.category} data={categories} value={categoryId} onChange={(v) => setCategoryId(v)} />
           <SmartSelect label={labels.country} data={countries} value={countryId} onChange={(v) => setCountryId(v)} />
           <input 
-            ref={inputEl}
-            type="file" 
-            accept="image/*" 
-            style={{display: "none" }}
-            onChange={e => handleFileChange(e)}
-          />
-          <IonButton 
-            expand="block" 
-            fill="clear" 
-            onClick={onUploadClick}
-          >
-            {labels.setImage}
-          </IonButton>
-          <IonImg src={imageUrl} alt={labels.noImage} />
+              ref={inputEl}
+              type="file" 
+              accept="image/*" 
+              style={{display: "none" }}
+              onChange={e => handleFileChange(e)}
+            />
+            <IonButton 
+              expand="block" 
+              fill="clear" 
+              onClick={onUploadClick}
+            >
+              {labels.setImage}
+            </IonButton>
+            <IonImg src={imageUrl || '/no-image.webp'} alt={labels.noImage} />
         </IonList>
       </IonContent>
-      {name && categoryId && countryId &&
+      {name && categoryId && hasChanged &&
         <IonFab vertical="top" horizontal="end" slot="fixed">
           <IonFabButton onClick={handleSubmit} color="success">
             <IonIcon ios={checkmarkOutline} />
@@ -154,4 +159,4 @@ const AddProduct = () => {
     </IonPage>
   )
 }
-export default AddProduct
+export default EditProduct

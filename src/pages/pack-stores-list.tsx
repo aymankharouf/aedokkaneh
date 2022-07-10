@@ -1,13 +1,13 @@
 import { useState, useMemo } from 'react'
-import { getPackStores, deleteStorePack, refreshPackPrice, deletePack, changeStorePackStatus, getMessage, quantityText } from '../data/actions'
+import { getPackStores, deleteStorePack, deletePack, changeStorePackStatus, getMessage, quantityText } from '../data/actions'
 import labels from '../data/labels'
-import { Basket, Err, Order, Pack, PackPrice, Purchase, State, Store } from '../data/types'
+import { Basket, Err, Order, Pack, PackPrice, Purchase, State, Stock, Store } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
-import { IonActionSheet, IonBadge, IonCard, IonCol, IonContent, IonFab, IonFabButton, IonFabList, IonGrid, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonRow, IonText, useIonAlert, useIonToast } from '@ionic/react'
+import { IonActionSheet, IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonListHeader, IonPage, IonRow, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { colors } from '../data/config'
-import { addOutline, chevronDownOutline, ellipsisVerticalOutline, pencilOutline, repeatOutline, swapVerticalOutline, trashOutline } from 'ionicons/icons'
+import { ellipsisVerticalOutline } from 'ionicons/icons'
 import { useSelector, useDispatch } from 'react-redux'
 
 type Params = {
@@ -21,7 +21,7 @@ type ExtendedPackPrice = {
   pack: Pack,
   store: Store
 }
-const PackDetails = () => {
+const PackStores = () => {
   const params = useParams<Params>()
   const dispatch = useDispatch()
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
@@ -30,16 +30,19 @@ const PackDetails = () => {
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const statePurchases = useSelector<State, Purchase[]>(state => state.purchases)
   const stateBasket = useSelector<State, Basket | undefined>(state => state.basket)
+  const stateStocks = useSelector<State, Stock[]>(state => state.stocks)
   const [currentStorePack, setCurrentStorePack] = useState<ExtendedPackPrice>()
-  const [actionOpened, setActionOpened] = useState(false)
+  const [priceActionOpened, setPriceActionOpened] = useState(false)
+  const [packActionOpened, setPackActionOpened] = useState(false)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
   const [alert] = useIonAlert()
   const pack = useMemo(() => statePacks.find(p => p.id === params.id)!, [statePacks, params.id])
+  const stock = useMemo(() => stateStocks.find(s => s.id === params.id), [stateStocks, params.id])
   const detailsCount = useMemo(() => {
     const detailsCount = statePackPrices.filter(p => p.packId === pack.id).length
-    return detailsCount === 0 ? stateOrders.filter(o => o.basket.find(p => p.packId === pack.id)).length : detailsCount
+    return detailsCount === 0 ? stateOrders.filter(o => o.basket.find(p => p.pack.id === pack.id)).length : detailsCount
   }, [pack, stateOrders, statePackPrices])
   const packStores = useMemo(() => {
     const packStores = getPackStores(pack, statePackPrices, statePacks)
@@ -67,15 +70,6 @@ const PackDetails = () => {
       }
     })
   }, [pack, stateStores, statePackPrices, statePurchases, statePacks])
-  const handleRefreshPrice = () => {
-    try{
-      refreshPackPrice(pack, statePackPrices)
-      message(labels.refreshSuccess, 3000)
-    } catch(error) {
-      const err = error as Err
-			message(getMessage(location.pathname, err), 3000)
-		}
-  }
   const handleDelete = () => {
     alert({
       header: labels.confirmationTitle,
@@ -118,7 +112,7 @@ const PackDetails = () => {
     const params = {
       pack,
       packStore: currentStorePack,
-      quantity : pack.isDivided ? weight : 1,
+      quantity : pack.quantityType === 'wo' ? weight : 1,
       price: currentStorePack?.packPrice.price,
       weight,
     }
@@ -131,11 +125,11 @@ const PackDetails = () => {
 			if (stateBasket?.storeId && stateBasket.storeId !== currentStorePack?.packPrice.storeId){
 				throw new Error('twoDiffStores')
       }
-      if (stateBasket?.packs?.find(p => p.packId === pack.id)) {
+      if (stateBasket?.packs?.find(p => p.pack.id === pack.id)) {
         throw new Error('alreadyInBasket')
       }
       let params
-      if (pack.byWeight) {
+      if (pack.quantityType !== 'c') {
         alert({
           header: labels.enterWeight,
           inputs: [{name: 'weight', type: 'number'}],
@@ -182,42 +176,72 @@ const PackDetails = () => {
       packId: pack.id!
     }
     setCurrentStorePack(storePack)
-    setActionOpened(true)
+    setPriceActionOpened(true)
   }
   let i = 0
   return (
     <IonPage>
-      <Header title={`${pack.product.name}${pack.product.alias ? '-' + pack.product.alias : ''}`} />
+      <Header title={labels.prices} />
       <IonContent fullscreen>
-        <IonCard>
-          <IonGrid>
-            <IonRow>
-              <IonCol className="card-title">
-                {pack.name}
-              </IonCol>
-            </IonRow>
-            <IonRow>
-              <IonCol>
-                <IonImg src={pack.product.imageUrl} alt={labels.noImage} />
-              </IonCol>
-            </IonRow>
-            <IonRow>
-              <IonCol>{(pack.price / 100).toFixed(2)}</IonCol>
-              <IonCol className="ion-text-end">{pack.unitsCount}</IonCol>
-            </IonRow>
-          </IonGrid>
-        </IonCard>
+      <IonList>
+          <IonItem>
+            <IonLabel>{labels.product}</IonLabel>
+            <IonInput 
+              value={`${pack.product.name}${pack.product.alias ? '-' + pack.product.alias : ''}`} 
+              type="text"
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.pack}</IonLabel>
+            <IonInput 
+              value={pack.name} 
+              type="text"
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.price}</IonLabel>
+            <IonInput 
+              value={(pack.price / 100).toFixed(2)} 
+              type="text"
+              readonly
+            />
+          </IonItem>
+        </IonList>
         <IonList>
+          <IonListHeader style={{fontSize: '0.9rem'}} color="primary" mode="ios">
+            <IonLabel>{labels.stock}</IonLabel>
+          </IonListHeader>
+          <IonItem>
+            <IonLabel>{labels.price}</IonLabel>
+            <IonInput 
+              value={((stock?.price || 0) / 100).toFixed(2)} 
+              type="text"
+              readonly
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.quantity}</IonLabel>
+            <IonInput 
+              value={quantityText(stock?.quantity || 0, stock?.weight)} 
+              type="text"
+              readonly
+            />
+          </IonItem>
+        </IonList>
+        <IonList>
+          <IonListHeader style={{fontSize: '0.9rem'}} color="primary">
+            <IonLabel>{labels.stores}</IonLabel>
+          </IonListHeader>
           {packStores.map(s => 
             <IonItem key={i++} className={currentStorePack?.packPrice.storeId === s.packPrice.storeId && currentStorePack?.packPrice.packId === s.packPrice.packId ? 'selected' : ''}>
               <IonLabel>
                 <IonText style={{color: colors[0].name}}>{s.store.name}</IonText>
                 <IonText style={{color: colors[1].name}}>{s.packPrice.packId === pack.id ? '' : `${s.pack.product.name}${s.pack.product.alias ? '-' + s.pack.product.alias : ''}`}</IonText>
                 <IonText style={{color: colors[2].name}}>{s.packPrice.packId === pack.id ? '' : s.pack.name}</IonText>
-                <IonText style={{color: colors[3].name}}>{`${labels.price}: ${(s.packPrice.price / 100).toFixed(2)}${s.packPrice.price === s.unitPrice ? '' : '(' + (s.unitPrice / 100).toFixed(2) + ')'}`}</IonText>
+                <IonText style={{color: colors[3].name}}>{`${labels.price}: ${(s.packPrice.price / 100).toFixed(2)}${s.packPrice.price === s.unitPrice ? '' : '(' + (s.unitPrice / 100).toFixed(2) + ')'}`} {!s.packPrice.isActive && <IonBadge color="danger">{labels.inActive}</IonBadge>}</IonText>
                 <IonText style={{color: colors[4].name}}>{s.subCount ? `${labels.quantity}: ${s.subCount}` : ''}</IonText>
-                {!s.packPrice.isActive && <IonBadge color="danger">{labels.inActive}</IonBadge>}
-                {s.packPrice.quantity > 0 && <IonText style={{color: colors[6].name}}>{`${labels.balance}: ${quantityText(s.packPrice.quantity, s.packPrice.weight)}`}</IonText>}
               </IonLabel>
               {s.packPrice.packId === pack.id &&
                 <IonIcon 
@@ -233,59 +257,69 @@ const PackDetails = () => {
         </IonList>
       </IonContent>
       <IonFab horizontal="end" vertical="top" slot="fixed">
-        <IonFabButton>
-          <IonIcon ios={chevronDownOutline} />
+        <IonFabButton onClick={() => setPackActionOpened(true)}>
+          <IonIcon ios={ellipsisVerticalOutline} />
         </IonFabButton>
-        <IonFabList>
-          <IonFabButton color="success" routerLink={`/add-pack-store/${params.id}`}>
-            <IonIcon ios={addOutline} />
-          </IonFabButton>
-          <IonFabButton color="secondary" routerLink={`/${pack.isOffer ? 'edit-offer' : (pack.subPackId ? 'edit-bulk' : 'edit-pack')}/${params.id}`}>
-            <IonIcon ios={pencilOutline} />
-          </IonFabButton>
-          <IonFabButton color="warning" onClick={() => handleRefreshPrice()}>
-            <IonIcon ios={repeatOutline} />
-          </IonFabButton>
-          <IonFabButton color="tertiary" routerLink={`/pack-operations/${params.id}`}>
-            <IonIcon ios={swapVerticalOutline} />
-          </IonFabButton>
-          {detailsCount === 0 &&
-            <IonFabButton color="danger" onClick={() => handleDelete()}>
-              <IonIcon ios={trashOutline} />
-            </IonFabButton>
-          }
-        </IonFabList>
       </IonFab>
       <IonActionSheet
         mode='ios'
-        isOpen={actionOpened}
-        onDidDismiss={() => setActionOpened(false)}
+        isOpen={priceActionOpened}
+        onDidDismiss={() => setPriceActionOpened(false)}
         buttons={[
           {
             text: currentStorePack?.packPrice.isActive ? labels.deactivate : labels.activate,
-            cssClass: currentStorePack?.packPrice.storeId !== 's' ? colors[i++ % 10].name : 'ion-hide',
+            cssClass: colors[i++ % 10].name,
             handler: () => handleChangeStatus()
           },
           {
             text: labels.editPrice,
-            cssClass: currentStorePack?.packPrice.storeId !== 's' || currentStorePack?.packPrice.quantity > 0 ? colors[i++ % 10].name : 'ion-hide',
+            cssClass: colors[i++ % 10].name,
             handler: () => history.push(`/edit-price/${currentStorePack?.packPrice.packId}/${currentStorePack?.packPrice.storeId}`)
           },
           {
             text: labels.delete,
-            cssClass: currentStorePack?.packPrice.storeId !== 's' ? colors[i++ % 10].name : 'ion-hide',
+            cssClass: colors[i++ % 10].name,
             handler: () => handleDeletePrice()
           },
           {
             text: labels.purchase,
-            cssClass: currentStorePack?.packPrice.storeId !== 's' ? colors[i++ % 10].name : 'ion-hide',
+            cssClass: colors[i++ % 10].name,
             handler: () => handlePurchase()
           },
         ]}
       />
+      <IonActionSheet
+        mode='ios'
+        isOpen={packActionOpened}
+        onDidDismiss={() => setPackActionOpened(false)}
+        buttons={[
+          {
+            text: labels.addPrice,
+            cssClass: colors[i++ % 10].name,
+            handler: () => history.push(`/add-pack-store/${params.id}`)
+          },
+          {
+            text: labels.edit,
+            cssClass: colors[i++ % 10].name,
+            handler: () => history.push(`/${pack.subPackId ? 'edit-offer' : 'edit-pack'}/${params.id}`)
+          },
+          {
+            text: labels.operations,
+            cssClass: colors[i++ % 10].name,
+            handler: () => history.push(`/pack-operations/${params.id}`)
+          },
+          {
+            text: labels.delete,
+            cssClass: detailsCount === 0 ? colors[i++ % 10].name : 'ion-hide',
+            handler: () => handleDelete()
+          },
+
+        ]}
+      />
+
       <Footer />
     </IonPage>
   )
 }
 
-export default PackDetails
+export default PackStores

@@ -32,15 +32,6 @@ const StoreDetails = () => {
           </IonItem>
           <IonItem>
             <IonLabel position="floating" color="primary">
-              {labels.balance}
-            </IonLabel>
-            <IonInput 
-              value={((store.balances?.reduce((sum, b) => sum + b.balance, 0) || 0) / 100).toFixed(2)} 
-              readonly
-            />
-          </IonItem>
-          <IonItem>
-            <IonLabel position="floating" color="primary">
               {labels.mobile}
             </IonLabel>
             <IonInput 

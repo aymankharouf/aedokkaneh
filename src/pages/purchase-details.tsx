@@ -28,7 +28,7 @@ const PurchaseDetails = () => {
   const [message] = useIonToast()
   const location = useLocation()
   const purchase = useMemo(() => params.type === 'a' ? stateArchivedPurchases.find(p => p.id === params.id)! : statePurchases.find(p => p.id === params.id)!, [statePurchases, stateArchivedPurchases, params.id, params.type])
-  const purchaseBasket = useMemo(() => purchase.basket.filter(p => !(stateReturnBasket?.purchaseId === purchase.id && stateReturnBasket?.packs?.find(bp => bp.packId === p.packId && (!bp.weight || bp.weight === p.weight))))
+  const purchaseBasket = useMemo(() => purchase.basket.filter(p => !(stateReturnBasket?.purchaseId === purchase.id && stateReturnBasket?.packs?.find(bp => bp.id === p.packId && (!bp.weight || bp.weight === p.weight))))
                                                       .map(p => {
                                                         const packInfo = statePacks.find(pa => pa.id === p.packId)!
                                                         return {
@@ -48,7 +48,7 @@ const PurchaseDetails = () => {
       }
       const params = {
         type: 'c',
-        packId: pack.packId,
+        packId: pack.id,
         price: pack.price,
         quantity: pack.quantity,
         weight: pack.weight,

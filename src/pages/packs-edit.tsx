@@ -1,51 +1,44 @@
 import { useState, useEffect, useMemo } from 'react'
-import { addPack, getMessage } from '../data/actions'
+import { editPack, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { useHistory, useLocation, useParams } from 'react-router'
-import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonToggle, useIonToast } from '@ionic/react'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, IonToggle, useIonToast } from '@ionic/react'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
-import { Err, Pack, Product, State } from '../data/types'
+import { Err, Pack, State } from '../data/types'
 import { useSelector } from 'react-redux'
+import { quantityTypes } from '../data/config'
 
 type Params = {
   id: string
 }
-const AddPack = () => {
+const EditPack = () => {
   const params = useParams<Params>()
-  const stateProducts = useSelector<State, Product[]>(state => state.products)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
-  const [name, setName] = useState('')
-  const [unitsCount, setUnitsCount] = useState('')
-  const [isDivided, setIsDivided] = useState(false)
-  const [byWeight, setByWeight] = useState(false)
-  const product = useMemo(() => stateProducts.find(p => p.id === params.id)!, [stateProducts, params.id])
+  const [pack] = useState(() => statePacks.find(p => p.id === params.id)!)
+  const [name, setName] = useState(pack.name)
+  const [unitsCount, setUnitsCount] = useState(pack.unitsCount.toString())
+  const [quantityType, setQuantityType] = useState(pack.quantityType)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-  useEffect(() => {
-    if (isDivided) {
-      setByWeight(true)
-    }
-  }, [isDivided])
+  const hasChanged = useMemo(() => (name !== pack.name)
+    || (+unitsCount !== pack.unitsCount)
+    || (quantityType !== pack.quantityType)
+  , [pack, name, unitsCount, quantityType])
   const handleSubmit = () => {
     try{
-      if (statePacks.find(p => p.product.id === params.id && p.name === name)) {
+      if (statePacks.find(p => p.id !== pack.id && p.product.id === params.id && p.name === name)) {
         throw new Error('duplicateName')
       }
-      const pack = {
-        product,
+      const newPack = {
+        ...pack,
         name,
-        isDivided,
-        byWeight,
-        isOffer: false,
-        price: 0,
-        isArchived: false,
-        withGift: false,
-        unitsCount: +unitsCount
+        unitsCount: +unitsCount,
+        quantityType,
       }
-      addPack(pack)
-      message(labels.addSuccess, 3000)
+      editPack(newPack, statePacks)
+      message(labels.editSuccess, 3000)
       history.goBack()
     } catch(error) {
       const err = error as Err
@@ -54,10 +47,10 @@ const AddPack = () => {
   }
   return (
     <IonPage>
-      <Header title={`${labels.addPack} ${product.name}`} />
+      <Header title={`${labels.editPack} ${pack.product.name}`} />
       <IonContent fullscreen className="ion-padding">
         <IonList>
-          <IonItem>
+        <IonItem>
             <IonLabel position="floating" color="primary">
               {labels.name}
             </IonLabel>
@@ -80,16 +73,22 @@ const AddPack = () => {
             />
           </IonItem>
           <IonItem>
-            <IonLabel color="primary">{labels.isDivided}</IonLabel>
-            <IonToggle checked={isDivided} onIonChange={() => setIsDivided(s => !s)}/>
-          </IonItem>
-          <IonItem>
-            <IonLabel color="primary">{labels.byWeight}</IonLabel>
-            <IonToggle checked={byWeight} disabled={isDivided} onIonChange={() => setByWeight(s => !s)}/>
+            <IonLabel position="floating" color="primary">
+              {labels.quantityType}
+            </IonLabel>
+            <IonSelect 
+              interface="action-sheet"
+              ok-text={labels.ok} 
+              cancel-text={labels.cancel} 
+              value={quantityType}
+              onIonChange={e => setQuantityType(e.detail.value)}
+            >
+              {quantityTypes.map(t => <IonSelectOption key={t.id} value={t.id}>{t.name}</IonSelectOption>)}
+            </IonSelect>
           </IonItem>
         </IonList>
       </IonContent>
-      {name && unitsCount &&
+      {name && unitsCount && quantityType && hasChanged &&
         <IonFab vertical="top" horizontal="end" slot="fixed">
           <IonFabButton onClick={handleSubmit} color="success">
             <IonIcon ios={checkmarkOutline} />
@@ -99,4 +98,4 @@ const AddPack = () => {
     </IonPage>
   )
 }
-export default AddPack
+export default EditPack

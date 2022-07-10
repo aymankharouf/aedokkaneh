@@ -4,7 +4,7 @@ import 'moment/locale/ar'
 import { getMessage, quantityText, unfoldStockPack } from '../data/actions'
 import labels from '../data/labels'
 import { stockOperationTypes } from '../data/config'
-import { Err, Pack, PackPrice, Purchase, ReturnBasket, State, StockOperation, Store } from '../data/types'
+import { Err, Pack, PackPrice, Purchase, ReturnBasket, State, Stock, StockOperation, Store } from '../data/types'
 import { IonActionSheet, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -25,8 +25,9 @@ const StockPackOperations = () => {
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const stateStockOperations = useSelector<State, StockOperation[]>(state => state.stockOperations)
   const stateReturnBasket = useSelector<State, ReturnBasket | undefined>(state => state.returnBasket)
+  const stateStocks = useSelector<State, Stock[]>(state => state.stocks)
   const pack = useMemo(() => statePacks.find(p => p.id === params.id)!, [statePacks, params.id])
-  const stockPackInfo = useMemo(() => statePackPrices.find(p => p.storeId === 's' && p.packId === params.id)!, [statePackPrices, params])
+  const stockPack = useMemo(() => stateStocks.find(s => s.id === params.id)!, [stateStocks, params.id])
   const [actionOpened, setActionOpened] = useState(false)
   const [message] = useIonToast()
   const location = useLocation()
@@ -66,10 +67,10 @@ const StockPackOperations = () => {
   , [stateStockOperations, stateStores, pack])
   const handleQuantity = (type: string, quantity: number) => {
     try{
-      if (stateReturnBasket?.packs?.find(p => p.packId === pack.id)) {
+      if (stateReturnBasket?.packs?.find(p => p.id === pack.id)) {
         throw new Error('alreadyInBasket')
       }
-      if (Number(quantity) > stockPackInfo.quantity) {
+      if (Number(quantity) > stockPack.quantity) {
         throw new Error('invalidValue')
       }
       if (stateReturnBasket && stateReturnBasket.type !== type) {
@@ -81,11 +82,11 @@ const StockPackOperations = () => {
       const params = {
         type,
         packId: pack.id,
-        price: type === 'r' ? lastPurchase.price : stockPackInfo.price,
+        price: type === 'r' ? lastPurchase.price : stockPack.price,
         quantity: Number(quantity),
         storeId: type === 'r' ? lastPurchase.storeInfo.id : '',
         purchaseId: type === 'r' ? lastPurchase.purchaseId : '',
-        weight: pack.byWeight ? Number(quantity) : 0
+        weight: pack.quantityType !== 'c' ? Number(quantity) : 0
       }
       dispatch({type: 'ADD_TO_RETURN_BASKET', payload: params})
       message(labels.addToBasketSuccess, 3000)
@@ -106,7 +107,7 @@ const StockPackOperations = () => {
   }
   const handleOpen = () => {
     try{
-      unfoldStockPack(stockPackInfo, statePackPrices, statePacks, stateStores)
+      unfoldStockPack(stockPack, statePackPrices, statePacks, stateStores)
       message(labels.executeSuccess, 3000)
       history.goBack()
     } catch(error) {
@@ -137,7 +138,7 @@ const StockPackOperations = () => {
           }
         </IonList>
       </IonContent>
-      {stockPackInfo.quantity > 0 &&
+      {stockPack.quantity > 0 &&
         <IonFab vertical="top" horizontal="end" slot="fixed">
           <IonFabButton onClick={() => setActionOpened(true)} color="success">
             <IonIcon ios={constructOutline} />

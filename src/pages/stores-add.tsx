@@ -12,7 +12,7 @@ import { Err } from '../data/types'
 const AddStore = () => {
   const [name, setName] = useState('')
   const [mobile, setMobile] = useState('')
-  const mobileInvalid = useMemo(() => !mobile || !patterns.mobile.test(mobile), [mobile])
+  const mobileInvalid = useMemo(() => mobile && !patterns.mobile.test(mobile), [mobile])
   const [address, setAddress] = useState('')
   const [mapPosition, setMapPosition] = useState('')
   const [isActive, setIsActive] = useState(false)
@@ -30,8 +30,6 @@ const AddStore = () => {
         isActive,
         openTime,
         address,
-        balances: [],
-        time: new Date()
       }
       addStore(store)
       message(labels.addSuccess, 3000)

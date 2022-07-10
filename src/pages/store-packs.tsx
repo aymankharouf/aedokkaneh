@@ -31,7 +31,7 @@ const StorePacks = () => {
                                                       category
                                                     } 
                                                   })
-                                                  .sort((p1, p2) => p1.pack.product.categoryId === p2.pack.product.categoryId ? (p2.time > p1.time ? 1 : -1) : (p1.category.name > p2.category.name ? 1 : -1))
+                                                  .sort((p1, p2) => (p1.category.name > p2.category.name ? 1 : -1))
   , [statePackPrices, statePacks, stateCategories, params.id])
   let i = 0
   return(
@@ -54,9 +54,8 @@ const StorePacks = () => {
                   <IonText style={{color: colors[2].name}}>{p.pack.name}</IonText>
                   <IonText style={{color: colors[3].name}}>{`${labels.price}: ${(p.price / 100).toFixed(2)}`}</IonText>
                   <IonText style={{color: colors[4].name}}>{p.category.name}</IonText>
-                  <IonText style={{color: colors[5].name}}>{moment(p.time).fromNow()}</IonText>
                 </IonLabel>
-                {p.pack.isOffer && <IonBadge color="success">{labels.offer}</IonBadge>}
+                {!!p.pack.subPackId && <IonBadge color="success">{labels.offer}</IonBadge>}
               </IonItem>    
             )
           }

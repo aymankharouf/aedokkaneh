@@ -36,6 +36,12 @@ export const orderTransTypes = [
   {id: 'd', name: 'تسليم'},
 ]
 
+export const quantityTypes = [
+  {id: 'c', name: 'عدد'},
+  {id: 'wo', name: 'وزن'},
+  {id: 'wc', name: 'وزن وعدد'},
+]
+
 export const stockOperationTypes = [
   {id: 'p', name: 'شراء'},
   {id: 'o', name: 'بيع تجزئة'},

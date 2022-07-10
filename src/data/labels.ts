@@ -55,7 +55,6 @@ const labels: Label = {
   invalidFile: 'الرجاء التأكد من ملف الصورة',
   stockOperations: 'حركات المستودع',
   stockOperationDetails: 'تفاصيل حركة المستودع',
-  stockName: 'دكانة نت',
   editOrder: 'تعديل طلب',
   passwordRequests: 'طلبات كلمة السر',
   customers: 'العملاء',
@@ -130,7 +129,7 @@ const labels: Label = {
   purchaseSuccess: 'تم الشراء',
   unavailable: 'غير متوفر',
   executeSuccess: 'تم التنفيذ',
-  stock: 'موجودات المستودع',
+  stock: 'المستودع',
   sales: 'المبيعات',
   ordersCount: 'الطلبات',
   netProfit: 'صافي الربح',
@@ -389,7 +388,9 @@ const labels: Label = {
   unAvailableConfirmation: 'هل تود انهاء تجهيز هذه المادة دون استكمال الكمية المطلوبة؟',
   orderTrans: 'حركات الطلب',
   invalidDeliveryFees: 'لم نستطع تحديد رسوم التوصيل',
-  purchasePrice: 'سعر الشراء'
+  purchasePrice: 'سعر الشراء',
+  quantityType: 'نوع الكمية',
+  enterTotalPaid: 'المدفوع فعلا'
 }
 
 export default labels

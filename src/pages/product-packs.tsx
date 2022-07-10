@@ -8,7 +8,7 @@ import { IonActionSheet, IonBadge, IonCard, IonCol, IonContent, IonFab, IonFabBu
 import Header from './header'
 import Footer from './footer'
 import { colors } from '../data/config'
-import { settingsOutline } from 'ionicons/icons'
+import { ellipsisVerticalOutline } from 'ionicons/icons'
 import { useSelector } from 'react-redux'
 
 type Params = {
@@ -71,7 +71,7 @@ const ProductPacks = () => {
         <IonCard>
           <IonRow>
             <IonCol>
-              <IonImg src={product.imageUrl} alt={labels.noImage} />
+              <IonImg src={product.imageUrl || '/no-image.webp'} alt={labels.noImage} />
             </IonCol>
           </IonRow>
           <IonRow>
@@ -83,15 +83,15 @@ const ProductPacks = () => {
           {packs.map(p => 
             <IonItem key={p.id} routerLink={`/pack-details/${p.id}`}>
               <IonLabel>{p.name}</IonLabel>
-              {!p.isOffer && p.price > 0 && <IonLabel slot="end" className="price">{(p.price / 100).toFixed(2)}</IonLabel>}
-              {p.isOffer && <IonBadge slot="end" color="success">{p.price > 0 ? (p.price / 100).toFixed(2) : labels.offer}</IonBadge>}
+              {!p.subPackId && p.price > 0 && <IonLabel slot="end" className="price">{(p.price / 100).toFixed(2)}</IonLabel>}
+              {!!p.subPackId && <IonBadge slot="end" color="success">{p.price > 0 ? (p.price / 100).toFixed(2) : labels.offer}</IonBadge>}
             </IonItem>
           )}
         </IonList>
       </IonContent>
       <IonFab vertical="top" horizontal="end" slot="fixed">
         <IonFabButton onClick={() => setActionOpened(true)}>
-          <IonIcon ios={settingsOutline} />
+          <IonIcon ios={ellipsisVerticalOutline} />
         </IonFabButton>
       </IonFab>
       <IonActionSheet

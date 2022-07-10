@@ -28,7 +28,7 @@ const EditOrder = () => {
   const handleIncrease = (orderPack: OrderPack) => {
     const increment = [0.125, 0.25, 0.5, 0.75, 1]
     let nextQuantity, i, packIndex, basketPack
-    if (orderPack.pack?.isDivided) {
+    if (orderPack.pack?.quantityType === 'wo') {
       if (orderPack.quantity >= 1) {
         nextQuantity = orderPack.quantity + 0.5
       } else {
@@ -54,7 +54,7 @@ const EditOrder = () => {
     let nextQuantity, i, packIndex, basketPack
     if (orderPack.weight) {
       nextQuantity = 0
-    } else if (orderPack.pack?.isDivided) {
+    } else if (orderPack.pack?.quantityType === 'wo') {
       if (orderPack.quantity > 1) {
         nextQuantity = orderPack.quantity - 0.5
       } else {

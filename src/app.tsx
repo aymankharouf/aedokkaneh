@@ -3,7 +3,7 @@ import { IonApp, IonRouterOutlet, IonSplitPane } from '@ionic/react'
 import { IonReactRouter } from '@ionic/react-router'
 import { Route } from 'react-router-dom'
 import firebase from './data/firebase'
-import { Advert, Customer, Log, MonthlyOperation, Notification, Order, Pack, PackPrice, PasswordRequest, Product, Purchase, Rating, Spending, Stock as StockType, StockOperation, Store, StorePayment, StoreTrans as StoreTransType } from './data/types'
+import { Advert, Customer, Log, MonthlyOperation, Notification, Order, Pack, PackPrice, PasswordRequest, Product, Purchase, Rating, Spending, Stock as StockType, StockOperation, Store, StoreTrans as StoreTransType } from './data/types'
 import { useDispatch } from 'react-redux';
 
 
@@ -30,79 +30,76 @@ import './css/app.css'
 import Home from './pages/home'
 import Panel from './pages/panel'
 import Login from './pages/login'
-import Products from './pages/products'
+import Products from './pages/products-list'
 import ProductPacks from './pages/product-packs'
 import Basket from './pages/basket'
-import Stores from './pages/stores'
+import Stores from './pages/stores-list'
 import StorePacks from './pages/store-packs'
-import AddStorePack from './pages/add-store-pack'
-import AddStorePayment from './pages/add-store-payment'
-import AddProduct from './pages/add-product'
+import AddStorePack from './pages/store-packs-add'
+import AddProduct from './pages/products-add'
 import OrdersList from './pages/orders-list'
 import OrderDetails from './pages/order-details'
-import AddStore from './pages/add-store'
-import EditProduct from './pages/edit-product'
+import AddStore from './pages/stores-add'
+import EditProduct from './pages/products-edit'
 import EditPrice from './pages/edit-price'
-import Countries from './pages/countries'
-import AddCountry from './pages/add-country'
+import Countries from './pages/countries-list'
+import AddCountry from './pages/countries-add'
 import Settings from './pages/settings'
-import Categories from './pages/categories'
-import AddCategory from './pages/add-category'
-import Orders from './pages/orders'
+import Categories from './pages/categories-list'
+import AddCategory from './pages/categories-add'
+import Orders from './pages/orders-stat'
 import ConfirmPurchase from './pages/confirm-purchase'
-import Purchases from './pages/purchases'
+import Purchases from './pages/purchases-list'
 import PurchaseDetails from './pages/purchase-details'
 import Stock from './pages/stock'
 import StockPackOperations from './pages/stock-pack-operations'
 import StockOperations from './pages/stock-operations'
 import StockOperationDetails from './pages/stock-operation-details'
-import Customers from './pages/customers'
+import Customers from './pages/customers-list'
 import PasswordRequests from './pages/password-requests'
-import AddPack from './pages/add-pack'
-import PackDetails from './pages/pack-details'
-import EditPack from './pages/edit-pack'
-import EditCountry from './pages/edit-country'
-import EditCategory from './pages/edit-category'
-import EditStore from './pages/edit-store'
+import AddPack from './pages/packs-add'
+import PackDetails from './pages/pack-stores-list'
+import EditPack from './pages/packs-edit'
+import EditCountry from './pages/countries-edit'
+import EditCategory from './pages/categories-edit'
+import EditStore from './pages/stores-edit'
 import CustomerDetails from './pages/customer-details'
-import EditCustomer from './pages/edit-customer'
+import EditCustomer from './pages/customers-edit'
 import ApproveCustomer from './pages/approve-customer'
-import Spendings from './pages/spendings'
-import AddSpending from './pages/add-spending'
+import Spendings from './pages/spendings-list'
+import AddSpending from './pages/spendings-add'
 import EditSpending from './pages/edit-spending'
 import MonthlyOperationCall from './pages/monthly-operation-call'
 import MonthlyOperations from './pages/monthly-operations'
 import RetreivePassword from './pages/retreive-password'
-import EditOrder from './pages/edit-order'
+import EditOrder from './pages/orders-edit'
 import ChangePassword from './pages/change-password'
-import Regions from './pages/regions'
-import AddRegion from './pages/add-region'
-import EditRegion from './pages/edit-region'
+import Regions from './pages/regions-list'
+import AddRegion from './pages/regions-add'
+import EditRegion from './pages/regions-edit'
 import Ratings from './pages/ratings'
 import Approvals from './pages/approvals'
 import PackOperations from './pages/pack-operations'
-import AddPackStore from './pages/add-pack-store'
+import AddPackStore from './pages/pack-stores-add'
 import Logs from './pages/logs'
 import StoreDetails from './pages/store-details'
 import PrepareOrdersList from './pages/prepare-orders-list'
 import ProductDetails from './pages/product-details'
-import AddOffer from './pages/add-offer'
-import EditOffer from './pages/edit-offer'
-import Notifications from './pages/notifications'
-import AddNotification from './pages/add-notification'
+import AddOffer from './pages/pack-offers-add'
+import EditOffer from './pages/pack-offers-edit'
+import Notifications from './pages/notifications-list'
+import AddNotification from './pages/notifications-add'
 import ArchivedOrders from './pages/archived-orders'
 import StoreOperations from './pages/store-operations'
-import Adverts from './pages/adverts'
-import AddAdvert from './pages/add-advert'
+import Adverts from './pages/adverts-list'
+import AddAdvert from './pages/adverts-add'
 import AdvertDetails from './pages/advert-details'
-import EditAdvert from './pages/edit-advert'
+import EditAdvert from './pages/adverts-edit'
 import Register from './pages/register'
 import ArchivedPurchases from './pages/archived-purchases'
 import ArchivedStockOperations from './pages/archived-stock-operations'
 import ArchivedProducts from './pages/archived-products'
 import ReturnBasket from './pages/return-basket'
-import StoreBalance from './pages/store-balance'
-import StoreBalanceOperations from './pages/store-balance-operations'
 import StoreTrans from './pages/store-trans'
 import OrderPackStores from './pages/prepare-order-pack'
 import PrepareOrderPack from './pages/prepare-order-pack'
@@ -126,12 +123,9 @@ const App = () => {
           product: doc.data().product,
           price: doc.data().price,
           subPackId: doc.data().subPackId,
-          isOffer: doc.data().isOffer,
           subCount: doc.data().subCount,
           unitsCount: doc.data().unitsCount,
-          byWeight: doc.data().byWeight,
-          isDivided: doc.data().isDivided,
-          withGift: doc.data().withGift,
+          quantityType: doc.data().quantityType,
           gift: doc.data().gift
         })
         if (doc.data().prices) {
@@ -139,11 +133,8 @@ const App = () => {
             packPrices.push({
               packId: doc.id,
               storeId: p.storeId,
-              quantity: p.quantity,
-              weight: p.weight,
               price: p.price,
               isActive: p.isActive,
-              time: p.time.toDate()
             })
           })
         }
@@ -238,7 +229,6 @@ const App = () => {
               profit: doc.data().profit,
               basket: doc.data().basket,
               lastUpdate: doc.data().lastUpdate.toDate(),
-              time: doc.data().lastUpdate.toDate(),
               trans: doc.data().trans
             })
           })
@@ -293,7 +283,6 @@ const App = () => {
         })  
         const unsubscribeStores = firebase.firestore().collection('stores').onSnapshot(docs => {
           let stores: Store[] = []
-          let storePayments: StorePayment[] = []
           docs.forEach(doc => {
             stores.push({
               id: doc.id,
@@ -303,17 +292,9 @@ const App = () => {
               mapPosition: doc.data().mapPosition,
               openTime: doc.data().openTime,
               address: doc.data().address,
-              time: doc.data().time.toDate(),
-              balances: doc.data().balances
             })
-            if (doc.data().payments) {
-              doc.data().payments.forEach((p: any) => {
-                storePayments.push({...p, storeId: doc.id, storeInfo: doc.data()})
-              })
-            }
           })
           dispatch({type: 'SET_STORES', payload: stores})
-          dispatch({type: 'SET_STORE_PAYMENTS', payload: storePayments})
         }, err => {
           unsubscribeStores()
         })  
@@ -355,7 +336,6 @@ const App = () => {
           docs.forEach(doc => {
             stocks.push({
               id: doc.id,
-              packId: doc.id,
               quantity: doc.data().quantity,
               price: doc.data().price,
               weight: doc.data().weight,
@@ -395,11 +375,8 @@ const App = () => {
               operationProfit: doc.data().operationProfit,
               deliveryFees: doc.data().deliveryFees,
               fractions: doc.data().fractions,
-              storesBalance: doc.data().storesBalance,
               donations: doc.data().donations,
               damages: doc.data().damages,
-              storesProfit: doc.data().storesProfit,
-              operationNet: doc.data().operationNet,
               withdrawals: doc.data().withdrawals,
               expenses: doc.data().expenses,
               netProfit: doc.data().netProfit
@@ -483,7 +460,6 @@ const App = () => {
             <Route path="/store-packs/:id" exact={true} component={StorePacks} />
             <Route path="/edit-store/:id" exact={true} component={EditStore} />
             <Route path="/add-store-pack/:id" exact={true} component={AddStorePack} />
-            <Route path="/add-store-payment/:id" exact={true} component={AddStorePayment} />
             <Route path="/add-pack-store/:id" exact={true} component={AddPackStore} />
             <Route path="/add-product/:id" exact={true} component={AddProduct} />
             <Route path="/add-pack/:id" exact={true} component={AddPack} />
@@ -528,8 +504,6 @@ const App = () => {
             <Route path="/archived-stock-operations" exact={true} component={ArchivedStockOperations} />
             <Route path="/archived-products" exact={true} component={ArchivedProducts} />
             <Route path="/return-basket" exact={true} component={ReturnBasket} />
-            <Route path="/store-balance/:id" exact={true} component={StoreBalance} />
-            <Route path="/store-balance-operations/:storeId/:month" exact={true} component={StoreBalanceOperations} />
             <Route path="/store-trans/:id" exact={true} component={StoreTrans} />
             <Route path="/order-trans/:id" exact={true} component={OrderTrans} />
           </IonRouterOutlet>

@@ -20,7 +20,7 @@ const ApproveCustomer = () => {
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const customer = useMemo(() => stateCustomers.find(c => c.id === params.id)!, [stateCustomers, params.id])
   const [name, setName] = useState(customer.name)
-  const storeId = useMemo(() => stateStores.find(s => s.mobile === customer.mobile)?.id, [stateStores, customer])
+  const storeId = useMemo(() => stateStores.find(s => s.mobile === customer.mobile)?.id || '', [stateStores, customer])
   const [mobile, setMobile] = useState(customer.mobile)
   const [regionId, setRegionId] = useState(customer.regionId)
   const [address, setAddress] = useState('')

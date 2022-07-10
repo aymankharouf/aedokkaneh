@@ -79,7 +79,7 @@ const PrepareOrderPack = () => {
   }
   const addToBasket = (packStore: ExtendedPackPrice) => {
     try {
-      if (packStore.pack.byWeight) {
+      if (packStore.pack.quantityType === 'wc') {
         alert({
           header: labels.enterWeight,
           inputs: [
@@ -89,6 +89,17 @@ const PrepareOrderPack = () => {
           buttons: [
             {text: labels.cancel},
             {text: labels.ok, handler: (e) => handleAddWithWeight(packStore, Number(e.quantity), Number(e.weight))}
+          ],
+        })
+      } else if (packStore.pack.quantityType === 'wo') {
+        alert({
+          header: labels.enterWeight,
+          inputs: [
+            {name: 'weight', type: 'number', label: labels.weight}
+          ],
+          buttons: [
+            {text: labels.cancel},
+            {text: labels.ok, handler: (e) => handleAddWithWeight(packStore, orderPack.quantity - (stock?.quantity || 0), Number(e.weight))}
           ],
         })
       } else {
@@ -106,7 +117,7 @@ const PrepareOrderPack = () => {
       if (stateBasket?.storeId && stateBasket.storeId !== packStore.packPrice.storeId){
         throw new Error('twoDiffStores')
       }
-      if (stateBasket?.packs?.find(p => p.packId === packStore.packPrice.packId)) {
+      if (stateBasket?.packs?.find(p => p.pack.id === packStore.packPrice.packId)) {
         throw new Error('alreadyInBasket')
       }
       addToBasket(packStore)
@@ -124,7 +135,7 @@ const PrepareOrderPack = () => {
         flag = false
       }
       if (flag) {
-        if (pack.byWeight) {
+        if (pack.quantityType !== 'c') {
           alert({
             header: labels.enterWeight,
             inputs: [{name: 'weight', type: 'number'}],
@@ -170,7 +181,7 @@ const PrepareOrderPack = () => {
             </IonRow>
             <IonRow>
               <IonCol>
-                <IonImg src={pack.product.imageUrl} alt={labels.noImage} />
+                <IonImg src={pack.product.imageUrl || '/no-image.webp'} alt={labels.noImage} />
               </IonCol>
             </IonRow>
             <IonRow>
@@ -200,9 +211,6 @@ const PrepareOrderPack = () => {
                 </IonText>
                 {s.subCount > 0 && 
                   <IonText style={{color: colors[4].name}}>{`${labels.quantity}: ${s.subCount}`}</IonText>
-                }
-                {s.packPrice.quantity > 0 && 
-                  <IonText style={{color: colors[5].name}}>{`${labels.stockQuantity}: ${s.packPrice.weight || s.packPrice.quantity}`}</IonText>
                 }
               </IonLabel>
               {orderPack.status === 'n' && 

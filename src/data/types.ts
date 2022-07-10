@@ -19,24 +19,17 @@ export type Pack = {
   name: string,
   product: Product,
   price: number,
-  subPackId?: string,
-  subCount?: number,
-  subPackName?: string,
-  isOffer: boolean,
-  withGift: boolean,
-  gift?: string
+  subPackId: string,
+  subCount: number,
+  gift: string
   unitsCount: number,
-  byWeight: boolean,
-  isDivided: boolean
+  quantityType: string,
 }
 export type PackPrice = {
   packId: string,
   storeId: string,
-  quantity: number,
-  weight: number,
   price: number,
   isActive: boolean,
-  time: Date
 }
 export type Notification = {
   id: string,
@@ -60,21 +53,17 @@ export type Customer = {
   colors: string[],
   regionId: string,
   status: string,
-  storeId?: string,
-  orderLimit?: number,
-  address?: string,
+  storeId: string,
+  orderLimit: number,
+  address: string,
   deliveryFees?: number,
-  mapPosition?: string,
-  ordersCount?: number,
-  deliveredOrdersCount?: number,
+  mapPosition: string,
+  ordersCount: number,
+  deliveredOrdersCount: number,
   time: Date
 }
 export type OrderPack = {
-  pack?: Pack,
-  packId: string,
-  productName: string,
-  productAlias: string,
-  packName: string,
+  pack: Pack,
   price: number,
   actual: number,
   quantity: number,
@@ -84,8 +73,6 @@ export type OrderPack = {
   status: string,
   overPriced: boolean,
   oldQuantity: number,
-  imageUrl: string,
-  offerId: string,
 }
 export type OrderTrans = {
   type: string,
@@ -101,7 +88,6 @@ export type Order = {
   fraction: number,
   profit: number,
   lastUpdate: Date,
-  time: Date,
   basket: OrderPack[],
   trans: OrderTrans[]
 }
@@ -120,27 +106,20 @@ export type Region = {
   fees: number,
   ordering: number
 }
-
 export type PasswordRequest = {
   id: string,
   mobile: string,
   status: string,
   time: Date
 }
-export type Balance = {
-  month: number,
-  balance: number
-}
 export type Store = {
   id?: string,
   name: string,
   isActive: boolean,
   mobile: string,
-  mapPosition?: string,
-  openTime?: string,
+  mapPosition: string,
+  openTime: string,
   address: string,
-  time: Date,
-  balances?: Balance[]
 }
 export type StoreTrans = {
   id: string,
@@ -199,11 +178,8 @@ export type MonthlyOperation = {
   operationProfit: number,
   deliveryFees: number,
   fractions: number,
-  storesBalance: number,
   donations: number,
   damages: number,
-  storesProfit: number,
-  operationNet: number,
   withdrawals: number,
   expenses: number,
   netProfit: number
@@ -214,12 +190,6 @@ export type Log = {
   page: string,
   error: string,
   time: Date
-}
-export type StorePayment = {
-  storeId: string,
-  type: string,
-  amount: number,
-  paymentDate: Date,
 }
 export type Basket = {
   storeId: string,
@@ -232,18 +202,11 @@ export type ReturnBasket = {
   packs: Stock[]
 }
 export type BasketPack = {
-  pack?: Pack,
-  packId?: string,
-  productName?: string,
-  productAlias?: string,
-  packName?: string,
-  imageUrl?: string,
+  pack: Pack,
   price: number,
   actual?: number,
   quantity: number,
   weight: number,
-  isOffer?: boolean,
-  isDivided?: boolean,
   exceedPriceType?: string,
 }
 export type StockTrans = {
@@ -251,7 +214,7 @@ export type StockTrans = {
   quantity: number,
   weight: number,
   price: number,
-  refId?: string,
+  refId: string,
   time: number
 }
 export type PurchasePack = {
@@ -262,7 +225,6 @@ export type PurchasePack = {
 }
 export type Stock = {
   id?: string,
-  packId: string,
   quantity: number,
   price: number,
   weight: number,
@@ -308,7 +270,6 @@ export type State = {
   archivedPacks: Pack[],
   notifications: Notification[],
   ratings: Rating[],
-  storePayments: StorePayment[],
   basket?: Basket,
   returnBasket?: ReturnBasket,
   searchText: string,

@@ -17,12 +17,11 @@ const EditOffer = () => {
   const [pack] = useState(() => statePacks.find(p => p.id === params.id)!)
   const [subPackId, setSubPackId] = useState(pack.subPackId)
   const [subCount, setSubCount] = useState((pack.subCount || 0).toString())
-  const [withGift, setWithGift] = useState(pack.withGift)
   const [gift, setGift] = useState(pack.gift)
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-  const packs = useMemo(() => statePacks.filter(p => p.product.id === pack.product.id && !p.isOffer && !p.byWeight)
+  const packs = useMemo(() => statePacks.filter(p => p.product.id === pack.product.id && !p.subPackId)
   .map(p => {
     return {
       id: p.id,
@@ -34,24 +33,23 @@ const EditOffer = () => {
     if (subPackId && subCount) {
       suggestedName = `${+subCount > 1 ? subCount + '×' : ''}${statePacks.find(p => p.id === subPackId)!.name}`
     }
-    if (withGift) {
+    if (gift) {
       suggestedName += ' + ' + gift 
     }
     return suggestedName
-  }, [subPackId, subCount, withGift, gift, statePacks])
+  }, [subPackId, subCount, gift, statePacks])
   const hasChanged = useMemo(() => (name !== pack.name)
     || (subPackId !== pack.subPackId)
     || (+subCount !== pack.subCount)
-    || (withGift !== pack.withGift)
     || (gift !== pack.gift)
-  , [pack, name, subPackId, subCount, withGift, gift])
+  , [pack, name, subPackId, subCount, gift])
   const handleSubmit = () => {
     try{
       const subPack = statePacks.find(p => p.id === subPackId)!
       if (statePacks.find(p => p.id !== pack.id && p.product.id === params.id && p.name === name)) {
         throw new Error('duplicateName')
       }
-      if (!withGift && +subCount <= 1) {
+      if (!gift && +subCount <= 1) {
         throw new Error('invalidQuantity')
       }
       const newPack = {
@@ -61,9 +59,7 @@ const EditOffer = () => {
         subQuantity: +subCount,
         unitsCount: +subCount * subPack.unitsCount,
         subPackName: subPack.name,
-        isDivided: subPack.isDivided,
-        byWeight: subPack.byWeight,
-        withGift,
+        quantityType: subPack.quantityType,
         gift
       }
       editPack(newPack, statePacks)
@@ -114,25 +110,19 @@ const EditOffer = () => {
             />
           </IonItem>
           <IonItem>
-            <IonLabel color="primary">{labels.withGift}</IonLabel>
-            <IonToggle checked={withGift} onIonChange={() => setWithGift(s => !s)}/>
+            <IonLabel position="floating" color="primary">
+              {labels.gift}
+            </IonLabel>
+            <IonInput 
+              value={gift} 
+              type="text" 
+              clearInput
+              onIonChange={e => setGift(e.detail.value!)} 
+              />
           </IonItem>
-          {withGift &&
-            <IonItem>
-              <IonLabel position="floating" color="primary">
-                {labels.gift}
-              </IonLabel>
-              <IonInput 
-                value={gift} 
-                type="text" 
-                clearInput
-                onIonChange={e => setGift(e.detail.value!)} 
-                />
-            </IonItem>
-          }
         </IonList>
       </IonContent>
-      {name && subPackId && subCount && (!withGift || gift) && hasChanged &&
+      {name && subPackId && subCount && hasChanged &&
         <IonFab vertical="top" horizontal="end" slot="fixed">
           <IonFabButton onClick={handleSubmit} color="success">
             <IonIcon ios={checkmarkOutline} />

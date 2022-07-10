@@ -26,7 +26,7 @@ const OrdersList = () => {
                                               customer
                                             }
                                           })
-                                          .sort((o1, o2) => o2.time > o1.time ? 1 : -1)
+                                          .sort((o1, o2) => o2.lastUpdate > o1.lastUpdate ? 1 : -1)
   , [stateOrders, stateCustomers, params.id, params.type])
 
   return(
@@ -43,7 +43,7 @@ const OrdersList = () => {
                 <IonLabel>
                   <IonText style={{color: colors[0].name}}>{params.type === 's' ? o.customer?.name : orderStatus.find(s => s.id === o.status)?.name}</IonText>
                   <IonText style={{color: colors[1].name}}>{o.deliveryTime}</IonText>
-                  <IonText style={{color: colors[2].name}}>{moment(o.time).fromNow()}</IonText>
+                  <IonText style={{color: colors[2].name}}>{moment(o.lastUpdate).fromNow()}</IonText>
                   <IonText style={{color: colors[3].name}}>{o.lastUpdate ? moment(o.lastUpdate).fromNow() : ''}</IonText>
                 </IonLabel>
                 <IonLabel slot="end" className="price">{(o.total / 100).toFixed(2)}</IonLabel>

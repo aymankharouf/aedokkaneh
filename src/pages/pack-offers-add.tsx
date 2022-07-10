@@ -23,7 +23,7 @@ const AddOffer = () => {
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
-  const packs = useMemo(() => statePacks.filter(p => p.product.id === params.id && !p.isOffer && !p.byWeight)
+  const packs = useMemo(() => statePacks.filter(p => p.product.id === params.id && !p.subPackId)
   .map(p => {
     return {
       id: p.id,
@@ -42,7 +42,7 @@ const AddOffer = () => {
   }, [subPackId, subCount, withGift, gift, statePacks])
   const handleSubmit = () => {
     try{
-      const subPackInfo = statePacks.find(p => p.id === subPackId)!
+      const subPack = statePacks.find(p => p.id === subPackId)!
       if (statePacks.find(p => p.product.id === params.id && p.name === name)) {
         throw new Error('duplicateName')
       }
@@ -52,17 +52,13 @@ const AddOffer = () => {
       const pack = {
         name,
         product,
-        isOffer: true,
         subPackId,
         subCount: +subCount,
-        withGift,
         gift,
-        unitsCount: +subCount * subPackInfo.unitsCount,
-        isDivided: subPackInfo.isDivided,
-        byWeight: subPackInfo.byWeight,
+        unitsCount: +subCount * subPack.unitsCount,
+        quantityType: subPack.quantityType,
         price: 0,
         isArchived: false,
-        specialImage: false,
       }
       addPack(pack)
       message(labels.addSuccess, 3000)

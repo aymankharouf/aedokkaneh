@@ -1,45 +1,49 @@
 import { useMemo, useState } from 'react'
 import labels from '../data/labels'
 import { addPackPrice, getMessage } from '../data/actions'
-import { Err, Pack, PackPrice, State, Store } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
-import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, useIonToast } from '@ionic/react'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
+import { Err, Pack, PackPrice, State, Store } from '../data/types'
 import { useSelector } from 'react-redux'
+import SmartSelect from './smart-select'
 
 type Params = {
   id: string
 }
-const AddPackStore = () => {
+const AddStorePack = () => {
   const params = useParams<Params>()
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
+  const [packId, setPackId] = useState('')
   const [price, setPrice] = useState('')
-  const [storeId, setStoreId] = useState('')
-  const stores = useMemo(() => stateStores.filter(s => s.id !== 's'), [stateStores])
-  const pack = useMemo(() => statePacks.find(p => p.id === params.id)!, [statePacks, params.id])
+  const store = useMemo(() => stateStores.find(s => s.id === params.id)!, [stateStores, params.id])
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
+  const packs = useMemo(() => statePacks.map(p => {
+                                return {
+                                  id: p.id,
+                                  name: `${p.product.name}-${p.product.alias} ${p.name}`
+                                }
+                              })
+                              .sort((p1, p2) => p1.name > p2.name ? 1 : -1)
+  , [statePacks]) 
   const handleSubmit = () => {
     try{
-      if (statePackPrices.find(p => p.packId === pack.id && p.storeId === storeId)) {
+      if (statePackPrices.find(p => p.packId === packId && p.storeId === store.id)) {
         throw new Error('duplicatePackInStore')
       }
       if (Number(price) !== Number(Number(price).toFixed(2))) {
         throw new Error('invalidPrice')
       }
-      const storeStatus = stateStores.find(s => s.id === storeId)?.isActive!
       const storePack = {
-        packId: pack.id!,
-        storeId,
+        packId,
+        storeId: store.id!,
         price: +price * 100,
-        isActive: storeStatus,
-        time: new Date(),
-        quantity: 0,
-        weight: 0,
+        isActive: store.isActive,
       }
       addPackPrice(storePack, statePackPrices, statePacks)
       message(labels.addSuccess, 3000)
@@ -51,21 +55,10 @@ const AddPackStore = () => {
   }
   return (
     <IonPage>
-      <Header title={`${labels.addPrice} ${pack.product.name} ${pack.name}`} />
+      <Header title={`${labels.addProduct} ${store.name}`} />
       <IonContent fullscreen className="ion-padding">
         <IonList>
-        <IonItem>
-            <IonLabel position="floating" color="primary">{labels.store}</IonLabel>
-            <IonSelect 
-              interface="action-sheet"
-              ok-text={labels.ok} 
-              cancel-text={labels.cancel} 
-              value={storeId}
-              onIonChange={e => setStoreId(e.detail.value)}
-            >
-              {stores.map(s => <IonSelectOption key={s.id} value={s.id}>{s.name}</IonSelectOption>)}
-            </IonSelect>
-          </IonItem>
+          <SmartSelect label={labels.product} data={packs} value={packId} onChange={(v) => setPackId(v)} />
           <IonItem>
             <IonLabel position="floating" color="primary">
               {labels.price}
@@ -79,7 +72,7 @@ const AddPackStore = () => {
           </IonItem>
         </IonList>
       </IonContent>
-      {storeId && price &&
+      {packId && price &&
         <IonFab vertical="top" horizontal="end" slot="fixed">
           <IonFabButton onClick={handleSubmit} color="success">
             <IonIcon ios={checkmarkOutline} />
@@ -89,4 +82,4 @@ const AddPackStore = () => {
     </IonPage>
   )
 }
-export default AddPackStore
+export default AddStorePack

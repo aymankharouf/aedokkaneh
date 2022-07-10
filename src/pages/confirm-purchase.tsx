@@ -20,8 +20,20 @@ const ConfirmPurchase = () => {
   const history = useHistory()
   const total = useMemo(() => stateBasket?.packs.reduce((sum, p) => sum + Math.round(p.price * (p.weight || p.quantity)), 0) || 0, [stateBasket])
   const handlePurchase = () => {
-    try{
-      confirmPurchase(stateBasket?.packs!, store.id!, stateStocks, total)
+    alert({
+      header: labels.enterTotalPaid,
+      inputs: [
+        {name: 'total', type: 'number', label: labels.total}
+      ],
+      buttons: [
+        {text: labels.cancel},
+        {text: labels.ok, handler: (e: any) => purchase(Number(e.total))}
+      ],
+    })
+}
+  const purchase = (totalPaid: number) => {
+    try {
+      confirmPurchase(stateBasket?.packs!, store.id!, stateStocks, totalPaid)
       message(labels.purchaseSuccess, 3000)
       history.push('/')
       dispatch({type: 'CLEAR_BASKET'})    

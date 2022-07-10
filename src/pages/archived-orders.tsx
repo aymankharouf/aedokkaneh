@@ -28,7 +28,7 @@ const ArchivedOrders = () => {
                                                       customerInfo
                                                     }
                                                   })
-                                                  .sort((o1, o2) => o2.time > o1.time ? 1 : -1)  
+                                                  .sort((o1, o2) => o2.lastUpdate > o1.lastUpdate ? 1 : -1)  
   , [stateArchivedOrders, stateCustomers])
   const handleRetreive = () => {
     try{
@@ -60,7 +60,7 @@ const ArchivedOrders = () => {
                 <IonLabel>
                   <IonText style={{color: colors[0].name}}>{o.customerInfo.name}</IonText>
                   <IonText style={{color: colors[1].name}}>{orderStatus.find(s => s.id === o.status)?.name}</IonText>
-                  <IonText style={{color: colors[2].name}}>{moment(o.time).fromNow()}</IonText>
+                  <IonText style={{color: colors[2].name}}>{moment(o.lastUpdate).fromNow()}</IonText>
                 </IonLabel>
               </IonItem>   
             )

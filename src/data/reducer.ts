@@ -30,7 +30,6 @@ const initState = {
   notifications: [],
   alarms: [],
   ratings: [],
-  storePayments: [],
   searchText: '',
   storeTrans: []
 }
@@ -58,7 +57,7 @@ const reducer = (state: State = initState, action: Action) => {
           quantity: basketPack.quantity + 1
         }
         packs = state.basket?.packs.slice()!
-        packIndex = packs.findIndex(p => p.packId === action.payload)
+        packIndex = packs.findIndex(p => p.pack.id === action.payload)
         packs.splice(packIndex, 1, basketPack)
         return {...state, basket: {...state.basket!, packs}}
       case 'DECREASE_QUANTITY':
@@ -67,10 +66,10 @@ const reducer = (state: State = initState, action: Action) => {
         if (!packs) return state
         if (basketPack.weight) {
           nextQuantity = 0
-          packIndex = packs.findIndex(p => p.packId === action.payload)
+          packIndex = packs.findIndex(p => p.pack.id === action.payload)
         } else {
           nextQuantity = basketPack.quantity - 1
-          packIndex = packs.findIndex(p => p.packId === action.payload)
+          packIndex = packs.findIndex(p => p.pack.id === action.payload)
         }
         if (nextQuantity === 0) {
           packs.splice(packIndex, 1)
@@ -111,7 +110,7 @@ const reducer = (state: State = initState, action: Action) => {
       case 'REMOVE_FROM_RETURN_BASKET':
         const basket = state.returnBasket?.packs.slice()
         if (!basket) return state
-        packIndex = basket.findIndex(p => p.packId === action.payload.packId)
+        packIndex = basket.findIndex(p => p.id === action.payload.packId)
         basket.splice(packIndex, 1)
         if (basket.length === 0) {
           return {...state, returnBasket: undefined}
@@ -174,8 +173,6 @@ const reducer = (state: State = initState, action: Action) => {
         return {...state, archivedProducts: action.payload}
       case 'SET_ARCHIVED_PACKS':
         return {...state, archivedPacks: action.payload}
-      case 'SET_STORE_PAYMENTS':
-        return {...state, storePayments: action.payload}
       case 'LOGIN':
         return {...state, user: action.payload}
       case 'LOGOUT':

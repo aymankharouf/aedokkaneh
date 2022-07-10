@@ -26,7 +26,7 @@ const ReturnBasket = () => {
   const location = useLocation()
   const [message] = useIonToast()
   const basket = useMemo(() => stateReturnBasket?.packs.map(p => {
-    const packInfo = statePacks.find(pa => pa.id === p.packId)!
+    const packInfo = statePacks.find(pa => pa.id === p.id)!
     return {
       ...p,
       packInfo

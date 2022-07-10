@@ -82,7 +82,7 @@ const ProductDetails = () => {
               readonly
             />
           </IonItem>
-          <IonImg src={product.imageUrl} alt={labels.noImage} />
+          <IonImg src={product.imageUrl || '/no-image.webp'} alt={labels.noImage} />
         </IonList>
       </IonContent>
       <IonFab vertical="top" horizontal="end" slot="fixed">
