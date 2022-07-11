@@ -18,7 +18,7 @@ const AddPackStore = () => {
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const [price, setPrice] = useState('')
   const [storeId, setStoreId] = useState('')
-  const stores = useMemo(() => stateStores.filter(s => !statePackPrices.find(p => p.storeId === s.id && p.packId === params.id)), [stateStores, statePackPrices])
+  const stores = useMemo(() => stateStores.filter(s => !statePackPrices.find(p => p.storeId === s.id && p.packId === params.id)), [stateStores, statePackPrices, params.id])
   const pack = useMemo(() => statePacks.find(p => p.id === params.id)!, [statePacks, params.id])
   const [message] = useIonToast()
   const location = useLocation()

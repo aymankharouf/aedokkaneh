@@ -6,7 +6,7 @@ import Header from './header'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { checkmarkOutline } from 'ionicons/icons'
 import Footer from './footer'
-import { Err, MonthlyOperation, Order, PackPrice, Purchase, Spending, State, Stock, StockOperation, Store } from '../data/types'
+import { Err, MonthlyOperation, Order, Purchase, Spending, State, Stock } from '../data/types'
 import { useSelector } from 'react-redux'
 
 type Params = {
@@ -15,10 +15,7 @@ type Params = {
 const MonthlyOperations = () => {
   const stateMonthlyOperations = useSelector<State, MonthlyOperation[]>(state => state.monthlyOperations)
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
-  const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
-  const stateStores = useSelector<State, Store[]>(state => state.stores)
   const stateSpendings = useSelector<State, Spending[]>(state => state.spendings)
-  const stateStockOperations = useSelector<State, StockOperation[]>(state => state.stockOperations)
   const statePurchases = useSelector<State, Purchase[]>(state => state.purchases)
   const stateStocks = useSelector<State, Stock[]>(state => state.stocks)
   const params = useParams<Params>()
@@ -35,18 +32,17 @@ const MonthlyOperations = () => {
   const ordersCount = useMemo(() => monthlyOperation?.ordersCount || orders.length, [monthlyOperation, orders])
   const deliveredOrdersCount = useMemo(() => monthlyOperation?.deliveredOrdersCount || deliveredOrders.length, [monthlyOperation, deliveredOrders])
   const finishedOrdersCount = useMemo(() => monthlyOperation?.finishedOrdersCount || finishedOrders.length, [monthlyOperation, finishedOrders])
-  const stock = useMemo(() => monthlyOperation?.stock || stateStocks.filter(s => s.quantity > 0).reduce((sum, p) => sum + Math.round(p.price * p.quantity), 0), [monthlyOperation, statePackPrices])
+  const stock = useMemo(() => monthlyOperation?.stock || stateStocks.filter(s => s.quantity > 0).reduce((sum, p) => sum + Math.round(p.price * p.quantity), 0), [monthlyOperation, stateStocks])
   const sales = useMemo(() => monthlyOperation?.sales || deliveredOrders.reduce((sum, o) => sum + o.total, 0), [monthlyOperation, deliveredOrders])
   const operationProfit = useMemo(() => monthlyOperation?.operationProfit || deliveredOrders.reduce((sum, o) => sum + o.profit, 0), [monthlyOperation, deliveredOrders])
   const deliveryFees = useMemo(() => monthlyOperation?.deliveryFees || deliveredOrders.reduce((sum, o) => sum + o.deliveryFees, 0), [monthlyOperation, deliveredOrders])
   const fractions = useMemo(() => monthlyOperation?.fractions || deliveredOrders.reduce((sum, o) => sum + o.fraction, 0), [monthlyOperation, deliveredOrders])
   const spendings = useMemo(() => stateSpendings.filter(s => (s.spendingDate).getFullYear() === year && (s.spendingDate).getMonth() === month), [stateSpendings, year, month])
-  const stockOperations = useMemo(() => stateStockOperations.filter(t => (t.time).getFullYear() === year && (t.time).getMonth() === month), [stateStockOperations, year, month])
-  const donations = useMemo(() => monthlyOperation?.donations || stockOperations.reduce((sum, t) => sum + (t.type === 'g' ? t.total : 0), 0), [monthlyOperation, stockOperations])
-  const damages = useMemo(() => monthlyOperation?.damages || stockOperations.reduce((sum, t) => sum + (t.type === 'd' ? t.total : 0), 0), [monthlyOperation, stockOperations])
+  // const donations = useMemo(() => monthlyOperation?.donations || stockOperations.reduce((sum, t) => sum + (t.type === 'g' ? t.total : 0), 0), [monthlyOperation, stockOperations])
+  // const damages = useMemo(() => monthlyOperation?.damages || stockOperations.reduce((sum, t) => sum + (t.type === 'd' ? t.total : 0), 0), [monthlyOperation, stockOperations])
   const withdrawals = useMemo(() => monthlyOperation?.withdrawals || spendings.filter(s => s.type === 'w').reduce((sum, s) => sum + s.amount, 0), [monthlyOperation, spendings])
   const expenses = useMemo(() => monthlyOperation?.expenses || spendings.filter(s => s.type !== 'w').reduce((sum, s) => sum + s.amount, 0), [monthlyOperation, spendings])
-  const netProfit = useMemo(() => monthlyOperation?.netProfit || (operationProfit + deliveryFees) - (expenses + damages + fractions), [monthlyOperation, operationProfit, deliveryFees, expenses, damages, fractions])
+  // const netProfit = useMemo(() => monthlyOperation?.netProfit || (operationProfit + deliveryFees) - (expenses + damages + fractions), [monthlyOperation, operationProfit, deliveryFees, expenses, damages, fractions])
   useEffect(() => {
     const today = new Date()
     if ((today.getFullYear() * 100 + Number(today.getMonth())) > year * 100 + month) {
@@ -69,11 +65,11 @@ const MonthlyOperations = () => {
         fractions,
         withdrawals,
         expenses,
-        donations,
-        damages,
-        netProfit
+        donations: 0,
+        damages: 0,
+        netProfit: 0
       }
-      addMonthlyOperation(operation, stateOrders, statePurchases, stateStockOperations)
+      addMonthlyOperation(operation, stateOrders, statePurchases)
       message(labels.addSuccess, 3000)
       history.goBack()
     } catch(error) {
@@ -126,7 +122,7 @@ const MonthlyOperations = () => {
             <IonLabel>{labels.expenses}</IonLabel>
             <IonLabel slot="end" className="price">{(expenses / 100).toFixed(2)}</IonLabel>
           </IonItem>
-          <IonItem>
+          {/* <IonItem>
             <IonLabel>{labels.damages}</IonLabel>
             <IonLabel slot="end" className="price">{(damages / 100).toFixed(2)}</IonLabel>
           </IonItem>
@@ -153,7 +149,7 @@ const MonthlyOperations = () => {
           <IonItem>
             <IonLabel>{labels.propertyBalance}</IonLabel>
             <IonLabel slot="end" className="price">{((netProfit - Math.round(netProfit * 0.2) - withdrawals) / 100).toFixed(2)}</IonLabel>
-          </IonItem>
+          </IonItem> */}
         </IonList>
       </IonContent>
       {buttonVisisble && 

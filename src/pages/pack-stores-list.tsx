@@ -3,7 +3,7 @@ import { getPackStores, deleteStorePack, deletePack, changeStorePackStatus, getM
 import labels from '../data/labels'
 import { Basket, Err, Order, Pack, PackPrice, Purchase, State, Stock, Store } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
-import { IonActionSheet, IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonListHeader, IonPage, IonRow, IonText, useIonAlert, useIonToast } from '@ionic/react'
+import { IonActionSheet, IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonListHeader, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { colors } from '../data/config'
@@ -90,6 +90,7 @@ const PackStores = () => {
     })
   }
   const handleDeletePrice = () => {
+    if (!currentStorePack) return
     alert({
       header: labels.confirmationTitle,
       message: labels.confirmationText,
@@ -97,7 +98,6 @@ const PackStores = () => {
         {text: labels.cancel},
         {text: labels.yes, handler: () => {
           try{
-            if (!currentStorePack) return
             deleteStorePack(currentStorePack.packPrice, statePackPrices, statePacks)
             message(labels.deleteSuccess, 3000)
           } catch(error) {
@@ -108,52 +108,57 @@ const PackStores = () => {
       ],
     })
   }
-  const handleWeight = (weight: number) => {
-    const params = {
-      pack,
-      packStore: currentStorePack,
-      quantity : pack.quantityType === 'wo' ? weight : 1,
-      price: currentStorePack?.packPrice.price,
-      weight,
-    }
-    dispatch({type: 'ADD_TO_BASKET', payload: params})
+  const handleWeight = (packStore: ExtendedPackPrice, quantity: number, weight: number) => {
+    dispatch({type: 'ADD_TO_BASKET', payload: {...packStore, quantity, weight}})
     message(labels.addToBasketSuccess, 3000)
     history.goBack()
   }
-  const handlePurchase = () => {
-		try{
-			if (stateBasket?.storeId && stateBasket.storeId !== currentStorePack?.packPrice.storeId){
-				throw new Error('twoDiffStores')
-      }
-      if (stateBasket?.packs?.find(p => p.pack.id === pack.id)) {
-        throw new Error('alreadyInBasket')
-      }
-      let params
-      if (pack.quantityType !== 'c') {
+  const addToBasket = (packStore: ExtendedPackPrice) => {
+    try {
+      if (packStore.pack.quantityType === 'wc') {
         alert({
           header: labels.enterWeight,
-          inputs: [{name: 'weight', type: 'number'}],
+          inputs: [
+            {name: 'quantity', type: 'number', label: labels.quantity},
+            {name: 'weight', type: 'number', label: labels.weight}
+          ],
           buttons: [
             {text: labels.cancel},
-            {text: labels.ok, handler: (e) => handleWeight(e.weight)}
+            {text: labels.ok, handler: (e) => handleWeight(packStore, Number(e.quantity), Number(e.weight))}
+          ],
+        })
+      } else if (packStore.pack.quantityType === 'wo') {
+        alert({
+          header: labels.enterWeight,
+          inputs: [
+            {name: 'weight', type: 'number', label: labels.weight}
+          ],
+          buttons: [
+            {text: labels.cancel},
+            {text: labels.ok, handler: (e) => handleWeight(packStore, Number(e.weight), Number(e.weight))}
           ],
         })
       } else {
-        params = {
-          pack, 
-          packStore: currentStorePack,
-          quantity: 1,
-          price: currentStorePack?.packPrice.price,
-          weight: 0,
-          orderId: '',
-          refPackId: '',
-          refPackQuantity: 0,
-          exceedPriceType: ''
-        }
-        dispatch({type: 'ADD_TO_BASKET', payload: params})
+        dispatch({type: 'ADD_TO_BASKET', payload: {...packStore, quantity: 1, weight: 0}})
         message(labels.addToBasketSuccess, 3000)
-        history.goBack()
+        history.goBack()  
       }
+    } catch(error) {
+      const err = error as Err
+      message(getMessage(location.pathname, err), 3000)
+    }
+  }
+
+  const handlePurchase = () => {
+		try{
+      if (!currentStorePack) return
+			if (stateBasket?.storeId && stateBasket.storeId !== currentStorePack.packPrice.storeId){
+				throw new Error('twoDiffStores')
+      }
+      if (stateBasket?.packs?.find(p => p.pack.id === currentStorePack.packPrice.packId)) {
+        throw new Error('alreadyInBasket')
+      }
+      addToBasket(currentStorePack)
     } catch(error) {
       const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
@@ -170,11 +175,11 @@ const PackStores = () => {
     }
   }
 
-  const handleActions = (storePackInfo: ExtendedPackPrice) => {
-    const storePack = {
-      ...storePackInfo,
-      packId: pack.id!
-    }
+  const handleActions = (storePack: ExtendedPackPrice) => {
+    // const storePack = {
+    //   ...storePackInfo,
+    //   packId: pack.id!
+    // }
     setCurrentStorePack(storePack)
     setPriceActionOpened(true)
   }
@@ -183,7 +188,7 @@ const PackStores = () => {
     <IonPage>
       <Header title={labels.prices} />
       <IonContent fullscreen>
-      <IonList>
+        <IonList>
           <IonItem>
             <IonLabel>{labels.product}</IonLabel>
             <IonInput 

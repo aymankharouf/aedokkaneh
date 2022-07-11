@@ -3,7 +3,7 @@ import labels from '../data/labels'
 import { productOfText } from '../data/actions'
 import { Category, Country, Pack, Product, State } from '../data/types'
 import { useHistory, useParams } from 'react-router'
-import { IonActionSheet, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
+import { IonActionSheet, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import Fuse from "fuse.js"

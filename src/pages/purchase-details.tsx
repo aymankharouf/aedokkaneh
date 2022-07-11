@@ -1,67 +1,80 @@
 import { useMemo } from 'react'
 import labels from '../data/labels'
-import { getMessage, quantityText } from '../data/actions'
-import { Err, Order, Pack, Purchase, ReturnBasket, State, Stock } from '../data/types'
-import { IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail, useIonToast } from '@ionic/react'
+import { getMessage, packStockOut, quantityText } from '../data/actions'
+import { Err, Pack, Purchase, PurchasePack, State, Stock } from '../data/types'
+import { IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useLocation, useParams } from 'react-router'
 import { colors } from '../data/config'
 import { refreshOutline } from 'ionicons/icons'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 type Params = {
   id: string,
   type: string
 }
-type ExtendedStockPack = Stock & {
-  packInfo: Pack
+type ExtendedPack = PurchasePack & {
+  pack: Pack
 }
 const PurchaseDetails = () => {
   const params = useParams<Params>()
-  const dispatch = useDispatch()
   const stateArchivedPurchases = useSelector<State, Purchase[]>(state => state.archivedPurchases)
   const statePurchases = useSelector<State, Purchase[]>(state => state.purchases)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
-  const stateOrders = useSelector<State, Order[]>(state => state.orders)
-  const stateReturnBasket = useSelector<State, ReturnBasket | undefined>(state => state.returnBasket)
+  const stateStocks = useSelector<State, Stock[]>(state => state.stocks)
   const [message] = useIonToast()
   const location = useLocation()
   const purchase = useMemo(() => params.type === 'a' ? stateArchivedPurchases.find(p => p.id === params.id)! : statePurchases.find(p => p.id === params.id)!, [statePurchases, stateArchivedPurchases, params.id, params.type])
-  const purchaseBasket = useMemo(() => purchase.basket.filter(p => !(stateReturnBasket?.purchaseId === purchase.id && stateReturnBasket?.packs?.find(bp => bp.id === p.packId && (!bp.weight || bp.weight === p.weight))))
-                                                      .map(p => {
-                                                        const packInfo = statePacks.find(pa => pa.id === p.packId)!
+  const purchaseBasket = useMemo(() => purchase.basket.map(p => {
+                                                        const pack = statePacks.find(pa => pa.id === p.packId)!
                                                         return {
                                                           ...p,
-                                                          packInfo,
+                                                          pack,
                                                         }
                                                       })
-  , [statePacks, stateReturnBasket, purchase])
-  const handleReturn = (pack: ExtendedStockPack) => {
+  , [statePacks, purchase])
+  const handleReturn = (purchasePack: ExtendedPack, quantity: number, weight: number) => {
     try{
-      // const affectedOrders = stateOrders.filter(o => o.basket.find(p => p.packId === pack.packId && p.lastPurchaseId === purchase?.id) && ['p', 'd'].includes(o.status))
-      // if (affectedOrders.length > 0) {
-      //   throw new Error('finishedOrdersAffected')
-      // }
-      if (stateReturnBasket && stateReturnBasket.purchaseId !== purchase?.id) {
-        throw new Error('diffPurchaseInReturnBasket')
+      const stockPack = stateStocks.find(s => s.id === purchasePack.packId)
+      if (!stockPack || stockPack.quantity < quantity) {
+        throw new Error('noStock')
       }
-      const params = {
-        type: 'c',
-        packId: pack.id,
-        price: pack.price,
-        quantity: pack.quantity,
-        weight: pack.weight,
-        storeId: purchase!.storeId,
-        purchaseId: purchase!.id
+      if (quantity > purchasePack.quantity || weight > purchasePack.weight) {
+        throw new Error('invalidQuantity')
       }
-      dispatch({type: 'ADD_TO_RETURN_BASKET', payload: params})
-      message(labels.addToBasketSuccess, 3000)
+      packStockOut(stockPack, quantity, weight, 'r', purchasePack.price, params.id)
+      message(labels.executeSuccess, 3000)
     } catch(error) {
       const err = error as Err
-			message(getMessage(location.pathname, err), 3000)
-		}
+      message(getMessage(location.pathname, err), 3000)
+    }    
   }
+  const handleQuantity = (purchasePack: ExtendedPack) => {
+    if (purchasePack.pack.quantityType === 'wc') {
+      alert({
+        header: labels.enterWeight,
+        inputs: [
+          {name: 'quantity', type: 'number', label: labels.quantity},
+          {name: 'weight', type: 'number', label: labels.weight}
+        ],
+        buttons: [
+          {text: labels.cancel},
+          {text: labels.ok, handler: (e: any) => handleReturn(purchasePack, Number(e.quantity), Number(e.weight))}
+        ],
+      })
+    } else {
+      alert({
+        header: labels.enterQuantity,
+        inputs: [{name: 'quantity', type: 'number'}],
+        buttons: [
+          {text: labels.cancel},
+          {text: labels.ok, handler: (e: any) => handleReturn(purchasePack, Number(e.quantity), 0)}
+        ],
+      })
+    }
+  }
+
   let i = 0
   return(
     <IonPage>
@@ -74,13 +87,10 @@ const PurchaseDetails = () => {
             </IonItem>
           : purchaseBasket.map(p => 
               <IonItem key={i++}>
-                <IonThumbnail slot="start">
-                  <img src={p.packInfo.product.imageUrl} alt={labels.noImage} />
-                </IonThumbnail>
                 <IonLabel>
-                  <IonText style={{color: colors[0].name}}>{p.packInfo.product.name}</IonText>
-                  <IonText style={{color: colors[1].name}}>{p.packInfo.product.alias}</IonText>
-                  <IonText style={{color: colors[2].name}}>{p.packInfo.name}</IonText>
+                  <IonText style={{color: colors[0].name}}>{p.pack.product.name}</IonText>
+                  <IonText style={{color: colors[1].name}}>{p.pack.product.alias}</IonText>
+                  <IonText style={{color: colors[2].name}}>{p.pack.name}</IonText>
                   <IonText style={{color: colors[3].name}}>{`${labels.unitPrice}: ${(p.price / 100).toFixed(2)}`}</IonText>
                   <IonText style={{color: colors[4].name}}>{`${labels.quantity}: ${quantityText(p.quantity, p.weight)}`}</IonText>
                   <IonText style={{color: colors[5].name}}>{`${labels.price}: ${(Math.round(p.price * (p.weight || p.quantity)) / 100).toFixed(2)}`}</IonText>
@@ -91,7 +101,7 @@ const PurchaseDetails = () => {
                     slot="end" 
                     color="danger"
                     style={{fontSize: '20px', marginRight: '10px'}} 
-                    onClick={()=> handleReturn(p)}
+                    onClick={()=> handleQuantity(p)}
                   />
                 }
               </IonItem>    

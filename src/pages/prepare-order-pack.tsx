@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { packUnavailable, getMessage, getPackStores, returnPack, quantityDetails } from '../data/actions'
+import { getMessage, getPackStores, returnPack, quantityDetails, completeOrderPack } from '../data/actions'
 import labels from '../data/labels'
 import { Basket, Err, Order, Pack, PackPrice, Purchase, State, Stock, Store } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
@@ -99,7 +99,7 @@ const PrepareOrderPack = () => {
           ],
           buttons: [
             {text: labels.cancel},
-            {text: labels.ok, handler: (e) => handleAddWithWeight(packStore, orderPack.quantity - (stock?.quantity || 0), Number(e.weight))}
+            {text: labels.ok, handler: (e) => handleAddWithWeight(packStore, Number(e.weight), Number(e.weight))}
           ],
         })
       } else {
@@ -112,7 +112,7 @@ const PrepareOrderPack = () => {
       message(getMessage(location.pathname, err), 3000)
     }
   }
-	const handlePurchase = async (packStore: ExtendedPackPrice) => {
+	const handlePurchase = (packStore: ExtendedPackPrice) => {
     try{
       if (stateBasket?.storeId && stateBasket.storeId !== packStore.packPrice.storeId){
         throw new Error('twoDiffStores')
@@ -126,7 +126,7 @@ const PrepareOrderPack = () => {
       message(getMessage(location.pathname, err), 3000)
     }
   }
-  const handleApprove = async () => {
+  const handleComplete = async () => {
     try {
       let flag: boolean, overPricedPermission: boolean
       flag = (stock?.quantity || 0) >= orderPack.quantity || (await IonAlert(alert, labels.unAvailableConfirmation))
@@ -142,15 +142,17 @@ const PrepareOrderPack = () => {
             buttons: [
               {text: labels.cancel},
               {text: labels.ok, handler: (e) => {
-                packUnavailable(pack, order, e.weight, overPricedPermission, stock)
+                completeOrderPack(pack, order, Number(e.weight), overPricedPermission, stock)
+                message(labels.executeSuccess, 3000)
+                history.goBack()       
               }}
             ],
           })
         } else {
-          packUnavailable(pack, order, 0, overPricedPermission, stock)
+          completeOrderPack(pack, order, 0, overPricedPermission, stock)
+          message(labels.executeSuccess, 3000)
+          history.goBack() 
         }  
-        message(labels.executeSuccess, 3000)
-        history.goBack() 
       }
     } catch(error) {
       const err = error as Err
@@ -181,7 +183,7 @@ const PrepareOrderPack = () => {
             </IonRow>
             <IonRow>
               <IonCol>
-                <IonImg src={pack.product.imageUrl || '/no-image.webp'} alt={labels.noImage} />
+                <IonImg src={pack.product.imageUrl || '/no-image.webp'} alt={labels.noImage} style={{margin: 'auto'}}/>
               </IonCol>
             </IonRow>
             <IonRow>
@@ -190,7 +192,7 @@ const PrepareOrderPack = () => {
             </IonRow>
             <IonRow>
               <IonCol>{quantityDetails(orderPack)}</IonCol>
-              <IonCol className="ion-text-end">{`${labels.stockQuantity}: ${stock?.quantity || 0}`}{stock?.weight ? `, ${labels.weight} : ${stock.weight}` : ''}</IonCol>
+              <IonCol className="ion-text-end">{`${labels.stockQuantity}: ${stock?.quantity || 0}`}{stock?.weight && stock.weight !== stock.quantity ? `, ${labels.weight} : ${stock.weight}` : ''}</IonCol>
             </IonRow>
             {orderPack.actual > 0 &&
               <IonRow>
@@ -228,7 +230,7 @@ const PrepareOrderPack = () => {
       </IonContent>
       {['a', 'e', 's', 'f'].includes(order.status) &&
         <IonFab vertical="top" horizontal="end" slot="fixed">
-          <IonFabButton onClick={() => ['s', 'f'].includes(order.status) ? handleReturn() : (orderPack.status === 'n' ? handleApprove() : handleReturn())} color="success">
+          <IonFabButton onClick={() => ['s', 'f'].includes(order.status) ? handleReturn() : (orderPack.status === 'n' ? handleComplete() : handleReturn())} color="success">
             <IonIcon ios={['s', 'f'].includes(order.status) ? reloadOutline : (orderPack.status === 'n' ? checkmarkOutline : reloadOutline)} /> 
           </IonFabButton>
         </IonFab>

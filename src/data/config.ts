@@ -1,5 +1,6 @@
 export const setup = {
   orderLimit: 2000,
+  nextOrderLimit: 5000,
   stockName: 'المستودع',
   mobile: '0799982800'
 }
@@ -42,15 +43,12 @@ export const quantityTypes = [
   {id: 'wc', name: 'وزن وعدد'},
 ]
 
-export const stockOperationTypes = [
+export const stockTransTypes = [
   {id: 'p', name: 'شراء'},
-  {id: 'o', name: 'بيع تجزئة'},
-  {id: 'i', name: 'استيداع'},
+  {id: 's', name: 'بيع'},
+  {id: 'r', name: 'ارجاع'},
   {id: 'd', name: 'اتلاف'},
   {id: 'g', name: 'تبرع'},
-  {id: 'r', name: 'ارجاع'},
-  {id: 'c', name: 'الغاء شراء'},
-  {id: 's', name: 'بيع'},
   {id: 'u', name: 'فتح'},
 ]
 

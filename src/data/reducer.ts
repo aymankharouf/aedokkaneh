@@ -35,8 +35,7 @@ const initState = {
 }
 
 const reducer = (state: State = initState, action: Action) => {
-  let basketPack, packIndex, packs, nextQuantity, i
-    const increment = [0.125, 0.25, 0.5, 0.75, 1]
+  let basketPack, packIndex, packs, nextQuantity
     switch (action.type){
       case 'ADD_TO_BASKET':
         basketPack = {
@@ -86,39 +85,6 @@ const reducer = (state: State = initState, action: Action) => {
         return {...state, basket: {...state.basket!, packs}}
       case 'CLEAR_BASKET':
         return {...state, basket: undefined}
-      case 'ADD_TO_RETURN_BASKET':
-        basketPack = {
-          packId: action.payload.packId,
-          price: action.payload.price,
-          actual: action.payload.price,
-          quantity: action.payload.quantity,
-          weight: action.payload.weight
-        }
-        if (!state.returnBasket?.type) {
-          return {
-            ...state, 
-            returnBasket: {
-              storeId: action.payload.storeId, 
-              type: action.payload.type, 
-              purchaseId: action.payload.purchaseId, 
-              packs: [basketPack]
-            }
-          }
-        } else {
-          return {...state, returnBasket: {...state.returnBasket!, packs: [...state.returnBasket.packs, basketPack]}}
-        }
-      case 'REMOVE_FROM_RETURN_BASKET':
-        const basket = state.returnBasket?.packs.slice()
-        if (!basket) return state
-        packIndex = basket.findIndex(p => p.id === action.payload.packId)
-        basket.splice(packIndex, 1)
-        if (basket.length === 0) {
-          return {...state, returnBasket: undefined}
-        } else {
-          return {...state, returnBasket: {...state.returnBasket!, packs: basket}}  
-        }
-      case 'CLEAR_RETURN_BASKET':
-        return {...state, returnBasket: undefined}  
       case 'SET_REGIONS':
         return {...state, regions: action.payload}
       case 'SET_COUNTRIES':
@@ -141,8 +107,6 @@ const reducer = (state: State = initState, action: Action) => {
         return {...state, orders: action.payload}
       case 'SET_STOCKS':
         return {...state, stocks: action.payload}
-      case 'SET_STOCK_OPERATIONS':
-        return {...state, stockOperations: action.payload}
       case 'SET_PASSWORD_REQUESTS':
         return {...state, passwordRequests: action.payload}
       case 'SET_PRODUCTS':
@@ -167,8 +131,6 @@ const reducer = (state: State = initState, action: Action) => {
         return {...state, adverts: action.payload}
       case 'ADD_ARCHIVED_PURCHASES':
         return {...state, archivedPurchases: [...state.archivedPurchases, ...action.payload]}
-      case 'ADD_ARCHIVED_STOCK_OPERATIONS':
-        return {...state, archivedStockOperations: [...state.archivedStockOperations, ...action.payload]}
       case 'SET_ARCHIVED_PRODUCTS':
         return {...state, archivedProducts: action.payload}
       case 'SET_ARCHIVED_PACKS':

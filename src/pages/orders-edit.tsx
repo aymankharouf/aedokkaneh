@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { editOrder, getMessage, quantityDetails } from '../data/actions'
 import labels from '../data/labels'
-import { Err, Order, OrderPack, Pack, PackPrice, State } from '../data/types'
+import { Err, Order, OrderPack, State } from '../data/types'
 import { IonButton, IonButtons, IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
 import Header from './header'
 import { addOutline, removeOutline } from 'ionicons/icons'
@@ -15,8 +15,6 @@ type Params = {
 const EditOrder = () => {
   const params = useParams<Params>()
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
-  const statePacks = useSelector<State, Pack[]>(state => state.packs)
-  const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const order = useMemo(() => stateOrders.find(o => o.id === params.id)!, [stateOrders, params.id])
   const [basket, setBasket] = useState(() => order.basket.map(p => ({...p, oldQuantity: p.quantity})))
   const hasChanged = useMemo(() => !!basket.find(p => p.oldQuantity !== p.quantity), [basket])
@@ -78,7 +76,7 @@ const EditOrder = () => {
 
   const handleSubmit = () => {
     try{
-      editOrder(order, basket, statePackPrices, statePacks)
+      editOrder(order, basket)
       message(labels.editSuccess, 3000)
       history.goBack()
     } catch(error) {

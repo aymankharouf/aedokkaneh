@@ -71,7 +71,7 @@ const ProductPacks = () => {
         <IonCard>
           <IonRow>
             <IonCol>
-              <IonImg src={product.imageUrl || '/no-image.webp'} alt={labels.noImage} />
+              <IonImg src={product.imageUrl || '/no-image.webp'} alt={labels.noImage} style={{margin: 'auto'}}/>
             </IonCol>
           </IonRow>
           <IonRow>

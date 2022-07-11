@@ -390,7 +390,8 @@ const labels: Label = {
   invalidDeliveryFees: 'لم نستطع تحديد رسوم التوصيل',
   purchasePrice: 'سعر الشراء',
   quantityType: 'نوع الكمية',
-  enterTotalPaid: 'المدفوع فعلا'
+  enterTotalPaid: 'المدفوع فعلا',
+  noStock: 'لا يوجد في المستودع كمية كافية'
 }
 
 export default labels

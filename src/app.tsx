@@ -3,7 +3,7 @@ import { IonApp, IonRouterOutlet, IonSplitPane } from '@ionic/react'
 import { IonReactRouter } from '@ionic/react-router'
 import { Route } from 'react-router-dom'
 import firebase from './data/firebase'
-import { Advert, Customer, Log, MonthlyOperation, Notification, Order, Pack, PackPrice, PasswordRequest, Product, Purchase, Rating, Spending, Stock as StockType, StockOperation, Store, StoreTrans as StoreTransType } from './data/types'
+import { Advert, Customer, Log, MonthlyOperation, Notification, Order, Pack, PackPrice, PasswordRequest, Product, Purchase, Rating, Spending, Stock as StockType, Store, StoreTrans as StoreTransType } from './data/types'
 import { useDispatch } from 'react-redux';
 
 
@@ -52,9 +52,7 @@ import ConfirmPurchase from './pages/confirm-purchase'
 import Purchases from './pages/purchases-list'
 import PurchaseDetails from './pages/purchase-details'
 import Stock from './pages/stock'
-import StockPackOperations from './pages/stock-pack-operations'
-import StockOperations from './pages/stock-operations'
-import StockOperationDetails from './pages/stock-operation-details'
+import StockTrans from './pages/stock-trans'
 import Customers from './pages/customers-list'
 import PasswordRequests from './pages/password-requests'
 import AddPack from './pages/packs-add'
@@ -90,16 +88,13 @@ import EditOffer from './pages/pack-offers-edit'
 import Notifications from './pages/notifications-list'
 import AddNotification from './pages/notifications-add'
 import ArchivedOrders from './pages/archived-orders'
-import StoreOperations from './pages/store-operations'
 import Adverts from './pages/adverts-list'
 import AddAdvert from './pages/adverts-add'
 import AdvertDetails from './pages/advert-details'
 import EditAdvert from './pages/adverts-edit'
 import Register from './pages/register'
 import ArchivedPurchases from './pages/archived-purchases'
-import ArchivedStockOperations from './pages/archived-stock-operations'
 import ArchivedProducts from './pages/archived-products'
-import ReturnBasket from './pages/return-basket'
 import StoreTrans from './pages/store-trans'
 import OrderPackStores from './pages/prepare-order-pack'
 import PrepareOrderPack from './pages/prepare-order-pack'
@@ -314,23 +309,6 @@ const App = () => {
         }, err => {
           unsubscribePurchases()
         })  
-        const unsubscribeStockOperations = firebase.firestore().collection('stock-operations').where('isArchived', '==', false).onSnapshot(docs => {
-          const stockOperations: StockOperation[] = []
-          docs.forEach(doc => {
-            stockOperations.push({
-              id: doc.id,
-              purchaseId: doc.data().purchaseId,
-              type: doc.data().type,
-              total: doc.data().total,
-              storeId: doc.data().storeId,
-              time: doc.data().time.toDate(),
-              basket: doc.data().basket
-            })
-          })
-          dispatch({type: 'SET_STOCK_OPERATIONS', payload: stockOperations})
-        }, err => {
-          unsubscribeStockOperations()
-        })  
         const unsubscribeStocks = firebase.firestore().collection('stocks').where('isArchived', '==', false).onSnapshot(docs => {
           const stocks: StockType[] = []
           docs.forEach(doc => {
@@ -476,9 +454,7 @@ const App = () => {
             <Route path="/purchases" exact={true} component={Purchases} />
             <Route path="/purchase-details/:id/:type" exact={true} component={PurchaseDetails} />
             <Route path="/stock" exact={true} component={Stock} />
-            <Route path="/stock-pack-operations/:id" exact={true} component={StockPackOperations} />
-            <Route path="/stock-operations" exact={true} component={StockOperations} />
-            <Route path="/stock-operation-details/:id/:type" exact={true} component={StockOperationDetails} />
+            <Route path="/stock-trans/:id" exact={true} component={StockTrans} />
             <Route path="/monthly-operation-call" exact={true} component={MonthlyOperationCall} />
             <Route path="/monthly-operations/:id" exact={true} component={MonthlyOperations} />
             <Route path="/retreive-password/:id" exact={true} component={RetreivePassword} />
@@ -495,15 +471,12 @@ const App = () => {
             <Route path="/notifications" exact={true} component={Notifications} />
             <Route path="/add-notification" exact={true} component={AddNotification} />
             <Route path="/archived-orders" exact={true} component={ArchivedOrders} />
-            <Route path="/store-operations/:id" exact={true} component={StoreOperations} />
             <Route path="/adverts" exact={true} component={Adverts} />
             <Route path="/add-advert" exact={true} component={AddAdvert} />
             <Route path="/advert-details/:id" exact={true} component={AdvertDetails} />
             <Route path="/edit-advert/:id" exact={true} component={EditAdvert} />
             <Route path="/archived-purchases" exact={true} component={ArchivedPurchases} />
-            <Route path="/archived-stock-operations" exact={true} component={ArchivedStockOperations} />
             <Route path="/archived-products" exact={true} component={ArchivedProducts} />
-            <Route path="/return-basket" exact={true} component={ReturnBasket} />
             <Route path="/store-trans/:id" exact={true} component={StoreTrans} />
             <Route path="/order-trans/:id" exact={true} component={OrderTrans} />
           </IonRouterOutlet>

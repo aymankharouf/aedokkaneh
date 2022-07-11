@@ -56,7 +56,7 @@ export type Customer = {
   storeId: string,
   orderLimit: number,
   address: string,
-  deliveryFees?: number,
+  deliveryFees: number,
   mapPosition: string,
   ordersCount: number,
   deliveredOrdersCount: number,
@@ -137,15 +137,6 @@ export type Purchase = {
   isArchived: boolean,
   basket: PurchasePack[]
 }
-export type StockOperation = {
-  id?: string,
-  purchaseId: string,
-  storeId: string,
-  type: string,
-  total: number,
-  basket: PurchasePack[],
-  time: Date
-}
 export type Product = {
   id?: string,
   name: string,
@@ -195,12 +186,6 @@ export type Basket = {
   storeId: string,
   packs: BasketPack[]
 }
-export type ReturnBasket = {
-  storeId: string,
-  purchaseId: string,
-  type: string,
-  packs: Stock[]
-}
 export type BasketPack = {
   pack: Pack,
   price: number,
@@ -231,15 +216,6 @@ export type Stock = {
   trans?: StockTrans[],
   isArchived?: boolean
 }
-export type RequestedPack = {
-  packId: string,
-  price: number,
-  quantity: number,
-  orderId: string,
-  offerId: string,
-  packInfo: Pack,
-  weight: number
-}
 export type Country = {
   id: string,
   name: string,
@@ -253,7 +229,6 @@ export type State = {
   purchases: Purchase[],
   orders: Order[],
   stocks: Stock[],
-  stockOperations: StockOperation[],
   products: Product[],
   packs: Pack[],
   passwordRequests: PasswordRequest[],
@@ -265,13 +240,11 @@ export type State = {
   archivedOrders: Order[],
   adverts: Advert[],
   archivedPurchases: Purchase[],
-  archivedStockOperations: StockOperation[],
   archivedProducts: Product[],
   archivedPacks: Pack[],
   notifications: Notification[],
   ratings: Rating[],
   basket?: Basket,
-  returnBasket?: ReturnBasket,
   searchText: string,
   storeTrans: StoreTrans[]
 }

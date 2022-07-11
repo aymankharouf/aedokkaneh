@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
-import { confirmPurchase, stockOut, getMessage, quantityText } from '../data/actions'
+import { confirmPurchase, getMessage, quantityText } from '../data/actions'
 import labels from '../data/labels'
-import { IonButton, IonContent, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
+import { IonButton, IonContent, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import { useHistory, useLocation } from 'react-router'
 import { colors } from '../data/config'
-import { Basket, Err, Order, Pack, PackPrice, State, Stock, Store } from '../data/types'
+import { Basket, Err, State, Stock, Store } from '../data/types'
 import { useSelector, useDispatch } from 'react-redux'
 
 
@@ -18,19 +18,24 @@ const ConfirmPurchase = () => {
   const [message] = useIonToast()
   const location = useLocation()
   const history = useHistory()
+  const [alert] = useIonAlert()
   const total = useMemo(() => stateBasket?.packs.reduce((sum, p) => sum + Math.round(p.price * (p.weight || p.quantity)), 0) || 0, [stateBasket])
   const handlePurchase = () => {
-    alert({
-      header: labels.enterTotalPaid,
-      inputs: [
-        {name: 'total', type: 'number', label: labels.total}
-      ],
-      buttons: [
-        {text: labels.cancel},
-        {text: labels.ok, handler: (e: any) => purchase(Number(e.total))}
-      ],
-    })
-}
+    const fraction = total - Math.floor(total / 5) * 5
+    if (fraction === 0) purchase(total)
+    else {
+      alert({
+        header: labels.enterTotalPaid,
+        inputs: [
+          {name: 'total', type: 'number', label: labels.total}
+        ],
+        buttons: [
+          {text: labels.cancel},
+          {text: labels.ok, handler: (e: any) => purchase(Number(e.total) * 100)}
+        ],
+      })
+    }
+  }
   const purchase = (totalPaid: number) => {
     try {
       confirmPurchase(stateBasket?.packs!, store.id!, stateStocks, totalPaid)

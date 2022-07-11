@@ -1,6 +1,4 @@
 import { useMemo } from 'react'
-import moment from 'moment'
-import 'moment/locale/ar'
 import labels from '../data/labels'
 import { Category, Pack, PackPrice, State, Store } from '../data/types'
 import { useParams } from 'react-router'

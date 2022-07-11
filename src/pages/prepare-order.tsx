@@ -81,6 +81,30 @@ const PrepareOrder = () => {
               }
             </IonItem>    
            )}
+          <IonItem>
+            <IonLabel>{labels.total}</IonLabel>
+            <IonLabel slot="end" className="price">{(order.total / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{labels.deliveryFees}</IonLabel>
+            <IonLabel slot="end" className="price">{(order.deliveryFees / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+          {order.fraction > 0 && 
+            <IonItem>
+              <IonLabel>{labels.discount}</IonLabel>
+              <IonLabel slot="end" className="price">{(order.fraction / 100).toFixed(2)}</IonLabel>
+            </IonItem>
+          }
+          <IonItem>
+            <IonLabel>{labels.net}</IonLabel>
+            <IonLabel slot="end" className="price">{((order.total + order.deliveryFees - order.fraction ) / 100).toFixed(2)}</IonLabel>
+          </IonItem>
+          {order.profit > 0 &&
+            <IonItem>
+              <IonLabel>{labels.profit}</IonLabel>
+              <IonLabel slot="end" className="price">{(order.profit / 100).toFixed(2)}</IonLabel>
+            </IonItem>
+          }
         </IonList>
       </IonContent>
       <IonFab vertical="top" horizontal="end" slot="fixed">

@@ -39,7 +39,7 @@ const PrepareOrdersList = () => {
                   <IonText style={{color: colors[1].name}}>{orderStatus.find(s => s.id === o.status)?.name}</IonText>
                   <IonText style={{color: colors[2].name}}>{moment(o.lastUpdate).fromNow()}</IonText>
                 </IonLabel>
-                <IonLabel slot="end" className="price">{(o.total / 100).toFixed(2)}</IonLabel>
+                <IonLabel slot="end" className="price">{((o.total + o.deliveryFees - o.fraction) / 100).toFixed(2)}</IonLabel>
               </IonItem>    
             )
           }

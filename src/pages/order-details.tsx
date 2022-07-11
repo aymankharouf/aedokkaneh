@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { updateOrderStatus, getMessage, quantityDetails, setDeliveryTime } from '../data/actions'
 import labels from '../data/labels'
 import { colors } from '../data/config'
-import { Customer, Err, Order, Pack, PackPrice, State, Store } from '../data/types'
+import { Customer, Err, Order, Pack, PackPrice, State } from '../data/types'
 import { IonActionSheet, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
@@ -18,7 +18,6 @@ const OrderDetails = () => {
   const params = useParams<Params>()
   const stateArchivedOrders = useSelector<State, Order[]>(state => state.archivedOrders)
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
-  const stateStores = useSelector<State, Store[]>(state => state.stores)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
@@ -35,7 +34,7 @@ const OrderDetails = () => {
         priceNote,
       }
     })
-  , [order, stateStores])
+  , [order])
   const handleAction = (actionId: string) => {
     try{
       if (actionId === 'a' && stateCustomers.find(c => c.id === order.userId)?.status === 'n'){
