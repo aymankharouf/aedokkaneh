@@ -28,21 +28,21 @@ const Products = () => {
   const category = useMemo(() => stateCategories.find(c => c.id === params.id), [stateCategories, params.id])
   useEffect(() => {
     return function cleanUp() {
-      dispatch({type: 'CLEAR_SEARCH'})
+      dispatch({ type: 'CLEAR_SEARCH' })
     }
   }, [dispatch])
   const products = useMemo(() => stateProducts.filter(p => params.id === '-1' ? !statePacks.find(pa => pa.product.id === p.id) || statePacks.filter(pa => pa.product.id === p.id).length === statePacks.filter(pa => pa.product.id === p.id && pa.price === 0).length : params.id === '0' || p.categoryId === params.id)
-  .map(p => {
-    const category = stateCategories.find(c => c.id === p.categoryId)!
-    const country = stateCountries.find(c => c.id === p.countryId)
-    return {
-      ...p,
-      categoryName: category.name,
-      countryName: country?.name || ''
-    }
-  })
-  .sort((p1, p2) => p1.categoryId === p2.categoryId ? (p1.name > p2.name ? 1 : -1) : (p1.categoryName > p2.categoryName ? 1 : -1))
-  , [stateProducts, stateCategories, statePacks, stateCountries, params.id])
+    .map(p => {
+      const category = stateCategories.find(c => c.id === p.categoryId)!
+      const country = stateCountries.find(c => c.id === p.countryId)
+      return {
+        ...p,
+        categoryName: category.name,
+        countryName: country?.name || ''
+      }
+    })
+    .sort((p1, p2) => p1.categoryId === p2.categoryId ? (p1.name > p2.name ? 1 : -1) : (p1.categoryName > p2.categoryName ? 1 : -1))
+    , [stateProducts, stateCategories, statePacks, stateCountries, params.id])
   const data = useMemo(() => {
     if (!stateSearchText) {
       return products
@@ -59,25 +59,25 @@ const Products = () => {
   }, [stateSearchText, products])
   let i = 0
   if (!stateUser) return <IonPage><h3 className="center"><a href="/login/">{labels.relogin}</a></h3></IonPage>
-  return(
+  return (
     <IonPage>
-      <Header title={params.id === '-1' ? labels.notUsedProducts : (params.id === '0' ? labels.products : category?.name || '')} withSearch/>
+      <Header title={params.id === '-1' ? labels.notUsedProducts : (params.id === '0' ? labels.products : category?.name || '')} withSearch />
       <IonContent fullscreen className="ion-padding">
         <IonList>
-          {data.length === 0 ? 
-            <IonItem> 
+          {data.length === 0 ?
+            <IonItem>
               <IonLabel>{labels.noData}</IonLabel>
-            </IonItem> 
-          : data.map(p => 
+            </IonItem>
+            : data.map(p =>
               <IonItem key={p.id} routerLink={`/product-packs/${p.id}/n`}>
                 <IonLabel>
-                  <IonText style={{color: colors[0].name}}>{p.name}</IonText>
-                  <IonText style={{color: colors[1].name}}>{p.alias}</IonText>
-                  <IonText style={{color: colors[2].name}}>{p.description}</IonText>
-                  <IonText style={{color: colors[3].name}}>{p.categoryName}</IonText>
-                  <IonText style={{color: colors[4].name}}>{productOfText(p.trademark, p.countryName)}</IonText>
+                  <IonText style={{ color: colors[0].name }}>{p.name}</IonText>
+                  <IonText style={{ color: colors[1].name }}>{p.alias}</IonText>
+                  <IonText style={{ color: colors[2].name }}>{p.description}</IonText>
+                  <IonText style={{ color: colors[3].name }}>{p.categoryName}</IonText>
+                  <IonText style={{ color: colors[4].name }}>{productOfText(p.trademark, p.countryName)}</IonText>
                 </IonLabel>
-              </IonItem>    
+              </IonItem>
             )
           }
         </IonList>

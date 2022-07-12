@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import labels from '../data/labels'
-import { getMessage, packStockOut, quantityText } from '../data/actions'
+import { getMessage, quantityText, returnPurchase } from '../data/actions'
 import { Err, Pack, Purchase, PurchasePack, State, Stock } from '../data/types'
-import { IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonToast } from '@ionic/react'
+import { IonContent, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { useLocation, useParams } from 'react-router'
@@ -25,8 +25,9 @@ const PurchaseDetails = () => {
   const stateStocks = useSelector<State, Stock[]>(state => state.stocks)
   const [message] = useIonToast()
   const location = useLocation()
-  const purchase = useMemo(() => params.type === 'a' ? stateArchivedPurchases.find(p => p.id === params.id)! : statePurchases.find(p => p.id === params.id)!, [statePurchases, stateArchivedPurchases, params.id, params.type])
-  const purchaseBasket = useMemo(() => purchase.basket.map(p => {
+  const [alert] = useIonAlert()
+  const purchase = useMemo(() => params.type === 'a' ? stateArchivedPurchases.find(p => p.id === params.id) : statePurchases.find(p => p.id === params.id), [statePurchases, stateArchivedPurchases, params.id, params.type])
+  const purchaseBasket = useMemo(() => purchase?.basket.map(p => {
                                                         const pack = statePacks.find(pa => pa.id === p.packId)!
                                                         return {
                                                           ...p,
@@ -43,7 +44,7 @@ const PurchaseDetails = () => {
       if (quantity > purchasePack.quantity || weight > purchasePack.weight) {
         throw new Error('invalidQuantity')
       }
-      packStockOut(stockPack, quantity, weight, 'r', purchasePack.price, params.id)
+      returnPurchase(stockPack, quantity, weight, purchase!)
       message(labels.executeSuccess, 3000)
     } catch(error) {
       const err = error as Err
@@ -81,11 +82,11 @@ const PurchaseDetails = () => {
       <Header title={labels.purchaseDetails} />
       <IonContent fullscreen className="ion-padding">
         <IonList>
-          {purchaseBasket.length === 0 ? 
+          {purchaseBasket?.length === 0 ? 
             <IonItem> 
               <IonLabel>{labels.noData}</IonLabel>
             </IonItem>
-          : purchaseBasket.map(p => 
+          : purchaseBasket?.map(p => 
               <IonItem key={i++}>
                 <IonLabel>
                   <IonText style={{color: colors[0].name}}>{p.pack.product.name}</IonText>

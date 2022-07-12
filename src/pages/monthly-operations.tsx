@@ -33,16 +33,17 @@ const MonthlyOperations = () => {
   const deliveredOrdersCount = useMemo(() => monthlyOperation?.deliveredOrdersCount || deliveredOrders.length, [monthlyOperation, deliveredOrders])
   const finishedOrdersCount = useMemo(() => monthlyOperation?.finishedOrdersCount || finishedOrders.length, [monthlyOperation, finishedOrders])
   const stock = useMemo(() => monthlyOperation?.stock || stateStocks.filter(s => s.quantity > 0).reduce((sum, p) => sum + Math.round(p.price * p.quantity), 0), [monthlyOperation, stateStocks])
+  const stockTrans = useMemo(() => stateStocks.map(s => s.trans).flat().filter(t => new Date(t!.time).getFullYear() === year && new Date(t!.time).getMonth() === month), [stateStocks, year, month])
   const sales = useMemo(() => monthlyOperation?.sales || deliveredOrders.reduce((sum, o) => sum + o.total, 0), [monthlyOperation, deliveredOrders])
   const operationProfit = useMemo(() => monthlyOperation?.operationProfit || deliveredOrders.reduce((sum, o) => sum + o.profit, 0), [monthlyOperation, deliveredOrders])
   const deliveryFees = useMemo(() => monthlyOperation?.deliveryFees || deliveredOrders.reduce((sum, o) => sum + o.deliveryFees, 0), [monthlyOperation, deliveredOrders])
   const fractions = useMemo(() => monthlyOperation?.fractions || deliveredOrders.reduce((sum, o) => sum + o.fraction, 0), [monthlyOperation, deliveredOrders])
   const spendings = useMemo(() => stateSpendings.filter(s => (s.spendingDate).getFullYear() === year && (s.spendingDate).getMonth() === month), [stateSpendings, year, month])
-  // const donations = useMemo(() => monthlyOperation?.donations || stockOperations.reduce((sum, t) => sum + (t.type === 'g' ? t.total : 0), 0), [monthlyOperation, stockOperations])
-  // const damages = useMemo(() => monthlyOperation?.damages || stockOperations.reduce((sum, t) => sum + (t.type === 'd' ? t.total : 0), 0), [monthlyOperation, stockOperations])
+  const donations = useMemo(() => monthlyOperation?.donations || stockTrans.reduce((sum, t) => sum + (t!.type === 'g' ? t!.price * t!.quantity : 0), 0), [monthlyOperation, stockTrans])
+  const damages = useMemo(() => monthlyOperation?.damages || stockTrans.reduce((sum, t) => sum + (t!.type === 'd' ? t!.price * t!.quantity : 0), 0), [monthlyOperation, stockTrans])
   const withdrawals = useMemo(() => monthlyOperation?.withdrawals || spendings.filter(s => s.type === 'w').reduce((sum, s) => sum + s.amount, 0), [monthlyOperation, spendings])
   const expenses = useMemo(() => monthlyOperation?.expenses || spendings.filter(s => s.type !== 'w').reduce((sum, s) => sum + s.amount, 0), [monthlyOperation, spendings])
-  // const netProfit = useMemo(() => monthlyOperation?.netProfit || (operationProfit + deliveryFees) - (expenses + damages + fractions), [monthlyOperation, operationProfit, deliveryFees, expenses, damages, fractions])
+  const netProfit = useMemo(() => monthlyOperation?.netProfit || (operationProfit + deliveryFees) - (expenses + damages + fractions), [monthlyOperation, operationProfit, deliveryFees, expenses, damages, fractions])
   useEffect(() => {
     const today = new Date()
     if ((today.getFullYear() * 100 + Number(today.getMonth())) > year * 100 + month) {
@@ -65,9 +66,9 @@ const MonthlyOperations = () => {
         fractions,
         withdrawals,
         expenses,
-        donations: 0,
-        damages: 0,
-        netProfit: 0
+        donations,
+        damages,
+        netProfit
       }
       addMonthlyOperation(operation, stateOrders, statePurchases)
       message(labels.addSuccess, 3000)
@@ -122,7 +123,7 @@ const MonthlyOperations = () => {
             <IonLabel>{labels.expenses}</IonLabel>
             <IonLabel slot="end" className="price">{(expenses / 100).toFixed(2)}</IonLabel>
           </IonItem>
-          {/* <IonItem>
+          <IonItem>
             <IonLabel>{labels.damages}</IonLabel>
             <IonLabel slot="end" className="price">{(damages / 100).toFixed(2)}</IonLabel>
           </IonItem>
@@ -149,7 +150,7 @@ const MonthlyOperations = () => {
           <IonItem>
             <IonLabel>{labels.propertyBalance}</IonLabel>
             <IonLabel slot="end" className="price">{((netProfit - Math.round(netProfit * 0.2) - withdrawals) / 100).toFixed(2)}</IonLabel>
-          </IonItem> */}
+          </IonItem>
         </IonList>
       </IonContent>
       {buttonVisisble && 

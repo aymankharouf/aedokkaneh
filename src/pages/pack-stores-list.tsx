@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { getPackStores, deleteStorePack, deletePack, changeStorePackStatus, getMessage, quantityText } from '../data/actions'
+import { getPackStores, editPrice, deletePack, getMessage, quantityText } from '../data/actions'
 import labels from '../data/labels'
 import { Basket, Err, Order, Pack, PackPrice, Purchase, State, Stock, Store } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
@@ -9,6 +9,7 @@ import Footer from './footer'
 import { colors } from '../data/config'
 import { ellipsisVerticalOutline } from 'ionicons/icons'
 import { useSelector, useDispatch } from 'react-redux'
+import IonAlert from './ion-alert'
 
 type Params = {
   id: string
@@ -70,43 +71,69 @@ const PackStores = () => {
       }
     })
   }, [pack, stateStores, statePackPrices, statePurchases, statePacks])
-  const handleDelete = () => {
-    alert({
-      header: labels.confirmationTitle,
-      message: labels.confirmationText,
-      buttons: [
-        {text: labels.cancel},
-        {text: labels.yes, handler: () => {
-          try{
-            deletePack(pack.id!)
-            message(labels.deleteSuccess, 3000)
-            history.goBack()
-          } catch(error) {
-            const err = error as Err
-            message(getMessage(location.pathname, err), 3000)
-          }    
-        }},
-      ],
-    })
+  const handleEnterPrice = () => {
+    try {
+      alert({
+        header: labels.enterPrice,
+        inputs: [
+          {name: 'price', type: 'number', label: labels.price},
+        ],
+        buttons: [
+          {text: labels.cancel},
+          {text: labels.ok, handler: (e) => handleEditPrice(Number(e.price))}
+        ],
+      })
+    } catch(error) {
+      const err = error as Err
+      message(getMessage(location.pathname, err), 3000)
+    }
   }
-  const handleDeletePrice = () => {
-    if (!currentStorePack) return
-    alert({
-      header: labels.confirmationTitle,
-      message: labels.confirmationText,
-      buttons: [
-        {text: labels.cancel},
-        {text: labels.yes, handler: () => {
-          try{
-            deleteStorePack(currentStorePack.packPrice, statePackPrices, statePacks)
-            message(labels.deleteSuccess, 3000)
-          } catch(error) {
-            const err = error as Err
-            message(getMessage(location.pathname, err), 3000)
-          }    
-        }},
-      ],
-    })
+  const handleEditPrice = (price: number) => {
+    try{
+      if (Number(price) !== Number(Number(price).toFixed(2))) {
+        throw new Error('invalidPrice')
+      }
+      const newStorePack = {
+        ...currentStorePack?.packPrice!,
+        price : Math.round(+price * 100),
+        lastUpdate: new Date()
+      }
+      editPrice(newStorePack, statePackPrices, statePacks, 'e')
+      message(labels.editSuccess, 3000)
+      history.goBack()
+    } catch(error) {
+      const err = error as Err
+			message(getMessage(location.pathname, err), 3000)
+		}
+  }
+
+  const handleDelete = async () => {
+    try {
+      if (await IonAlert(alert, labels.confirmationText)) {
+        deletePack(pack.id!)
+        message(labels.deleteSuccess, 3000)
+        history.goBack()
+      }
+    } catch(error) {
+      const err = error as Err
+      message(getMessage(location.pathname, err), 3000)
+    }    
+  }
+  const handleDeletePrice = async () => {
+    try {
+      if (!currentStorePack) return
+      if (await IonAlert(alert, labels.confirmationText)) {
+        const packStore = {
+          ...currentStorePack.packPrice,
+          isActive: false
+        }
+        editPrice(packStore, statePackPrices, statePacks, 'd')
+        message(labels.deleteSuccess, 3000)
+      }
+    } catch(error) {
+      const err = error as Err
+      message(getMessage(location.pathname, err), 3000)
+    }
   }
   const handleWeight = (packStore: ExtendedPackPrice, quantity: number, weight: number) => {
     dispatch({type: 'ADD_TO_BASKET', payload: {...packStore, quantity, weight}})
@@ -167,7 +194,12 @@ const PackStores = () => {
   const handleChangeStatus = () => {
     try{
       if (!currentStorePack) return
-      changeStorePackStatus(currentStorePack.packPrice, statePackPrices, statePacks)
+      const packStore = {
+        ...currentStorePack.packPrice,
+        isActive: !currentStorePack.packPrice.isActive,
+        lastUpdate: new Date()
+      }
+      editPrice(packStore, statePackPrices, statePacks, 'e')
       message(labels.editSuccess, 3000)
     } catch(error) {
       const err = error as Err
@@ -176,10 +208,6 @@ const PackStores = () => {
   }
 
   const handleActions = (storePack: ExtendedPackPrice) => {
-    // const storePack = {
-    //   ...storePackInfo,
-    //   packId: pack.id!
-    // }
     setCurrentStorePack(storePack)
     setPriceActionOpened(true)
   }
@@ -279,7 +307,7 @@ const PackStores = () => {
           {
             text: labels.editPrice,
             cssClass: colors[i++ % 10].name,
-            handler: () => history.push(`/edit-price/${currentStorePack?.packPrice.packId}/${currentStorePack?.packPrice.storeId}`)
+            handler: () => handleEnterPrice()
           },
           {
             text: labels.delete,

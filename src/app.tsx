@@ -41,7 +41,6 @@ import OrdersList from './pages/orders-list'
 import OrderDetails from './pages/order-details'
 import AddStore from './pages/stores-add'
 import EditProduct from './pages/products-edit'
-import EditPrice from './pages/edit-price'
 import Countries from './pages/countries-list'
 import AddCountry from './pages/countries-add'
 import Settings from './pages/settings'
@@ -110,7 +109,6 @@ const App = () => {
   useEffect(() => {
     const unsubscribePacks = firebase.firestore().collection('packs').where('isArchived', '==', false).onSnapshot(docs => {
       let packs: Pack[] = []
-      let packPrices: PackPrice[] = []
       docs.forEach(doc => {
         packs.push({
           id: doc.id,
@@ -123,19 +121,8 @@ const App = () => {
           quantityType: doc.data().quantityType,
           gift: doc.data().gift
         })
-        if (doc.data().prices) {
-          doc.data().prices.forEach((p: any) => {
-            packPrices.push({
-              packId: doc.id,
-              storeId: p.storeId,
-              price: p.price,
-              isActive: p.isActive,
-            })
-          })
-        }
       })
       dispatch({type: 'SET_PACKS', payload: packs})
-      dispatch({type: 'SET_PACK_PRICES', payload: packPrices})
     }, err => {
       unsubscribePacks()
     })
@@ -311,6 +298,7 @@ const App = () => {
         })  
         const unsubscribeStocks = firebase.firestore().collection('stocks').where('isArchived', '==', false).onSnapshot(docs => {
           const stocks: StockType[] = []
+          const packPrices: PackPrice[] = []
           docs.forEach(doc => {
             stocks.push({
               id: doc.id,
@@ -319,8 +307,20 @@ const App = () => {
               weight: doc.data().weight,
               trans: doc.data().trans
             })
+            if (doc.data().prices) {
+              doc.data().prices.forEach((p: any) => {
+                packPrices.push({
+                  packId: doc.id,
+                  storeId: p.storeId,
+                  price: p.price,
+                  isActive: p.isActive,
+                  lastUpdate: p.lastUpdate.toDate()
+                })
+              })
+            }
           })
           dispatch({type: 'SET_STOCKS', payload: stocks})
+          dispatch({type: 'SET_PACK_PRICES', payload: packPrices})
         }, err => {
           unsubscribeStocks()
         })  
@@ -445,7 +445,6 @@ const App = () => {
             <Route path="/pack-details/:id" exact={true} component={PackDetails} />
             <Route path="/edit-pack/:id" exact={true} component={EditPack} />
             <Route path="/edit-offer/:id" exact={true} component={EditOffer} />
-            <Route path="/edit-price/:packId/:storeId" exact={true} component={EditPrice} />
             <Route path="/orders" exact={true} component={Orders} />
             <Route path="/orders-list/:id/:type" exact={true} component={OrdersList} />
             <Route path="/order-details/:id/:type" exact={true} component={OrderDetails} />

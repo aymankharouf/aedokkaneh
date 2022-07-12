@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import labels from '../data/labels'
 import { Category, Pack, PackPrice, State, Store } from '../data/types'
 import { useParams } from 'react-router'
-import { IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, IonThumbnail } from '@ionic/react'
+import { IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
 import { addOutline } from 'ionicons/icons'
@@ -43,9 +43,6 @@ const StorePacks = () => {
             </IonItem> 
           : storePacks.map(p => 
               <IonItem key={i++} routerLink={`/pack-details/${p.packId}`}>
-                <IonThumbnail slot="start">
-                  <img src={p.pack.product.imageUrl} alt={labels.noImage} />
-                </IonThumbnail>
                 <IonLabel>
                   <IonText style={{color: colors[0].name}}>{p.pack.product.name}</IonText>
                   <IonText style={{color: colors[1].name}}>{p.pack.product.alias}</IonText>
