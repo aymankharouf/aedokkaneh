@@ -22,7 +22,7 @@ type ExtendedPackPrice = {
   pack: Pack,
   store: Store
 }
-const PackInfo = () => {
+const PackStoreList = () => {
   const params = useParams<Params>()
   const dispatch = useDispatch()
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
@@ -356,4 +356,4 @@ const PackInfo = () => {
   )
 }
 
-export default PackInfo
+export default PackStoreList

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { blockCustomer, editCustomer, getMessage } from '../data/actions'
+import { approveCustomer, blockCustomer, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, useIonToast, useIonLoading, useIonAlert, IonActionSheet } from '@ionic/react'
 import { useHistory, useLocation, useParams } from 'react-router'
@@ -51,7 +51,7 @@ const CustomerApprove = () => {
         ordersCount: 0,
         deliveredOrdersCount: 0,
       }
-      editCustomer(newCustomer)
+      approveCustomer(newCustomer)
       message(labels.approveSuccess)
       history.goBack()  
     } catch(error) {

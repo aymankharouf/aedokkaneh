@@ -55,7 +55,7 @@ import StockTransList from './pages/stock-trans-list'
 import CustomerList from './pages/customer-list'
 import PasswordRequestList from './pages/password-request-list'
 import PackAdd from './pages/pack-add'
-import PackInfo from './pages/pack-store-list'
+import PackStoreList from './pages/pack-store-list'
 import PackEdit from './pages/pack-edit'
 import CountryEdit from './pages/country-edit'
 import CategoryEdit from './pages/category-edit'
@@ -263,7 +263,9 @@ const App = () => {
           unsubscribeCustomers()
         })  
         const unsubscribeStores = firebase.firestore().collection('stores').onSnapshot(docs => {
-          let stores: Store[] = []
+          const stores: Store[] = []
+          const packPrices: PackPrice[] = []
+          const storeTrans: StoreTransType[] = []
           docs.forEach(doc => {
             stores.push({
               id: doc.id,
@@ -274,8 +276,34 @@ const App = () => {
               openTime: doc.data().openTime,
               address: doc.data().address,
             })
+            if (doc.data().prices) {
+              doc.data().prices.forEach((p: any) => {
+                packPrices.push({
+                  storeId: doc.id,
+                  packId: p.packId,
+                  price: p.price,
+                  isActive: p.isActive,
+                  lastUpdate: p.lastUpdate.toDate()
+                })
+              })
+            }
+            if (doc.data().trans) {
+              doc.data().trans.forEach((t: any) => {
+                storeTrans.push({
+                  storeId: doc.id,
+                  packId: t.packId,
+                  oldPrice: t.oldPrice,
+                  newPrice: t.newPrice,
+                  status: t.status,
+                  time: t.time.toDate()
+                })
+              })
+            }
+
           })
           dispatch({type: 'SET_STORES', payload: stores})
+          dispatch({type: 'SET_PACK_PRICES', payload: packPrices})
+          dispatch({type: 'SET_STORE_TRANS', payload: storeTrans})
         }, err => {
           unsubscribeStores()
         })  
@@ -297,7 +325,6 @@ const App = () => {
         })  
         const unsubscribeStocks = firebase.firestore().collection('stocks').where('isArchived', '==', false).onSnapshot(docs => {
           const stocks: StockType[] = []
-          const packPrices: PackPrice[] = []
           docs.forEach(doc => {
             stocks.push({
               id: doc.id,
@@ -306,20 +333,8 @@ const App = () => {
               weight: doc.data().weight,
               trans: doc.data().trans
             })
-            if (doc.data().prices) {
-              doc.data().prices.forEach((p: any) => {
-                packPrices.push({
-                  packId: doc.id,
-                  storeId: p.storeId,
-                  price: p.price,
-                  isActive: p.isActive,
-                  lastUpdate: p.lastUpdate.toDate()
-                })
-              })
-            }
           })
           dispatch({type: 'SET_STOCKS', payload: stocks})
-          dispatch({type: 'SET_PACK_PRICES', payload: packPrices})
         }, err => {
           unsubscribeStocks()
         })  
@@ -378,22 +393,6 @@ const App = () => {
         }, err => {
           unsubscribeLogs()
         })  
-        const unsubscribeStoreTrans = firebase.firestore().collection('store-trans').onSnapshot(docs => {
-          let storeTrans: StoreTransType[] = []
-          docs.forEach(doc => {
-            storeTrans.push({
-              id: doc.id,
-              storeId: doc.data().storeId,
-              packId: doc.data().packId,
-              oldPrice: doc.data().oldPrice,
-              newPrice: doc.data().newPrice,
-              time: doc.data().time.toDate()
-            })
-          })
-          dispatch({type: 'SET_STORE_TRANS', payload: storeTrans})
-        }, err => {
-          unsubscribeStoreTrans()
-        })  
       } else {
         dispatch({type: 'LOGOUT'})
       }
@@ -441,7 +440,7 @@ const App = () => {
             <Route path="/product-add/:id" exact={true} component={ProductAdd} />
             <Route path="/pack-add/:id" exact={true} component={PackAdd} />
             <Route path="/pack-offer-add/:id" exact={true} component={PackOfferAdd} />
-            <Route path="/pack-info/:id" exact={true} component={PackInfo} />
+            <Route path="/pack-store-list/:id" exact={true} component={PackStoreList} />
             <Route path="/pack-edit/:id" exact={true} component={PackEdit} />
             <Route path="/pac-offer-edit/:id" exact={true} component={PackOfferEdit} />
             <Route path="/order-stat" exact={true} component={OrderStat} />

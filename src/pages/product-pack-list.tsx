@@ -81,7 +81,7 @@ const ProductPackList = () => {
         </IonCard>
         <IonList className="list">
           {packs.map(p => 
-            <IonItem key={p.id} routerLink={`/pack-info/${p.id}`}>
+            <IonItem key={p.id} routerLink={`/pack-store-list/${p.id}`}>
               <IonLabel>{p.name}</IonLabel>
               {!p.subPackId && p.price > 0 && <IonLabel slot="end" className="price">{(p.price / 100).toFixed(2)}</IonLabel>}
               {!!p.subPackId && <IonBadge slot="end" color="success">{p.price > 0 ? (p.price / 100).toFixed(2) : labels.offer}</IonBadge>}

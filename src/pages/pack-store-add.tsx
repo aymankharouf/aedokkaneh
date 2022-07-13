@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import labels from '../data/labels'
 import { addPackPrice, getMessage } from '../data/actions'
-import { Err, Pack, PackPrice, State, Stock, Store } from '../data/types'
+import { Err, Pack, PackPrice, State, Store } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, useIonToast } from '@ionic/react'
 import Header from './header'
@@ -16,7 +16,6 @@ const PackStoreAdd = () => {
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
-  const stateStocks = useSelector<State, Stock[]>(state => state.stocks)
   const [price, setPrice] = useState('')
   const [storeId, setStoreId] = useState('')
   const stores = useMemo(() => stateStores.filter(s => !statePackPrices.find(p => p.storeId === s.id && p.packId === params.id)), [stateStores, statePackPrices, params.id])
@@ -40,7 +39,7 @@ const PackStoreAdd = () => {
         isActive: storeStatus,
         lastUpdate: new Date()
       }
-      addPackPrice(storePack, statePackPrices, statePacks, stateStocks)
+      addPackPrice(storePack, statePackPrices, statePacks)
       message(labels.addSuccess, 3000)
       history.goBack()
     } catch(error) {

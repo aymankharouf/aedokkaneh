@@ -393,6 +393,8 @@ const labels: Label = {
   enterTotalPaid: 'المدفوع فعلا',
   noStock: 'لا يوجد في المستودع كمية كافية',
   enterPrice: 'ادخل السعر الجديد',
+  refresh: 'تأكيد',
+  trans: 'الحركات'
 }
 
 export default labels

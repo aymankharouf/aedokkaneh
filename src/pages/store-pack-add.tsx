@@ -5,7 +5,7 @@ import { useHistory, useLocation, useParams } from 'react-router'
 import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
-import { Err, Pack, PackPrice, State, Stock, Store } from '../data/types'
+import { Err, Pack, PackPrice, State, Store } from '../data/types'
 import { useSelector } from 'react-redux'
 import SmartSelect from './smart-select'
 
@@ -17,7 +17,6 @@ const StorePackAdd = () => {
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
-  const stateStocks = useSelector<State, Stock[]>(state => state.stocks)
   const [packId, setPackId] = useState('')
   const [price, setPrice] = useState('')
   const store = useMemo(() => stateStores.find(s => s.id === params.id)!, [stateStores, params.id])
@@ -47,7 +46,7 @@ const StorePackAdd = () => {
         isActive: store.isActive,
         lastUpdate: new Date()
       }
-      addPackPrice(storePack, statePackPrices, statePacks, stateStocks)
+      addPackPrice(storePack, statePackPrices, statePacks)
       message(labels.addSuccess, 3000)
       history.goBack()
     } catch(error) {

@@ -19,8 +19,9 @@ const Panel = () => {
   const approvalsCount = useMemo(() => {
     const ratings = stateRatings.filter(r => r.status === 'n').length
     const passwordRequests = statePasswordRequests.length
-    return ratings + passwordRequests
-  }, [statePasswordRequests, stateRatings])
+    const storeTrans = stateStoreTrans.filter(t => t.status === 'n').length
+    return ratings + passwordRequests + storeTrans
+  }, [statePasswordRequests, stateRatings, stateStoreTrans])
   const handleLogout = () => {
     logout()
     history.push('/')
@@ -53,10 +54,6 @@ const Panel = () => {
             <IonItem routerLink="/logs" style={{marginBottom: '0px', marginTop: '0px'}}>
               <IonLabel>{labels.logs}</IonLabel>
               {stateLogs.length > 0 && <IonBadge color="danger">{stateLogs.length}</IonBadge>}
-            </IonItem>
-            <IonItem routerLink="/store-trans-list/0" style={{marginBottom: '0px', marginTop: '0px'}}>
-              <IonLabel>{labels.storeTrans}</IonLabel>
-              {stateStoreTrans.length > 0 && <IonBadge color="danger">{stateStoreTrans.length}</IonBadge>}
             </IonItem>
           </> : 
             <IonItem routerLink='/login'>

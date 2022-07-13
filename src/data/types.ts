@@ -123,11 +123,11 @@ export type Store = {
   address: string,
 }
 export type StoreTrans = {
-  id: string,
   storeId: string,
   packId: string,
   oldPrice: number,
   newPrice: number,
+  status: string,
   time: Date
 }
 export type Purchase = {

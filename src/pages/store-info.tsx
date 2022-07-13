@@ -84,8 +84,14 @@ const StoreInfo = () => {
           {
             text: labels.edit,
             cssClass: colors[i++ % 10].name,
-            handler: () => history.push(`/store-store/${params.id}`)
+            handler: () => history.push(`/store-edit/${params.id}`)
           },
+          {
+            text: labels.trans,
+            cssClass: colors[i++ % 10].name,
+            handler: () => history.push(`/store-trans-list/${params.id}`)
+          },
+
         ]}
       />
       <Footer />

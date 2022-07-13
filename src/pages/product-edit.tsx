@@ -72,7 +72,7 @@ const ProductEdit = () => {
         trademark,
         countryId,
       }
-      editProduct(newProduct, product.name, statePacks, image)
+      editProduct(newProduct, statePacks, image)
       message(labels.editSuccess, 3000)
       history.goBack()
     } catch(error) {
