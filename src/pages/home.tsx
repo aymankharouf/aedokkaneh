@@ -8,12 +8,12 @@ import { Customer, Order, State } from '../data/types'
 
 const Home = () => {
   const mainPages = useMemo(() => [
-    {id: '2', name: labels.stores, path: '/stores'},
-    {id: '3', name: labels.products, path: '/products/0'},
-    {id: '4', name: labels.purchases, path: '/purchases'},
+    {id: '2', name: labels.stores, path: '/store-list'},
+    {id: '3', name: labels.products, path: '/product-list/0'},
+    {id: '4', name: labels.purchases, path: '/purchase-list'},
     {id: '5', name: labels.stock, path: '/stock'},
-    {id: '6', name: labels.spendings, path: '/spendings'},
-    {id: '7', name: labels.notifications, path: '/notifications'}
+    {id: '6', name: labels.spendings, path: '/spending-list'},
+    {id: '7', name: labels.notifications, path: '/notification-list'}
   ], [])
   const stateOrders = useSelector<State, Order[]>(state => state.orders)
   const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
@@ -37,7 +37,7 @@ const Home = () => {
           </IonToolbar>
         </IonHeader>
         <IonButton
-          routerLink="/prepare-orders-list" 
+          routerLink="/prepare-order-list" 
           expand="block"
           shape="round"
           className={colors[i++ % 10].name}
@@ -46,7 +46,7 @@ const Home = () => {
           {`${labels.orders} (${orders.length})`}
         </IonButton>
         <IonButton
-          routerLink="/customers" 
+          routerLink="/customer-list" 
           expand="block"
           shape="round"
           className={colors[i++ % 10].name}

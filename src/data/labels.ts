@@ -392,7 +392,7 @@ const labels: Label = {
   quantityType: 'نوع الكمية',
   enterTotalPaid: 'المدفوع فعلا',
   noStock: 'لا يوجد في المستودع كمية كافية',
-  enterPrice: 'ادخل السعر الجديد'
+  enterPrice: 'ادخل السعر الجديد',
 }
 
 export default labels

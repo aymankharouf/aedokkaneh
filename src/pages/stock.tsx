@@ -35,7 +35,7 @@ const Stock = () => {
               <IonLabel>{labels.noData}</IonLabel>
             </IonItem>  
           : stockPacks.map(p => 
-              <IonItem key={i++} routerLink={`/stock-trans/${p.id}`}>
+              <IonItem key={i++} routerLink={`/stock-trans-list/${p.id}`}>
                 <IonLabel>
                   <IonText style={{color: colors[0].name}}>{p.pack.product.name}</IonText>
                   <IonText style={{color: colors[1].name}}>{p.pack.product.alias}</IonText>

@@ -62,7 +62,7 @@ const Basket = () => {
             shape="round"
             color="secondary"
             style={{width: '10rem'}}
-            routerLink="/confirm-purchase"
+            routerLink="/purchase-confirm"
           >
             {`${labels.submit} ${(totalPrice / 100).toFixed(2)}`}
           </IonButton>

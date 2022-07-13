@@ -30,75 +30,74 @@ import './css/app.css'
 import Home from './pages/home'
 import Panel from './pages/panel'
 import Login from './pages/login'
-import Products from './pages/products-list'
-import ProductPacks from './pages/product-packs'
+import ProductList from './pages/product-list'
+import ProductPackList from './pages/product-pack-list'
 import Basket from './pages/basket'
-import Stores from './pages/stores-list'
-import StorePacks from './pages/store-packs'
-import AddStorePack from './pages/store-packs-add'
-import AddProduct from './pages/products-add'
-import OrdersList from './pages/orders-list'
-import OrderDetails from './pages/order-details'
-import AddStore from './pages/stores-add'
-import EditProduct from './pages/products-edit'
-import Countries from './pages/countries-list'
-import AddCountry from './pages/countries-add'
+import StoreList from './pages/store-list'
+import StorePackList from './pages/store-pack-list'
+import StorePackAdd from './pages/store-pack-add'
+import ProductAdd from './pages/product-add'
+import OrderList from './pages/order-list'
+import OrderInfo from './pages/order-info'
+import StoreAdd from './pages/store-add'
+import ProductEdit from './pages/product-edit'
+import CountryList from './pages/country-list'
+import CountryAdd from './pages/country-add'
 import Settings from './pages/settings'
-import Categories from './pages/categories-list'
-import AddCategory from './pages/categories-add'
-import Orders from './pages/orders-stat'
-import ConfirmPurchase from './pages/confirm-purchase'
-import Purchases from './pages/purchases-list'
-import PurchaseDetails from './pages/purchase-details'
+import CategoryList from './pages/category-list'
+import CategoryAdd from './pages/category-add'
+import OrderStat from './pages/order-stat'
+import PurchaseConfirm from './pages/purchase-confirm'
+import PurchaseList from './pages/purchase-list'
+import PurchaseInfo from './pages/purchase-info'
 import Stock from './pages/stock'
-import StockTrans from './pages/stock-trans'
-import Customers from './pages/customers-list'
-import PasswordRequests from './pages/password-requests'
-import AddPack from './pages/packs-add'
-import PackDetails from './pages/pack-stores-list'
-import EditPack from './pages/packs-edit'
-import EditCountry from './pages/countries-edit'
-import EditCategory from './pages/categories-edit'
-import EditStore from './pages/stores-edit'
-import CustomerDetails from './pages/customer-details'
-import EditCustomer from './pages/customers-edit'
-import ApproveCustomer from './pages/approve-customer'
-import Spendings from './pages/spendings-list'
-import AddSpending from './pages/spendings-add'
-import EditSpending from './pages/edit-spending'
+import StockTransList from './pages/stock-trans-list'
+import CustomerList from './pages/customer-list'
+import PasswordRequestList from './pages/password-request-list'
+import PackAdd from './pages/pack-add'
+import PackInfo from './pages/pack-store-list'
+import PackEdit from './pages/pack-edit'
+import CountryEdit from './pages/country-edit'
+import CategoryEdit from './pages/category-edit'
+import StoreEdit from './pages/store-edit'
+import CustomerInfo from './pages/customer-info'
+import CustomerEdit from './pages/customer-edit'
+import CustomerApprove from './pages/customer-approve'
+import SpendingList from './pages/spending-list'
+import SpendingAdd from './pages/spending-add'
+import SpendingEdit from './pages/spending-edit'
 import MonthlyOperationCall from './pages/monthly-operation-call'
-import MonthlyOperations from './pages/monthly-operations'
-import RetreivePassword from './pages/retreive-password'
-import EditOrder from './pages/orders-edit'
-import ChangePassword from './pages/change-password'
-import Regions from './pages/regions-list'
-import AddRegion from './pages/regions-add'
-import EditRegion from './pages/regions-edit'
+import MonthlyOperationList from './pages/monthly-operation-list'
+import PasswordRetreive from './pages/password-retreive'
+import OrderEdit from './pages/order-edit'
+import PasswordChange from './pages/password-change'
+import RegionList from './pages/region-list'
+import RegionAdd from './pages/region-add'
+import RegionEdit from './pages/region-edit'
 import Ratings from './pages/ratings'
-import Approvals from './pages/approvals'
-import PackOperations from './pages/pack-operations'
-import AddPackStore from './pages/pack-stores-add'
+import ApprovalList from './pages/approval-list'
+import PackOperationList from './pages/pack-operation-list'
+import PackStoreAdd from './pages/pack-store-add'
 import Logs from './pages/logs'
-import StoreDetails from './pages/store-details'
-import PrepareOrdersList from './pages/prepare-orders-list'
-import ProductDetails from './pages/product-details'
-import AddOffer from './pages/pack-offers-add'
-import EditOffer from './pages/pack-offers-edit'
-import Notifications from './pages/notifications-list'
-import AddNotification from './pages/notifications-add'
-import ArchivedOrders from './pages/archived-orders'
-import Adverts from './pages/adverts-list'
-import AddAdvert from './pages/adverts-add'
-import AdvertDetails from './pages/advert-details'
-import EditAdvert from './pages/adverts-edit'
+import StoreInfo from './pages/store-info'
+import PrepareOrderList from './pages/prepare-order-list'
+import ProductInfo from './pages/product-info'
+import PackOfferAdd from './pages/pack-offer-add'
+import PackOfferEdit from './pages/pack-offer-edit'
+import NotificationList from './pages/notification-list'
+import NotificationAdd from './pages/notification-add'
+import OrderArchived from './pages/order-archived'
+import AdvertList from './pages/advert-list'
+import AdvertAdd from './pages/advert-add'
+import AdvertInfo from './pages/advert-info'
+import AdvertEdit from './pages/advert-edit'
 import Register from './pages/register'
-import ArchivedPurchases from './pages/archived-purchases'
-import ArchivedProducts from './pages/archived-products'
-import StoreTrans from './pages/store-trans'
-import OrderPackStores from './pages/prepare-order-pack'
+import PurchaseArchived from './pages/purchase-archived'
+import ProductArchived from './pages/product-archived'
+import StoreTransList from './pages/store-trans-list'
 import PrepareOrderPack from './pages/prepare-order-pack'
-import PrepareOrder from './pages/prepare-order'
-import OrderTrans from './pages/order-trans'
+import PrepareOrderInfo from './pages/prepare-order-info'
+import OrderTransList from './pages/order-trans-list'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -409,75 +408,74 @@ const App = () => {
           <IonRouterOutlet id="main" mode="ios">
             <Route path="/" exact={true} component={Home} />
             <Route path="/login" exact={true} component={Login} />
-            <Route path="/change-password" exact={true} component={ChangePassword} />
+            <Route path="/password-change" exact={true} component={PasswordChange} />
             <Route path="/register" exact={true} component={Register} />
-            <Route path="/products/:id" exact={true} component={Products} />
-            <Route path="/product-packs/:id/:type" exact={true} component={ProductPacks} />
-            <Route path="/product-details/:id" exact={true} component={ProductDetails} />
-            <Route path="/edit-product/:id" exact={true} component={EditProduct} />
+            <Route path="/product-list/:id" exact={true} component={ProductList} />
+            <Route path="/product-pack-list/:id/:type" exact={true} component={ProductPackList} />
+            <Route path="/product-info/:id" exact={true} component={ProductInfo} />
+            <Route path="/product-edit/:id" exact={true} component={ProductEdit} />
             <Route path="/basket" exact={true} component={Basket} />
-            <Route path="/confirm-purchase" exact={true} component={ConfirmPurchase} />
+            <Route path="/purchase-confirm" exact={true} component={PurchaseConfirm} />
             <Route path="/settings" exact={true} component={Settings} />
-            <Route path="/stores" exact={true} component={Stores} />
-            <Route path="/add-store" exact={true} component={AddStore} />
-            <Route path="/customers" exact={true} component={Customers} />
-            <Route path="/approve-customer/:id" exact={true} component={ApproveCustomer} />
-            <Route path="/customer-details/:id" exact={true} component={CustomerDetails} />
-            <Route path="/edit-customer/:id" exact={true} component={EditCustomer} />
-            <Route path="/store-details/:id" exact={true} component={StoreDetails} />
-            <Route path="/password-requests" exact={true} component={PasswordRequests} />
-            <Route path="/countries" exact={true} component={Countries} />
-            <Route path="/add-country" exact={true} component={AddCountry} />
-            <Route path="/edit-country/:id" exact={true} component={EditCountry} />
-            <Route path="/spendings" exact={true} component={Spendings} />
-            <Route path="/add-spending" exact={true} component={AddSpending} />
-            <Route path="/edit-spending/:id" exact={true} component={EditSpending} />
-            <Route path="/categories/:id" exact={true} component={Categories} />
-            <Route path="/add-category" exact={true} component={AddCategory} />
-            <Route path="/edit-category/:id" exact={true} component={EditCategory} />
-            <Route path="/store-packs/:id" exact={true} component={StorePacks} />
-            <Route path="/edit-store/:id" exact={true} component={EditStore} />
-            <Route path="/add-store-pack/:id" exact={true} component={AddStorePack} />
-            <Route path="/add-pack-store/:id" exact={true} component={AddPackStore} />
-            <Route path="/add-product/:id" exact={true} component={AddProduct} />
-            <Route path="/add-pack/:id" exact={true} component={AddPack} />
-            <Route path="/add-offer/:id" exact={true} component={AddOffer} />
-            <Route path="/pack-details/:id" exact={true} component={PackDetails} />
-            <Route path="/edit-pack/:id" exact={true} component={EditPack} />
-            <Route path="/edit-offer/:id" exact={true} component={EditOffer} />
-            <Route path="/orders" exact={true} component={Orders} />
-            <Route path="/orders-list/:id/:type" exact={true} component={OrdersList} />
-            <Route path="/order-details/:id/:type" exact={true} component={OrderDetails} />
-            <Route path="/edit-order/:id" exact={true} component={EditOrder} />
-            <Route path="/order-pack-stores/:packId/:quantity/:price" exact={true} component={OrderPackStores} />
-            <Route path="/purchases" exact={true} component={Purchases} />
-            <Route path="/purchase-details/:id/:type" exact={true} component={PurchaseDetails} />
+            <Route path="/store-list" exact={true} component={StoreList} />
+            <Route path="/store-add" exact={true} component={StoreAdd} />
+            <Route path="/customer-list" exact={true} component={CustomerList} />
+            <Route path="/customer-approve/:id" exact={true} component={CustomerApprove} />
+            <Route path="/customer-info/:id" exact={true} component={CustomerInfo} />
+            <Route path="/customer-edit/:id" exact={true} component={CustomerEdit} />
+            <Route path="/store-info/:id" exact={true} component={StoreInfo} />
+            <Route path="/password-request-list" exact={true} component={PasswordRequestList} />
+            <Route path="/country-list" exact={true} component={CountryList} />
+            <Route path="/country-add" exact={true} component={CountryAdd} />
+            <Route path="/country-edit/:id" exact={true} component={CountryEdit} />
+            <Route path="/spending-list" exact={true} component={SpendingList} />
+            <Route path="/spending-add" exact={true} component={SpendingAdd} />
+            <Route path="/spending-edit/:id" exact={true} component={SpendingEdit} />
+            <Route path="/category-list/:id" exact={true} component={CategoryList} />
+            <Route path="/category-add" exact={true} component={CategoryAdd} />
+            <Route path="/category-edit/:id" exact={true} component={CategoryEdit} />
+            <Route path="/store-pack-list/:id" exact={true} component={StorePackList} />
+            <Route path="/store-edit/:id" exact={true} component={StoreEdit} />
+            <Route path="/store-pack-add/:id" exact={true} component={StorePackAdd} />
+            <Route path="/pack-store-add/:id" exact={true} component={PackStoreAdd} />
+            <Route path="/product-add/:id" exact={true} component={ProductAdd} />
+            <Route path="/pack-add/:id" exact={true} component={PackAdd} />
+            <Route path="/pack-offer-add/:id" exact={true} component={PackOfferAdd} />
+            <Route path="/pack-info/:id" exact={true} component={PackInfo} />
+            <Route path="/pack-edit/:id" exact={true} component={PackEdit} />
+            <Route path="/pac-offer-edit/:id" exact={true} component={PackOfferEdit} />
+            <Route path="/order-stat" exact={true} component={OrderStat} />
+            <Route path="/order-list/:id/:type" exact={true} component={OrderList} />
+            <Route path="/order-info/:id/:type" exact={true} component={OrderInfo} />
+            <Route path="/order-edit/:id" exact={true} component={OrderEdit} />
+            <Route path="/purchase-list" exact={true} component={PurchaseList} />
+            <Route path="/purchase-info/:id/:type" exact={true} component={PurchaseInfo} />
             <Route path="/stock" exact={true} component={Stock} />
-            <Route path="/stock-trans/:id" exact={true} component={StockTrans} />
+            <Route path="/stock-trans-list/:id" exact={true} component={StockTransList} />
             <Route path="/monthly-operation-call" exact={true} component={MonthlyOperationCall} />
-            <Route path="/monthly-operations/:id" exact={true} component={MonthlyOperations} />
-            <Route path="/retreive-password/:id" exact={true} component={RetreivePassword} />
-            <Route path="/regions" exact={true} component={Regions} />
-            <Route path="/add-region" exact={true} component={AddRegion} />
-            <Route path="/edit-region/:id" exact={true} component={EditRegion} />
+            <Route path="/monthly-operation-list/:id" exact={true} component={MonthlyOperationList} />
+            <Route path="/password-retreive/:id" exact={true} component={PasswordRetreive} />
+            <Route path="/region-list" exact={true} component={RegionList} />
+            <Route path="/region-add" exact={true} component={RegionAdd} />
+            <Route path="/region-edit/:id" exact={true} component={RegionEdit} />
             <Route path="/ratings" exact={true} component={Ratings} />
-            <Route path="/approvals" exact={true} component={Approvals} />
-            <Route path="/pack-operations/:id" exact={true} component={PackOperations} />
+            <Route path="/approval-list" exact={true} component={ApprovalList} />
+            <Route path="/pack-operation-list/:id" exact={true} component={PackOperationList} />
             <Route path="/logs" exact={true} component={Logs} />
-            <Route path="/prepare-orders-list" exact={true} component={PrepareOrdersList} />
-            <Route path="/prepare-order/:id" exact={true} component={PrepareOrder} />
+            <Route path="/prepare-order-list" exact={true} component={PrepareOrderList} />
+            <Route path="/prepare-order-info/:id" exact={true} component={PrepareOrderInfo} />
             <Route path="/prepare-order-pack/:orderId/:packId" exact={true} component={PrepareOrderPack} />
-            <Route path="/notifications" exact={true} component={Notifications} />
-            <Route path="/add-notification" exact={true} component={AddNotification} />
-            <Route path="/archived-orders" exact={true} component={ArchivedOrders} />
-            <Route path="/adverts" exact={true} component={Adverts} />
-            <Route path="/add-advert" exact={true} component={AddAdvert} />
-            <Route path="/advert-details/:id" exact={true} component={AdvertDetails} />
-            <Route path="/edit-advert/:id" exact={true} component={EditAdvert} />
-            <Route path="/archived-purchases" exact={true} component={ArchivedPurchases} />
-            <Route path="/archived-products" exact={true} component={ArchivedProducts} />
-            <Route path="/store-trans/:id" exact={true} component={StoreTrans} />
-            <Route path="/order-trans/:id" exact={true} component={OrderTrans} />
+            <Route path="/notification-list" exact={true} component={NotificationList} />
+            <Route path="/notification-add" exact={true} component={NotificationAdd} />
+            <Route path="/order-archived" exact={true} component={OrderArchived} />
+            <Route path="/advert-list" exact={true} component={AdvertList} />
+            <Route path="/advert-add" exact={true} component={AdvertAdd} />
+            <Route path="/advert-info/:id" exact={true} component={AdvertInfo} />
+            <Route path="/advert-edit/:id" exact={true} component={AdvertEdit} />
+            <Route path="/purchase-archived" exact={true} component={PurchaseArchived} />
+            <Route path="/product-archived" exact={true} component={ProductArchived} />
+            <Route path="/store-trans-list/:id" exact={true} component={StoreTransList} />
+            <Route path="/order-trans-list/:id" exact={true} component={OrderTransList} />
           </IonRouterOutlet>
         </IonSplitPane>
       </IonReactRouter>

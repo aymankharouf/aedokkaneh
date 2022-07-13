@@ -30,7 +30,7 @@ export type PackPrice = {
   storeId: string,
   price: number,
   isActive: boolean,
-  lastUpdate?: Date
+  lastUpdate: Date
 }
 export type Notification = {
   id: string,

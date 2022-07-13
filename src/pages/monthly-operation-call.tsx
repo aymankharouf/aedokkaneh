@@ -42,7 +42,7 @@ const MonthlyOperationCall = () => {
       </IonContent>
       {month && year &&
         <IonFab vertical="top" horizontal="end" slot="fixed">
-          <IonFabButton routerLink={`/monthly-operations/${+year * 100 + Number(month)}`} color="success">
+          <IonFabButton routerLink={`/monthly-operation-list/${+year * 100 + Number(month)}`} color="success">
             <IonIcon ios={checkmarkOutline} /> 
           </IonFabButton>
         </IonFab>

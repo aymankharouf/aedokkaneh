@@ -40,11 +40,11 @@ const Panel = () => {
             <IonItem routerLink="/settings" style={{marginBottom: '0px', marginTop: '0px'}}>
               <IonLabel>{labels.settings}</IonLabel>
             </IonItem>
-            <IonItem routerLink="/approvals" style={{marginBottom: '0px', marginTop: '0px'}}>
+            <IonItem routerLink="/approval-list" style={{marginBottom: '0px', marginTop: '0px'}}>
               <IonLabel>{labels.approvals}</IonLabel>
               {approvalsCount > 0 && <IonBadge color="danger">{approvalsCount}</IonBadge>}
             </IonItem>
-            <IonItem routerLink="/orders" style={{marginBottom: '0px', marginTop: '0px'}}>
+            <IonItem routerLink="/order-stat" style={{marginBottom: '0px', marginTop: '0px'}}>
               <IonLabel>{labels.orders}</IonLabel>
             </IonItem>
             <IonItem routerLink="/monthly-operation-call" style={{marginBottom: '0px', marginTop: '0px'}}>
@@ -54,7 +54,7 @@ const Panel = () => {
               <IonLabel>{labels.logs}</IonLabel>
               {stateLogs.length > 0 && <IonBadge color="danger">{stateLogs.length}</IonBadge>}
             </IonItem>
-            <IonItem routerLink="/store-trans/0" style={{marginBottom: '0px', marginTop: '0px'}}>
+            <IonItem routerLink="/store-trans-list/0" style={{marginBottom: '0px', marginTop: '0px'}}>
               <IonLabel>{labels.storeTrans}</IonLabel>
               {stateStoreTrans.length > 0 && <IonBadge color="danger">{stateStoreTrans.length}</IonBadge>}
             </IonItem>
