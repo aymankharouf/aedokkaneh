@@ -76,14 +76,10 @@ import RegionAdd from './pages/region-add'
 import RegionEdit from './pages/region-edit'
 import Ratings from './pages/ratings'
 import ApprovalList from './pages/approval-list'
-import PackOperationList from './pages/pack-operation-list'
 import PackStoreAdd from './pages/pack-store-add'
 import Logs from './pages/logs'
 import StoreInfo from './pages/store-info'
 import PrepareOrderList from './pages/prepare-order-list'
-import ProductInfo from './pages/product-info'
-import PackOfferAdd from './pages/pack-offer-add'
-import PackOfferEdit from './pages/pack-offer-edit'
 import NotificationList from './pages/notification-list'
 import NotificationAdd from './pages/notification-add'
 import OrderArchived from './pages/order-archived'
@@ -114,11 +110,9 @@ const App = () => {
           name: doc.data().name,
           product: doc.data().product,
           price: doc.data().price,
-          subPackId: doc.data().subPackId,
-          subCount: doc.data().subCount,
           unitsCount: doc.data().unitsCount,
           quantityType: doc.data().quantityType,
-          gift: doc.data().gift
+          isOffer: doc.data().isOffer
         })
       })
       dispatch({type: 'SET_PACKS', payload: packs})
@@ -411,7 +405,6 @@ const App = () => {
             <Route path="/register" exact={true} component={Register} />
             <Route path="/product-list/:id" exact={true} component={ProductList} />
             <Route path="/product-pack-list/:id/:type" exact={true} component={ProductPackList} />
-            <Route path="/product-info/:id" exact={true} component={ProductInfo} />
             <Route path="/product-edit/:id" exact={true} component={ProductEdit} />
             <Route path="/basket" exact={true} component={Basket} />
             <Route path="/purchase-confirm" exact={true} component={PurchaseConfirm} />
@@ -439,10 +432,8 @@ const App = () => {
             <Route path="/pack-store-add/:id" exact={true} component={PackStoreAdd} />
             <Route path="/product-add/:id" exact={true} component={ProductAdd} />
             <Route path="/pack-add/:id" exact={true} component={PackAdd} />
-            <Route path="/pack-offer-add/:id" exact={true} component={PackOfferAdd} />
             <Route path="/pack-store-list/:id" exact={true} component={PackStoreList} />
             <Route path="/pack-edit/:id" exact={true} component={PackEdit} />
-            <Route path="/pac-offer-edit/:id" exact={true} component={PackOfferEdit} />
             <Route path="/order-stat" exact={true} component={OrderStat} />
             <Route path="/order-list/:id/:type" exact={true} component={OrderList} />
             <Route path="/order-info/:id/:type" exact={true} component={OrderInfo} />
@@ -459,7 +450,6 @@ const App = () => {
             <Route path="/region-edit/:id" exact={true} component={RegionEdit} />
             <Route path="/ratings" exact={true} component={Ratings} />
             <Route path="/approval-list" exact={true} component={ApprovalList} />
-            <Route path="/pack-operation-list/:id" exact={true} component={PackOperationList} />
             <Route path="/logs" exact={true} component={Logs} />
             <Route path="/prepare-order-list" exact={true} component={PrepareOrderList} />
             <Route path="/prepare-order-info/:id" exact={true} component={PrepareOrderInfo} />

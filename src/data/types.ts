@@ -19,9 +19,7 @@ export type Pack = {
   name: string,
   product: Product,
   price: number,
-  subPackId: string,
-  subCount: number,
-  gift: string
+  isOffer?: boolean,
   unitsCount: number,
   quantityType: string,
 }

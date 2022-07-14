@@ -87,8 +87,8 @@ const OrderEdit = () => {
   return (
     <IonPage>
       <Header title={labels.editOrder} />
-      <IonContent fullscreen>
-        <IonList className="ion-padding">
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
           {basket.length === 0 ? 
             <IonItem> 
               <IonLabel>{labels.noData}</IonLabel>

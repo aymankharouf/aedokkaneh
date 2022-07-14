@@ -43,7 +43,7 @@ const StoreList = () => {
         </IonList>
       </IonContent>
       <IonFab vertical="top" horizontal="end" slot="fixed">
-        <IonFabButton routerLink="/store-add" color="success">
+        <IonFabButton routerLink="/store-add">
           <IonIcon ios={addOutline} /> 
         </IonFabButton>
       </IonFab>

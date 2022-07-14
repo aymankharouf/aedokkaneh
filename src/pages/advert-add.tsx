@@ -56,8 +56,8 @@ const AdvertAdd = () => {
   return (
     <IonPage>
       <Header title={labels.addAdvert} />
-      <IonContent fullscreen>
-        <IonList className="ion-padding">
+      <IonContent fullscreen className="ion-padding">
+        <IonList>
           <IonItem>
             <IonLabel position="floating" color="primary">{labels.type}</IonLabel>
             <IonSelect 

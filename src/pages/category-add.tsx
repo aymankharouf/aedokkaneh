@@ -42,7 +42,7 @@ const CategoryAdd = () => {
   return (
     <IonPage>
       <Header title={labels.addCategory} />
-      <IonContent fullscreen>
+      <IonContent fullscreen className="ion-padding">
         <IonList>
           <IonItem>
             <IonLabel position="floating" color="primary">

@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { addPack, getMessage } from '../data/actions'
 import labels from '../data/labels'
 import { useHistory, useLocation, useParams } from 'react-router'
-import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, useIonToast } from '@ionic/react'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, IonToggle, useIonToast } from '@ionic/react'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
 import { Err, Pack, Product, State } from '../data/types'
@@ -19,6 +19,7 @@ const PackAdd = () => {
   const [name, setName] = useState('')
   const [unitsCount, setUnitsCount] = useState('')
   const [quantityType, setQuantityType] = useState('')
+  const [isOffer, setIsOffer] = useState(false)
   const product = useMemo(() => stateProducts.find(p => p.id === params.id)!, [stateProducts, params.id])
   const [message] = useIonToast()
   const location = useLocation()
@@ -32,11 +33,9 @@ const PackAdd = () => {
         product,
         name,
         quantityType,
-        subPackId: '',
-        subCount: 0,
         price: 0,
         isArchived: false,
-        gift: '',
+        isOffer,
         unitsCount: +unitsCount
       }
       addPack(pack)
@@ -87,6 +86,10 @@ const PackAdd = () => {
             >
               {quantityTypes.map(t => <IonSelectOption key={t.id} value={t.id}>{t.name}</IonSelectOption>)}
             </IonSelect>
+          </IonItem>
+          <IonItem>
+            <IonLabel color="primary">{labels.isOffer}</IonLabel>
+            <IonToggle checked={isOffer} onIonChange={() => setIsOffer(s => !s)}/>
           </IonItem>
         </IonList>
       </IonContent>

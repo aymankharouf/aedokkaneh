@@ -32,7 +32,7 @@ const OrderList = () => {
   return(
     <IonPage>
       <Header title={`${labels.orders} ${params.type === 's' ? orderStatus.find(s => s.id === params.id)?.name : stateCustomers.find(c => c.id === params.id)?.name}`} />
-      <IonContent fullscreen>
+      <IonContent fullscreen className="ion-padding">
         <IonList>
           {orders.length === 0 ? 
             <IonItem> 

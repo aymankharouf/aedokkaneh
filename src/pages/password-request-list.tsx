@@ -16,7 +16,7 @@ const PasswordRequestList = () => {
   return(
     <IonPage>
       <Header title={labels.passwordRequests} />
-      <IonContent fullscreen>
+      <IonContent fullscreen className="ion-padding">
           <IonList>
             {passwordRequests.length === 0 ? 
               <IonItem> 

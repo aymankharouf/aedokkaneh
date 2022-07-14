@@ -16,7 +16,7 @@ const Settings = () => {
   return(
     <IonPage>
       <Header title={labels.settings} />
-      <IonContent fullscreen>
+      <IonContent fullscreen className="ion-padding">
         {sections.map(s => 
           <IonButton
             routerLink={s.path} 

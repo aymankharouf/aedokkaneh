@@ -91,7 +91,7 @@ const StockTransList = () => {
   return(
     <IonPage>
       <Header title={`${pack.product.name} ${pack.name}`} />
-      <IonContent fullscreen>
+      <IonContent fullscreen className="ion-padding">
         <IonList>
           {trans?.length === 0 ? 
             <IonItem> 
@@ -122,7 +122,7 @@ const StockTransList = () => {
         buttons={[
           {
             text: labels.open,
-            cssClass: pack.subPackId ? colors[i++ % 10].name : 'ion-hide',
+            cssClass: pack.isOffer ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleOpen()
           },
           {

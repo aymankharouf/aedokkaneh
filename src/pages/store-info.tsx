@@ -16,7 +16,7 @@ const StoreInfo = () => {
   const params = useParams<Params>()
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const store = useMemo(() => stateStores.find(s => s.id === params.id)!, [stateStores, params.id])
-  const [packActionOpened, setPackActionOpened] = useState(false)
+  const [actionOpened, setActionOpened] = useState(false)
   const history = useHistory()
   let i = 0
   return (
@@ -67,14 +67,14 @@ const StoreInfo = () => {
         </IonList>
       </IonContent>
       <IonFab vertical="top" horizontal="end" slot="fixed">
-        <IonFabButton onClick={() => setPackActionOpened(true)}>
+        <IonFabButton onClick={() => setActionOpened(true)}>
           <IonIcon ios={ellipsisVerticalOutline} />
         </IonFabButton>
       </IonFab>
       <IonActionSheet
         mode='ios'
-        isOpen={packActionOpened}
-        onDidDismiss={() => setPackActionOpened(false)}
+        isOpen={actionOpened}
+        onDidDismiss={() => setActionOpened(false)}
         buttons={[
           {
             text: labels.products,

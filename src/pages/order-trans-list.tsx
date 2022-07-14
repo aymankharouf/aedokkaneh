@@ -21,7 +21,7 @@ const OrderTransList = () => {
   return(
     <IonPage>
       <Header title={labels.orderTrans} />
-      <IonContent fullscreen>
+      <IonContent fullscreen className="ion-padding">
         <IonList>
           {trans.map(t => 
             <IonItem key={i++}>

@@ -12,7 +12,7 @@ const MonthlyOperationCall = () => {
   return (
     <IonPage>
       <Header title={labels.monthlyOperations} />
-      <IonContent fullscreen>
+      <IonContent fullscreen className="ion-padding">
         <IonList>
           <IonItem>
             <IonLabel position="floating" color="primary">

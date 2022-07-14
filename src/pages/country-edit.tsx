@@ -64,7 +64,7 @@ const CountryEdit = () => {
   return (
     <IonPage>
       <Header title={labels.editCountry} />
-      <IonContent fullscreen>
+      <IonContent fullscreen className="ion-padding">
         <IonList>
           <IonItem>
             <IonLabel position="floating" color="primary">

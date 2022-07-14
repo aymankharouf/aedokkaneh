@@ -40,12 +40,12 @@ const reducer = (state: State = initState, action: Action) => {
       case 'ADD_TO_BASKET':
         basketPack = {
           pack: action.payload.pack,
-          price: action.payload.packPrice.price,
+          price: action.payload.price,
           quantity: action.payload.pack.isDivided ? action.payload.weight : action.payload.quantity,
           weight: action.payload.weight,
         }
         if (!state.basket?.storeId) {
-          return {...state, basket: {storeId: action.payload.store.id, packs: [basketPack]}}
+          return {...state, basket: {storeId: action.payload.storeId, packs: [basketPack]}}
         } else {
           return {...state, basket: {...state.basket, packs: [...state.basket.packs, basketPack]}}
         }

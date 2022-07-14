@@ -3,10 +3,11 @@ import labels from '../data/labels'
 import { addPackPrice, getMessage } from '../data/actions'
 import { Err, Pack, PackPrice, State, Store } from '../data/types'
 import { useHistory, useLocation, useParams } from 'react-router'
-import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, IonSelect, IonSelectOption, useIonToast } from '@ionic/react'
+import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel, IonList, IonPage, useIonToast } from '@ionic/react'
 import Header from './header'
 import { checkmarkOutline } from 'ionicons/icons'
 import { useSelector } from 'react-redux'
+import SmartSelect from './smart-select'
 
 type Params = {
   id: string
@@ -52,18 +53,7 @@ const PackStoreAdd = () => {
       <Header title={`${labels.addPrice} ${pack.product.name} ${pack.name}`} />
       <IonContent fullscreen className="ion-padding">
         <IonList>
-        <IonItem>
-            <IonLabel position="floating" color="primary">{labels.store}</IonLabel>
-            <IonSelect 
-              interface="action-sheet"
-              ok-text={labels.ok} 
-              cancel-text={labels.cancel} 
-              value={storeId}
-              onIonChange={e => setStoreId(e.detail.value)}
-            >
-              {stores.map(s => <IonSelectOption key={s.id} value={s.id}>{s.name}</IonSelectOption>)}
-            </IonSelect>
-          </IonItem>
+          <SmartSelect label={labels.store} data={stores} value={storeId} onChange={(v) => setStoreId(v)} />
           <IonItem>
             <IonLabel position="floating" color="primary">
               {labels.price}

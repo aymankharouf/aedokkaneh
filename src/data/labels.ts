@@ -394,7 +394,8 @@ const labels: Label = {
   noStock: 'لا يوجد في المستودع كمية كافية',
   enterPrice: 'ادخل السعر الجديد',
   refresh: 'تأكيد',
-  trans: 'الحركات'
+  trans: 'الحركات',
+  mobileFound: 'رقم الموبايل مستخدم سابقا'
 }
 
 export default labels

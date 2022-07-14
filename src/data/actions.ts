@@ -291,28 +291,6 @@ export const archiveProduct = (product: Product, packs: Pack[]) => {
   batch.commit()
 }
 
-export const getPackStores = (pack: Pack, packPrices: PackPrice[], packs: Pack[]) => {
-  return packPrices.filter(p => (p.storeId !== 's') && (p.packId === pack.id || packs.find(pa => pa.id === p.packId && pa.subPackId === pack.id)))
-    .map(s => {
-      let unitPrice, subCount, isOffer
-      if (s.packId === pack.id) {
-        subCount = 0
-        unitPrice = s.price
-        isOffer = !!pack.subPackId
-      } else {
-        subCount = packs.find(p => p.id === s.packId)?.subCount!
-        unitPrice = Math.round(s.price / subCount)
-        isOffer = true
-      }
-      return {
-        packPrice: s,
-        subCount,
-        unitPrice,
-        isOffer,
-      }
-    })
-}
-
 const getMinPrice = (storePack: PackPrice, packPrices: PackPrice[]) => {
   const packStores = packPrices.filter(p => p.packId === storePack.packId && p.storeId !== storePack.storeId && p.price > 0 && p.isActive)
   if (storePack.isActive) {
@@ -331,27 +309,14 @@ export const addPack = async (pack: Pack) => {
 }
 
 export const editPack = async (newPack: Pack, packs: Pack[]) => {
-  const batch = firebase.firestore().batch()
   const { id, ...others } = newPack
-  const packRef = firebase.firestore().collection('packs').doc(id)
-  batch.update(packRef, others)
-  const affectedPacks = packs.filter(p => p.subPackId === id)
-  affectedPacks.forEach(p => {
-    const packRef = firebase.firestore().collection('packs').doc(p.id)
-    const pack = {
-      subPackName: newPack.name,
-      unitsCount: (p.subCount || 0) * newPack.unitsCount,
-      quantityType: newPack.quantityType,
-    }
-    batch.update(packRef, pack)
-  })
-  batch.commit()
+  firebase.firestore().collection('packs').doc(id).update(others)
 }
 
 export const addPackPrice = (storePack: PackPrice, packPrices: PackPrice[], packs: Pack[], batch?: firebase.firestore.WriteBatch) => {
   const newBatch = batch || firebase.firestore().batch()
   const { storeId, ...others } = storePack
-  const storeRef = firebase.firestore().collection('store').doc(storeId)
+  const storeRef = firebase.firestore().collection('stores').doc(storeId)
   newBatch.update(storeRef, {
     prices: firebase.firestore.FieldValue.arrayUnion(others)
   })
@@ -370,7 +335,7 @@ export const addPackPrice = (storePack: PackPrice, packPrices: PackPrice[], pack
 
 export const editPrice = (storePack: PackPrice, packPrices: PackPrice[], packs: Pack[], type: string, batch?: firebase.firestore.WriteBatch) => {
   const newBatch = batch || firebase.firestore().batch()
-  const otherPrices = packPrices.filter(p => p.packId === storePack.packId && p.storeId !== storePack.storeId)
+  const otherPrices = packPrices.filter(p => p.storeId === storePack.storeId && p.packId !== storePack.packId)
   if (type !== 'd') otherPrices.push(storePack)
   const prices = otherPrices.map(p => {
     const { storeId, ...others } = p
@@ -471,15 +436,15 @@ const packStockIn = (batch: firebase.firestore.WriteBatch, pack: PurchasePack, s
 
 export const unfoldStockPack = (stock: Stock, pack: Pack, stocks: Stock[], quantity: number) => {
   const batch = firebase.firestore().batch()
-  if (!pack.subPackId) return
+  if (!pack.isOffer) return
   packStockOut(stock, quantity, 0, 'u', 0, '', batch)
-  const stockPack = {
-    packId: pack.subPackId,
-    price: Math.floor(stock.price / pack.subCount),
-    quantity: quantity * pack.subCount,
-    weight: 0
-  }
-  packStockIn(batch, stockPack, stocks, 'u')
+  // const stockPack = {
+  //   packId: pack.subPackId,
+  //   price: Math.floor(stock.price / pack.subCount!),
+  //   quantity: quantity * pack.subCount!,
+  //   weight: 0
+  // }
+  // packStockIn(batch, stockPack, stocks, 'u')
   batch.commit()
 }
 
@@ -796,11 +761,9 @@ export const getArchivedPacks = async () => {
           name: doc.data().name,
           product: doc.data().product,
           price: doc.data().price,
-          subPackId: doc.data().subPackId,
-          subCount: doc.data().subCount,
           unitsCount: doc.data().unitsCount,
           quantityType: doc.data().quantityType,
-          gift: doc.data().gift
+          isOffer: doc.data().isOffer
         })
       })
     })

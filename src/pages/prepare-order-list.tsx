@@ -25,7 +25,7 @@ const PrepareOrderList = () => {
   return(
     <IonPage>
       <Header title={labels.prepareOrders} />
-      <IonContent fullscreen>
+      <IonContent fullscreen className="ion-padding">
         <IonList>
           {orders.length === 0 ? 
             <IonItem> 

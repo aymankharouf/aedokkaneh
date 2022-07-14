@@ -36,7 +36,7 @@ const RegionAdd = () => {
   return (
     <IonPage>
       <Header title={labels.addRegion} />
-      <IonContent fullscreen>
+      <IonContent fullscreen className="ion-padding">
         <IonList>
           <IonItem>
             <IonLabel position="floating" color="primary">

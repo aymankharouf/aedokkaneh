@@ -1,12 +1,13 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import labels from '../data/labels'
-import { IonToggle, IonList, IonItem, IonContent, IonFab, IonFabButton, IonFabList, IonLabel, IonIcon, IonInput, IonPage } from '@ionic/react'
+import { IonToggle, IonList, IonItem, IonContent, IonFab, IonFabButton, IonLabel, IonIcon, IonInput, IonPage, IonActionSheet } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
-import { useParams } from 'react-router'
-import { checkmarkOutline, chevronDownOutline, pencilOutline, swapVerticalOutline } from 'ionicons/icons'
+import { useHistory, useParams } from 'react-router'
+import { ellipsisVerticalOutline } from 'ionicons/icons'
 import { useSelector } from 'react-redux'
 import { Customer, Region, State } from '../data/types'
+import { colors } from '../data/config'
 
 type Params = {
   id: string
@@ -15,7 +16,10 @@ const CustomerInfo = () => {
   const params = useParams<Params>()
   const stateCustomers = useSelector<State, Customer[]>(state => state.customers)
   const stateRegions = useSelector<State, Region[]>(state => state.regions)
+  const [actionOpened, setActionOpened] = useState(false)
+  const history = useHistory()
   const customer = useMemo(() => stateCustomers.find(c => c.id === params.id)!, [stateCustomers, params.id])
+  let i = 0
   return (
     <IonPage>
       <Header title={labels.customerDetails} />
@@ -99,27 +103,34 @@ const CustomerInfo = () => {
           </IonItem>
         </IonList>
       </IonContent>
-      {customer.status === 'n' ?
-        <IonFab vertical="top" horizontal="end" slot="fixed">
-          <IonFabButton routerLink={`/customer-approve/${customer.id}`}>
-            <IonIcon ios={checkmarkOutline} />
-          </IonFabButton>
-        </IonFab>
-      :    
-        <IonFab horizontal="end" vertical="top" slot="fixed">
-          <IonFabButton>
-            <IonIcon ios={chevronDownOutline} />
-          </IonFabButton>
-          <IonFabList>
-            <IonFabButton color="success" routerLink={`/customer-edit/${params.id}`}>
-              <IonIcon ios={pencilOutline} />
-            </IonFabButton>
-            <IonFabButton color="danger" routerLink={`/order-list/${params.id}/u`}>
-              <IonIcon ios={swapVerticalOutline} />
-            </IonFabButton>
-          </IonFabList>
-        </IonFab>
-      }
+      <IonFab vertical="top" horizontal="end" slot="fixed">
+        <IonFabButton onClick={() => setActionOpened(true)}>
+          <IonIcon ios={ellipsisVerticalOutline} />
+        </IonFabButton>
+      </IonFab>
+      <IonActionSheet
+        mode='ios'
+        isOpen={actionOpened}
+        onDidDismiss={() => setActionOpened(false)}
+        buttons={[
+          {
+            text: labels.approve,
+            cssClass: customer.status === 'n' ? colors[i++ % 10].name : 'ion-hide',
+            handler: () => history.push(`/customer-approve/${customer.id}`)
+          },
+          {
+            text: labels.edit,
+            cssClass: customer.status === 'a' ? colors[i++ % 10].name : 'ion-hide',
+            handler: () => history.push(`/customer-edit/${params.id}`)
+          },
+          {
+            text: labels.orders,
+            cssClass: colors[i++ % 10].name,
+            handler: () => history.push(`/order-list/${params.id}/u`)
+          },
+
+        ]}
+      />
       <Footer />
     </IonPage>
   )

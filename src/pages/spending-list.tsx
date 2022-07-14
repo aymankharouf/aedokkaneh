@@ -20,7 +20,7 @@ const SpendingList = () => {
   return(
     <IonPage>
       <Header title={labels.spendings} />
-      <IonContent fullscreen>
+      <IonContent fullscreen className="ion-padding">
         <IonList>
           {spendings.length === 0 ? 
             <IonItem> 

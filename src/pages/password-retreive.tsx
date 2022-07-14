@@ -36,7 +36,7 @@ const PasswordRetreive = () => {
   return(
     <IonPage>
       <Header title={labels.retreivePassword} />
-      <IonContent fullscreen>
+      <IonContent fullscreen className="ion-padding">
         <IonList>
           <IonItem>
             <IonLabel position="floating" color="primary">

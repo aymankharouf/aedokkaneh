@@ -67,7 +67,7 @@ const ProductPackList = () => {
   return (
     <IonPage>
       <Header title={`${product.name}${product.alias ? '-' + product.alias : ''}`} />
-      <IonContent fullscreen>
+      <IonContent fullscreen className="ion-padding">
         <IonCard>
           <IonRow>
             <IonCol>
@@ -83,8 +83,7 @@ const ProductPackList = () => {
           {packs.map(p => 
             <IonItem key={p.id} routerLink={`/pack-store-list/${p.id}`}>
               <IonLabel>{p.name}</IonLabel>
-              {!p.subPackId && p.price > 0 && <IonLabel slot="end" className="price">{(p.price / 100).toFixed(2)}</IonLabel>}
-              {!!p.subPackId && <IonBadge slot="end" color="success">{p.price > 0 ? (p.price / 100).toFixed(2) : labels.offer}</IonBadge>}
+              {p.price > 0 && <IonLabel slot="end" className="price">{(p.price / 100).toFixed(2)} {p.isOffer && <IonBadge slot="end">{labels.offer}</IonBadge>}</IonLabel>}
             </IonItem>
           )}
         </IonList>
@@ -102,17 +101,12 @@ const ProductPackList = () => {
           {
             text: labels.details,
             cssClass: colors[i++ % 10].name,
-            handler: () => history.push(`/product-info/${params.id}`)
+            handler: () => history.push(`/product-edit/${params.id}`)
           },
           {
             text: labels.addPack,
             cssClass: colors[i++ % 10].name,
             handler: () => history.push(`/pack-add/${params.id}`)
-          },
-          {
-            text: labels.addOffer,
-            cssClass: colors[i++ % 10].name,
-            handler: () => history.push(`/pack-offer-add/${params.id}`)
           },
           {
             text: labels.archive,

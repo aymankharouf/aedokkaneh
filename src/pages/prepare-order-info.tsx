@@ -62,7 +62,7 @@ const PrepareOrderInfo = () => {
   return(
     <IonPage>
       <Header title={labels.orderDetails} />
-      <IonContent fullscreen>
+      <IonContent fullscreen className="ion-padding">
         <IonList>
           {order.basket.map(p => 
             <IonItem key={p.pack?.id} routerLink={`/prepare-order-pack/${order.id}/${p.pack?.id}`}>

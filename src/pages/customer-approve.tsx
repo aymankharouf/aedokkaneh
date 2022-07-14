@@ -5,7 +5,7 @@ import { IonContent, IonFab, IonFabButton, IonIcon, IonInput, IonItem, IonLabel,
 import { useHistory, useLocation, useParams } from 'react-router'
 import Header from './header'
 import Footer from './footer'
-import { chevronUpOutline } from 'ionicons/icons'
+import { ellipsisVerticalOutline } from 'ionicons/icons'
 import { Customer, Err, Region, State, Store } from '../data/types'
 import { useSelector } from 'react-redux'
 import { colors, setup } from '../data/config'
@@ -85,7 +85,7 @@ const CustomerApprove = () => {
   return (
     <IonPage>
       <Header title={labels.approveUser} />
-      <IonContent fullscreen>
+      <IonContent fullscreen className="ion-padding">
         <IonList>
           <IonItem>
             <IonLabel position="floating" color="primary">
@@ -149,9 +149,9 @@ const CustomerApprove = () => {
           </IonItem>
         </IonList>
       </IonContent>
-      <IonFab horizontal="center" vertical="bottom" slot="fixed">
-        <IonFabButton size="small" onClick={() => setActionOpened(true)}>
-          <IonIcon ios={chevronUpOutline} />
+      <IonFab vertical="top" horizontal="end" slot="fixed">
+        <IonFabButton onClick={() => setActionOpened(true)}>
+          <IonIcon ios={ellipsisVerticalOutline} />
         </IonFabButton>
       </IonFab>
       <IonActionSheet

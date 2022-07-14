@@ -5,7 +5,7 @@ import { useHistory, useLocation, useParams } from 'react-router'
 import { IonActionSheet, IonBadge, IonContent, IonFab, IonFabButton, IonIcon, IonItem, IonLabel, IonList, IonPage, IonText, useIonAlert, useIonToast } from '@ionic/react'
 import Header from './header'
 import Footer from './footer'
-import { addOutline, ellipsisVerticalOutline } from 'ionicons/icons'
+import { ellipsisVerticalOutline } from 'ionicons/icons'
 import { colors } from '../data/config'
 import { useSelector } from 'react-redux'
 import moment from 'moment'
@@ -16,13 +16,18 @@ import IonAlert from './ion-alert'
 type Params = {
   id: string
 }
+type ExtendedPackPrice = PackPrice & {
+  pack: Pack,
+  category: Category
+}
+
 const StorePackList = () => {
   const params = useParams<Params>()
   const stateStores = useSelector<State, Store[]>(state => state.stores)
   const statePacks = useSelector<State, Pack[]>(state => state.packs)
   const statePackPrices = useSelector<State, PackPrice[]>(state => state.packPrices)
   const stateCategories = useSelector<State, Category[]>(state => state.categories)
-  const [currentStorePack, setCurrentStorePack] = useState<PackPrice>()
+  const [selectedPacks, setSelectedPacks] = useState<ExtendedPackPrice[]>([])
   const [actionOpened, setActionOpened] = useState(false)
   const [message] = useIonToast()
   const location = useLocation()
@@ -41,28 +46,28 @@ const StorePackList = () => {
                                                   })
                                                   .sort((p1, p2) => (p1.lastUpdate > p2.lastUpdate ? 1 : -1))
   , [statePackPrices, statePacks, stateCategories, params.id])
-  const handleActions = (storePack: PackPrice) => {
-    setCurrentStorePack(storePack)
+  const handleActions = () => {
     setActionOpened(true)
   }
   const handleOperation = (type: string) => {
     try{
-      if (!currentStorePack) return
       let packStore
       if (type === 'r') {
-        packStore = {
-          ...currentStorePack,
-          lastUpdate: new Date()
-        }
+        selectedPacks.forEach(p => {
+          const { pack, category, ...others } = p
+          editPrice({...others, lastUpdate: new Date()}, statePackPrices, statePacks, 'e')
+        })
       } else {
+        const { pack, category, ...others } = selectedPacks[0]
         packStore = {
-          ...currentStorePack,
-          isActive: !currentStorePack.isActive,
+          ...others,
+          isActive: !others.isActive,
           lastUpdate: new Date()
         }
+        editPrice(packStore, statePackPrices, statePacks, 'e')
       }
-      editPrice(packStore, statePackPrices, statePacks, 'e')
       message(labels.editSuccess, 3000)
+      setSelectedPacks([])
     } catch(error) {
       const err = error as Err
       message(getMessage(location.pathname, err), 3000)
@@ -70,7 +75,6 @@ const StorePackList = () => {
   }
   const handleEnterPrice = () => {
     try {
-      if (!currentStorePack) return
       alert({
         header: labels.enterPrice,
         inputs: [
@@ -88,18 +92,19 @@ const StorePackList = () => {
   }
   const handleEditPrice = (price: number) => {
     try{
-      if (!currentStorePack) return
+      if (!selectedPacks[0]) return
       if (Number(price) !== Number(Number(price).toFixed(2))) {
         throw new Error('invalidPrice')
       }
+      const { pack, category, ...others } = selectedPacks[0]
       const newStorePack = {
-        ...currentStorePack,
+        ...others,
         price : Math.round(+price * 100),
         lastUpdate: new Date()
       }
       editPrice(newStorePack, statePackPrices, statePacks, 'e')
       message(labels.editSuccess, 3000)
-      history.goBack()
+      setSelectedPacks([])
     } catch(error) {
       const err = error as Err
 			message(getMessage(location.pathname, err), 3000)
@@ -107,21 +112,30 @@ const StorePackList = () => {
   }
   const handleDeletePrice = async () => {
     try {
-      if (!currentStorePack) return
+      if (!selectedPacks[0]) return
       if (await IonAlert(alert, labels.confirmationText)) {
+        const { pack, category, ...others } = selectedPacks[0]
         const packStore = {
-          ...currentStorePack,
+          ...others,
           isActive: false
         }
         editPrice(packStore, statePackPrices, statePacks, 'd')
         message(labels.deleteSuccess, 3000)
+        setSelectedPacks([])
       }
     } catch(error) {
       const err = error as Err
       message(getMessage(location.pathname, err), 3000)
     }
   }
-
+  const handleSelected = (storePack: ExtendedPackPrice) => {
+    if (selectedPacks.find(p => p.packId === storePack.packId)) {
+      const others = selectedPacks.filter(p => p.packId !== storePack.packId)
+      setSelectedPacks(others)
+    } else {
+      setSelectedPacks([...selectedPacks, storePack])
+    }
+  }
   let i = 0
   return(
     <IonPage>
@@ -133,58 +147,54 @@ const StorePackList = () => {
               <IonLabel>{labels.noData}</IonLabel>
             </IonItem> 
           : storePacks.map(p => 
-              <IonItem key={i++}>
+              <IonItem key={i++} onClick={() => handleSelected(p)} className={selectedPacks.find(s => s.packId === p.packId) ? 'selected' : ''}>
                 <IonLabel>
                   <IonText style={{color: colors[0].name}}>{p.pack.product.name}</IonText>
                   <IonText style={{color: colors[1].name}}>{p.pack.product.alias}</IonText>
-                  <IonText style={{color: colors[2].name}}>{p.pack.name} {!!p.pack.subPackId && <IonBadge color="success">{labels.offer}</IonBadge>}</IonText>
-                  <IonText style={{color: colors[3].name}}>{`${labels.price}: ${(p.price / 100).toFixed(2)}`}</IonText>
-                  <IonText style={{color: colors[4].name}}>{p.category.name}</IonText>
-                  <IonText style={{color: colors[5].name}}>{moment(p.lastUpdate).fromNow()}</IonText>
+                  <IonText style={{color: colors[2].name}}>{p.pack.name} {p.pack.isOffer && <IonBadge color="success">{labels.offer}</IonBadge>}</IonText>
+                  <IonText style={{color: colors[3].name}}>{p.category.name}</IonText>
+                  <IonText style={{color: colors[4].name}}>{moment(p.lastUpdate).fromNow()}</IonText>
                 </IonLabel>
-                <IonIcon 
-                  ios={ellipsisVerticalOutline}
-                  slot="end" 
-                  color="danger"
-                  style={{fontSize: '20px', marginRight: '10px'}} 
-                  onClick={()=> handleActions(p)}
-                />
-
+                <IonLabel slot="end" className="price">{(p.price / 100).toFixed(2)}</IonLabel>
+                <IonLabel slot="end">{!p.isActive && <IonBadge color="danger">{labels.inActive}</IonBadge>}</IonLabel>
               </IonItem>    
             )
           }
         </IonList>
       </IonContent>
-      {store.id !== 's' &&
-        <IonFab vertical="top" horizontal="end" slot="fixed">
-          <IonFabButton routerLink={`/store-pack-add/${params.id}`} color="success">
-            <IonIcon ios={addOutline} /> 
-          </IonFabButton>
-        </IonFab>
-      }
+      <IonFab vertical="top" horizontal="end" slot="fixed">
+        <IonFabButton onClick={handleActions}>
+          <IonIcon ios={ellipsisVerticalOutline} /> 
+        </IonFabButton>
+      </IonFab>
       <IonActionSheet
         mode='ios'
         isOpen={actionOpened}
         onDidDismiss={() => setActionOpened(false)}
         buttons={[
           {
-            text: labels.refresh,
+            text: labels.add,
             cssClass: colors[i++ % 10].name,
+            handler: () => history.push(`/store-pack-add/${params.id}`)
+          },
+          {
+            text: labels.refresh,
+            cssClass: selectedPacks.length > 0 ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleOperation('r')
           },
           {
-            text: currentStorePack?.isActive ? labels.deactivate : labels.activate,
-            cssClass: colors[i++ % 10].name,
+            text: selectedPacks[0]?.isActive ? labels.deactivate : labels.activate,
+            cssClass: selectedPacks.length === 1 ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleOperation('s')
           },
           {
             text: labels.editPrice,
-            cssClass: colors[i++ % 10].name,
+            cssClass: selectedPacks.length === 1 ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleEnterPrice()
           },
           {
             text: labels.delete,
-            cssClass: colors[i++ % 10].name,
+            cssClass: selectedPacks.length === 1 ? colors[i++ % 10].name : 'ion-hide',
             handler: () => handleDeletePrice()
           },
         ]}

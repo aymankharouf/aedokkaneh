@@ -7,9 +7,11 @@ import { useHistory, useLocation } from 'react-router'
 import Header from './header'
 import Footer from './footer'
 import { checkmarkOutline } from 'ionicons/icons'
-import { Err } from '../data/types'
+import { Err, State, Store } from '../data/types'
+import { useSelector } from 'react-redux'
 
 const StoreAdd = () => {
+  const stateStores = useSelector<State, Store[]>(state => state.stores)
   const [name, setName] = useState('')
   const [mobile, setMobile] = useState('')
   const mobileInvalid = useMemo(() => mobile && !patterns.mobile.test(mobile), [mobile])
@@ -23,6 +25,9 @@ const StoreAdd = () => {
 
   const handleSubmit = () => {
     try{
+      if (mobile && stateStores.find(s => s.mobile === mobile)) {
+        throw new Error('mobileFound')
+      }
       const store = {
         name,
         mobile,
@@ -42,7 +47,7 @@ const StoreAdd = () => {
   return (
     <IonPage>
       <Header title={labels.newStore} />
-      <IonContent fullscreen>
+      <IonContent fullscreen className="ion-padding">
         <IonList>
           <IonItem>
             <IonLabel position="floating" color="primary">

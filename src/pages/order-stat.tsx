@@ -24,7 +24,7 @@ const OrderStat = () => {
   return(
     <IonPage>
       <Header title={labels.orders} />
-      <IonContent fullscreen>
+      <IonContent fullscreen className="ion-padding">
 				<IonList>
           {orderStatuses.map(s => 
             <IonItem key={s.id} routerLink={`/order-list/${s.id}/s`}> 

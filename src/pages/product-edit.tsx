@@ -146,7 +146,7 @@ const ProductEdit = () => {
             >
               {labels.setImage}
             </IonButton>
-            <IonImg src={imageUrl || '/no-image.webp'} alt={labels.noImage} />
+            <IonImg src={imageUrl || '/no-image.webp'} alt={labels.noImage} style={{margin: 'auto'}}/>
         </IonList>
       </IonContent>
       {name && categoryId && hasChanged &&
