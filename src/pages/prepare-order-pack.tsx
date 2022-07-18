@@ -11,6 +11,7 @@ import { cartOutline, checkmarkOutline, reloadOutline } from 'ionicons/icons'
 import { useSelector, useDispatch } from 'react-redux'
 import IonAlert from './ion-alert'
 import moment from 'moment'
+import IonDialog from './ion-dialog'
 
 type Params = {
   orderId: string,
@@ -67,33 +68,21 @@ const PrepareOrderPack = () => {
       message(getMessage(location.pathname, err), 3000)
     }   
   }
-  const addToBasket = (packStore: ExtendedPackPrice) => {
+  const addToBasket = async (packStore: ExtendedPackPrice) => {
     try {
+      let quantity, weight
       if (packStore.pack.quantityType === 'wc') {
-        alert({
-          header: labels.enterWeight,
-          inputs: [
-            {name: 'quantity', type: 'number', label: labels.quantity},
-            {name: 'weight', type: 'number', label: labels.weight}
-          ],
-          buttons: [
-            {text: labels.cancel},
-            {text: labels.ok, handler: (e) => handleAddWithWeight(packStore, Number(e.quantity), Number(e.weight))}
-          ],
-        })
+        const result = await IonDialog(alert, labels.enterQuantityWeight)
+        quantity = result.substring(0, result.indexOf('*'))
+        weight =result.substring(result.indexOf('*') + 1)
+        if (quantity && weight) handleAddWithWeight(packStore, Number(quantity), Number(weight))
       } else if (packStore.pack.quantityType === 'wo') {
-        alert({
-          header: labels.enterWeight,
-          inputs: [
-            {name: 'weight', type: 'number', label: labels.weight}
-          ],
-          buttons: [
-            {text: labels.cancel},
-            {text: labels.ok, handler: (e) => handleAddWithWeight(packStore, Number(e.weight), Number(e.weight))}
-          ],
-        })
+        weight = await IonDialog(alert, labels.enterWeight)
+        handleAddWithWeight(packStore, Number(weight), Number(weight))
       } else {
-        dispatch({type: 'ADD_TO_BASKET', payload: {...packStore, quantity: orderPack.quantity - (stock?.quantity || 0), weight: 0}})
+        quantity = orderPack.quantity - (stock?.quantity || 0)
+        weight = 0
+        dispatch({type: 'ADD_TO_BASKET', payload: {...packStore, quantity, weight}})
         message(labels.addToBasketSuccess, 3000)
         history.goBack()  
       }
@@ -118,7 +107,7 @@ const PrepareOrderPack = () => {
   }
   const handleComplete = async () => {
     try {
-      let flag: boolean, overPricedPermission: boolean
+      let flag: boolean, overPricedPermission: boolean, weight: string
       flag = (stock?.quantity || 0) >= orderPack.quantity || (await IonAlert(alert, labels.unAvailableConfirmation))
       overPricedPermission = ((stock?.price || 0) <= orderPack.price) || (await IonAlert(alert, labels.overPricedPermission))
       if (!overPricedPermission && !(await IonAlert(alert, labels.withLostPermission))) {
@@ -126,23 +115,13 @@ const PrepareOrderPack = () => {
       }
       if (flag) {
         if (pack.quantityType !== 'c') {
-          alert({
-            header: labels.enterWeight,
-            inputs: [{name: 'weight', type: 'number'}],
-            buttons: [
-              {text: labels.cancel},
-              {text: labels.ok, handler: (e) => {
-                completeOrderPack(pack, order, Number(e.weight), overPricedPermission, stock)
-                message(labels.executeSuccess, 3000)
-                history.goBack()       
-              }}
-            ],
-          })
+          weight = await IonDialog(alert, labels.enterWeight)
         } else {
-          completeOrderPack(pack, order, 0, overPricedPermission, stock)
-          message(labels.executeSuccess, 3000)
-          history.goBack() 
+          weight = '0'
         }  
+        completeOrderPack(pack, order, Number(weight), overPricedPermission, stock)
+        message(labels.executeSuccess, 3000)
+        history.goBack()       
       }
     } catch(error) {
       const err = error as Err
@@ -182,7 +161,7 @@ const PrepareOrderPack = () => {
             </IonRow>
             <IonRow>
               <IonCol>{quantityDetails(orderPack)}</IonCol>
-              <IonCol className="ion-text-end">{`${labels.stockQuantity}: ${stock?.quantity || 0}`}{stock?.weight && stock.weight !== stock.quantity ? `, ${labels.weight} : ${stock.weight}` : ''}</IonCol>
+              <IonCol className="ion-text-end">{`${labels.stockQuantity}: ${stock?.quantity || 0}`}{stock?.weight && stock.weight !== stock.quantity ? `, (${stock.weight})` : ''}</IonCol>
             </IonRow>
             {orderPack.actual > 0 &&
               <IonRow>

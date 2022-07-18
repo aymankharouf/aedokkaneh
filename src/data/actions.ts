@@ -434,17 +434,12 @@ const packStockIn = (batch: firebase.firestore.WriteBatch, pack: PurchasePack, s
   }
 }
 
-export const unfoldStockPack = (stock: Stock, pack: Pack, stocks: Stock[], quantity: number) => {
+export const unfoldStockPack = (stock: Stock, pack: Pack, stocks: Stock[], quantity: number, firstStockPack: PurchasePack, secondStockPack?: PurchasePack) => {
   const batch = firebase.firestore().batch()
   if (!pack.isOffer) return
   packStockOut(stock, quantity, 0, 'u', 0, '', batch)
-  // const stockPack = {
-  //   packId: pack.subPackId,
-  //   price: Math.floor(stock.price / pack.subCount!),
-  //   quantity: quantity * pack.subCount!,
-  //   weight: 0
-  // }
-  // packStockIn(batch, stockPack, stocks, 'u')
+  packStockIn(batch, firstStockPack, stocks, 'u')
+  if (secondStockPack) packStockIn(batch, secondStockPack, stocks, 'u')
   batch.commit()
 }
 
@@ -581,7 +576,7 @@ export const completeOrderPack = (pack: Pack, order: Order, weight: number, over
     weight,
     actual: (stock?.price || 0),
     overPriced: (stock?.price || 0) > basket[orderPackIndex].price && overPricedPermission ? true : false,
-    gross: Math.floor(price * quantity),
+    gross: Math.round(price * weight || quantity),
   })
 
   total = basket.reduce((sum, p) => sum + p.gross, 0)
@@ -609,15 +604,22 @@ export const completeOrderPack = (pack: Pack, order: Order, weight: number, over
 export const returnPack = (pack: Pack, order: Order, stocks: Stock[]) => {
   const batch = firebase.firestore().batch()
   const basket = order.basket.slice()
+  console.log('basket == ', basket)
   const orderPackIndex = basket.findIndex(p => p.pack.id === pack.id)
   let status = 'e', fraction, total
+  const stockPack = {
+    packId: pack.id!,
+    price: basket[orderPackIndex].price,
+    quantity: basket[orderPackIndex].quantity,
+    weight: basket[orderPackIndex].weight
+  }
   basket.splice(orderPackIndex, 1, {
     ...basket[orderPackIndex],
     status: 'n',
     purchased: 0,
     weight: 0,
     actual: 0,
-    gross: basket[orderPackIndex].price * basket[orderPackIndex].quantity,
+    gross: Math.round(basket[orderPackIndex].price * basket[orderPackIndex].quantity),
   })
   total = basket.reduce((sum, p) => sum + p.gross, 0)
   fraction = total - Math.floor(total / 5) * 5
@@ -634,12 +636,6 @@ export const returnPack = (pack: Pack, order: Order, stocks: Stock[]) => {
     fraction,
     status,
   })
-  const stockPack = {
-    packId: pack.id!,
-    price: basket[orderPackIndex].price,
-    quantity: basket[orderPackIndex].quantity,
-    weight: basket[orderPackIndex].weight
-  }
   packStockIn(batch, stockPack, stocks, 'r', order.id)
   batch.commit()
 }

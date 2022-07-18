@@ -94,6 +94,7 @@ import StoreTransList from './pages/store-trans-list'
 import PrepareOrderPack from './pages/prepare-order-pack'
 import PrepareOrderInfo from './pages/prepare-order-info'
 import OrderTransList from './pages/order-trans-list'
+import UnfoldStockPack from './pages/unfold-stock-pack'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -465,6 +466,7 @@ const App = () => {
             <Route path="/product-archived" exact={true} component={ProductArchived} />
             <Route path="/store-trans-list/:id" exact={true} component={StoreTransList} />
             <Route path="/order-trans-list/:id" exact={true} component={OrderTransList} />
+            <Route path="/unfold-stock-pack/:id" exact={true} component={UnfoldStockPack} />
           </IonRouterOutlet>
         </IonSplitPane>
       </IonReactRouter>

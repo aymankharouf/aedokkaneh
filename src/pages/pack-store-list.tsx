@@ -42,7 +42,7 @@ const PackStoreList = () => {
     const detailsCount = statePackPrices.filter(p => p.packId === params.id).length
     return detailsCount === 0 ? stateOrders.filter(o => o.basket.find(p => p.pack.id === params.id)).length : detailsCount
   }, [params.id, stateOrders, statePackPrices])
-  const packStores = useMemo(() => statePackPrices.filter(p => p.packId === pack?.id || statePacks.find(pa => pa.id === p.packId && pa.product.id === pack?.product.id && pa.isOffer))
+  const packStores = useMemo(() => statePackPrices.filter(p => p.packId === pack?.id)
                                                   .map(p => ({
                                                     ...p,
                                                     store: stateStores.find(s => s.id === p.storeId)!,
@@ -236,8 +236,6 @@ const PackStoreList = () => {
               readonly
             />
           </IonItem>
-        </IonList>
-        <IonList>
           <IonItemDivider style={{fontSize: '0.9rem'}} color="primary">
             <IonLabel>{labels.stock}</IonLabel>
           </IonItemDivider>
@@ -257,8 +255,6 @@ const PackStoreList = () => {
               readonly
             />
           </IonItem>
-        </IonList>
-        <IonList>
           <IonItemDivider style={{fontSize: '0.9rem'}} color="primary">
             <IonLabel>{labels.stores}</IonLabel>
           </IonItemDivider>
@@ -266,8 +262,7 @@ const PackStoreList = () => {
             <IonItem key={i++} className={currentStorePack?.storeId === s.storeId && currentStorePack?.packId === s.packId ? 'selected' : ''}>
               <IonLabel>
                 <IonText style={{color: colors[0].name}}>{s.store.name}</IonText>
-                <IonText style={{color: colors[1].name}}>{s.packId === pack.id ? '' : s.pack.name} {s.pack.isOffer && <IonBadge>{labels.offer}</IonBadge>}</IonText>
-                <IonText style={{color: colors[2].name}}>{`${labels.price}: ${(s.price / 100).toFixed(2)}`} {!s.isActive && <IonBadge color="danger">{labels.inActive}</IonBadge>}</IonText>
+                <IonText style={{color: colors[1].name}}>{`${labels.price}: ${(s.price / 100).toFixed(2)}`} {!s.isActive && <IonBadge color="danger">{labels.inActive}</IonBadge>}</IonText>
               </IonLabel>
               {s.packId === params.id &&
                 <IonIcon 

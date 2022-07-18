@@ -82,8 +82,8 @@ const ProductPackList = () => {
         <IonList className="list">
           {packs.map(p => 
             <IonItem key={p.id} routerLink={`/pack-store-list/${p.id}`}>
-              <IonLabel>{p.name}</IonLabel>
-              {p.price > 0 && <IonLabel slot="end" className="price">{(p.price / 100).toFixed(2)} {p.isOffer && <IonBadge slot="end">{labels.offer}</IonBadge>}</IonLabel>}
+              <IonLabel>{p.name} {p.isOffer && <IonBadge slot="end">{labels.offer}</IonBadge>}</IonLabel>
+              {p.price > 0 && <IonLabel slot="end" className="price">{(p.price / 100).toFixed(2)}</IonLabel>}
             </IonItem>
           )}
         </IonList>

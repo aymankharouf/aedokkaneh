@@ -395,7 +395,12 @@ const labels: Label = {
   enterPrice: 'ادخل السعر الجديد',
   refresh: 'تأكيد',
   trans: 'الحركات',
-  mobileFound: 'رقم الموبايل مستخدم سابقا'
+  mobileFound: 'رقم الموبايل مستخدم سابقا',
+  enterQuantityWeight: 'ادخل كمية*وزن',
+  firstPack: 'العبوة',
+  secondPack: 'المنتج اﻻضافي',
+  count: 'العدد',
+  unfoldPack: 'تقسيم عبوة'
 }
 
 export default labels
